@@ -34,7 +34,7 @@
 
     <!--deps-->
     <vertx.version>5.0.0.CR3</vertx.version>
-    <tx-manager.version>1.37.0</tx-manager.version>
+    <tx-manager.version>1.42.0</tx-manager.version>
   </properties>
 
   <dependencyManagement>
