@@ -1,0 +1,25 @@
+/* Licensed under Apache-2.0 2024. */
+package github.benslabbert.vdw.codegen.generator;
+
+import static com.google.common.truth.Truth.assertAbout;
+import static com.google.common.truth.Truth.assertThat;
+
+import com.google.testing.compile.JavaFileObjects;
+import com.google.testing.compile.JavaSourceSubjectFactory;
+import github.benslabbert.vdw.codegen.generator.WebHandlerGenerator;
+import java.net.URL;
+import org.junit.jupiter.api.Test;
+
+class WebHandlerGeneratorTest {
+
+  @Test
+  void test() {
+    URL resource = this.getClass().getClassLoader().getResource("ExampleHandler.java");
+    assertThat(resource).isNotNull();
+
+    assertAbout(JavaSourceSubjectFactory.javaSource())
+        .that(JavaFileObjects.forResource(resource))
+        .processedWith(new WebHandlerGenerator())
+        .compilesWithoutError();
+  }
+}

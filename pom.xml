@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>github.benslabbert</groupId>
+    <artifactId>vertx-dagger-bom</artifactId>
+    <version>1.75.0</version>
+  </parent>
+
+  <groupId>github.benslabbert.vdw.codegen</groupId>
+  <artifactId>codegen-parent</artifactId>
+  <version>${revision}</version>
+  <packaging>pom</packaging>
+
+  <modules>
+    <module>generator</module>
+    <module>annotation</module>
+    <module>commons</module>
+    <module>example</module>
+  </modules>
+
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub BenSlabbert Apache Maven Packages</name>
+      <url>https://maven.pkg.github.com/BenSlabbert/vertx-dagger-web-codegen</url>
+    </repository>
+  </distributionManagement>
+
+  <properties>
+    <!--config-->
+    <shade.skip>false</shade.skip>
+
+    <!--deps-->
+    <vertx.version>5.0.0.CR3</vertx.version>
+    <tx-manager.version>1.37.0</tx-manager.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-stack-depchain</artifactId>
+        <version>${vertx.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>github.benslabbert.txmanager</groupId>
+        <artifactId>annotation</artifactId>
+        <version>${tx-manager.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>github.benslabbert.txmanager</groupId>
+        <artifactId>txmanager</artifactId>
+        <version>${tx-manager.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>github.benslabbert.txmanager</groupId>
+        <artifactId>plugin</artifactId>
+        <version>${tx-manager.version}</version>
+        <scope>provided</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+</project>
