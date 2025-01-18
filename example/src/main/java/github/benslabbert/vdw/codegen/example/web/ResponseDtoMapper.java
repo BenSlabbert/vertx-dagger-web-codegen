@@ -2,9 +2,8 @@
 package github.benslabbert.vdw.codegen.example.web;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.MappingConstants;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.JAKARTA)
+@Mapper(config = MapperBaseConfig.class)
 interface ResponseDtoMapper {
 
   ResponseDto map(RequestDto dto);
