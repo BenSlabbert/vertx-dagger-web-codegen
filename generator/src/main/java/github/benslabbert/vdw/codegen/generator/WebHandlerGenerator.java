@@ -26,9 +26,12 @@ import github.benslabbert.vdw.codegen.annotation.WebRequest.RoutingContext;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.Session;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.Trace;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.UserContext;
+import github.benslabbert.vdw.codegen.commons.ContextDataKey;
+import github.benslabbert.vdw.codegen.commons.RequireRequestBodyHandler;
 import github.benslabbert.vdw.codegen.commons.ResponseWriterUtil;
 import github.benslabbert.vdw.codegen.commons.RoleAuthorizationHandlerProvider;
 import github.benslabbert.vdw.codegen.commons.RouterConfigurer;
+import github.benslabbert.vdw.codegen.commons.ValidateRequestBodyHandler;
 import github.benslabbert.vdw.codegen.commons.ValidatorProvider;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.vertx.core.buffer.Buffer;
@@ -106,7 +109,6 @@ public class WebHandlerGenerator extends ProcessorBase {
     String generatedClassName = handlerName + "_Router";
     String ctxVariable = "_c";
     String handlerVariable = "_h";
-    String dtoVariable = "_d";
     String respVariable = "_r";
     String validationProviderVariable = "_vp";
     String authProviderVariable = "_a";
@@ -121,30 +123,33 @@ public class WebHandlerGenerator extends ProcessorBase {
       out.println();
 
       getImports(annotatedMethods).forEach(anImport -> out.printf("import %s;%n", anImport));
-      out.printf("import %s%n;", Generated.class.getCanonicalName());
-      out.printf("import %s%n;", RequiresModuleGeneration.class.getCanonicalName());
-      out.printf("import %s%n;", Inject.class.getCanonicalName());
-      out.printf("import %s%n;", Singleton.class.getCanonicalName());
-      out.printf("import %s%n;", HttpHeaderValues.class.getCanonicalName());
-      out.printf("import %s%n;", HttpHeaders.class.getCanonicalName());
-      out.printf("import %s%n;", JsonObject.class.getCanonicalName());
-      out.printf("import %s%n;", Buffer.class.getCanonicalName());
-      out.printf("import %s%n;", Router.class.getCanonicalName());
-      out.printf("import %s%n;", io.vertx.ext.web.RoutingContext.class.getCanonicalName());
-      out.printf("import %s%n;", HttpServerRequest.class.getCanonicalName());
-      out.printf("import %s%n;", HttpServerResponse.class.getCanonicalName());
-      out.printf("import %s%n;", io.vertx.ext.web.UserContext.class.getCanonicalName());
-      out.printf("import %s%n;", io.vertx.ext.web.Session.class.getCanonicalName());
-      out.printf("import %s%n;", Logger.class.getCanonicalName());
-      out.printf("import %s%n;", LoggerFactory.class.getCanonicalName());
-      out.printf("import %s%n;", ResponseWriterUtil.class.getCanonicalName());
-      out.printf("import %s%n;", RouterConfigurer.class.getCanonicalName());
-      out.printf("import %s%n;", ValidatorProvider.class.getCanonicalName());
-      out.printf("import %s%n;", RoleAuthorizationHandlerProvider.class.getCanonicalName());
-      out.printf("import %s%n;", Validator.class.getCanonicalName());
-      out.printf("import %s%n;", ConstraintViolation.class.getCanonicalName());
-      out.printf("import %s%n;", Set.class.getCanonicalName());
-      out.printf("import %s%n;", Map.class.getCanonicalName());
+      out.printf("import %s;%n", Generated.class.getCanonicalName());
+      out.printf("import %s;%n", RequiresModuleGeneration.class.getCanonicalName());
+      out.printf("import %s;%n", Inject.class.getCanonicalName());
+      out.printf("import %s;%n", Singleton.class.getCanonicalName());
+      out.printf("import %s;%n", HttpHeaderValues.class.getCanonicalName());
+      out.printf("import %s;%n", HttpHeaders.class.getCanonicalName());
+      out.printf("import %s;%n", JsonObject.class.getCanonicalName());
+      out.printf("import %s;%n", Buffer.class.getCanonicalName());
+      out.printf("import %s;%n", Router.class.getCanonicalName());
+      out.printf("import %s;%n", io.vertx.ext.web.RoutingContext.class.getCanonicalName());
+      out.printf("import %s;%n", HttpServerRequest.class.getCanonicalName());
+      out.printf("import %s;%n", HttpServerResponse.class.getCanonicalName());
+      out.printf("import %s;%n", io.vertx.ext.web.UserContext.class.getCanonicalName());
+      out.printf("import %s;%n", io.vertx.ext.web.Session.class.getCanonicalName());
+      out.printf("import %s;%n", Logger.class.getCanonicalName());
+      out.printf("import %s;%n", LoggerFactory.class.getCanonicalName());
+      out.printf("import %s;%n", ResponseWriterUtil.class.getCanonicalName());
+      out.printf("import %s;%n", RouterConfigurer.class.getCanonicalName());
+      out.printf("import %s;%n", ValidatorProvider.class.getCanonicalName());
+      out.printf("import %s;%n", RoleAuthorizationHandlerProvider.class.getCanonicalName());
+      out.printf("import %s;%n", Validator.class.getCanonicalName());
+      out.printf("import %s;%n", ConstraintViolation.class.getCanonicalName());
+      out.printf("import %s;%n", Set.class.getCanonicalName());
+      out.printf("import %s;%n", Map.class.getCanonicalName());
+      out.printf("import %s;%n", RequireRequestBodyHandler.class.getCanonicalName());
+      out.printf("import %s;%n", ValidateRequestBodyHandler.class.getCanonicalName());
+      out.printf("import %s;%n", ContextDataKey.class.getCanonicalName());
       out.println();
 
       out.println("@RequiresModuleGeneration");
@@ -196,9 +201,6 @@ public class WebHandlerGenerator extends ProcessorBase {
           default -> throw new GenerationException("unsupported HTTP method: " + am.httpMethod());
         }
 
-        if (null != am.role()) {
-          out.printf("\t\t\t.handler(%s.forRole(\"%s\"))%n", authProviderVariable, am.role());
-        }
         if (null != am.produces()) {
           out.printf("\t\t\t.produces(\"%s\")%n", am.produces());
         }
@@ -206,15 +208,36 @@ public class WebHandlerGenerator extends ProcessorBase {
           out.printf("\t\t\t.consumes(\"%s\")%n", am.produces());
         }
 
+        if (null != am.role()) {
+          out.printf("\t\t\t.handler(%s.forRole(\"%s\"))%n", authProviderVariable, am.role());
+        }
+
+        MethodParameter bodyParam = requestBodyType(am.parameters());
+        if (null != bodyParam) {
+          out.printf("\t\t\t.handler((RoutingContext %s) -> {%n", ctxVariable);
+          out.printf(
+              "\t\t\t\tRequireRequestBodyHandler.requireJsonBody(%s, \"%s\");%n",
+              ctxVariable, am.path());
+          out.printf("\t\t\t})%n");
+
+          if (bodyParam.validateBody()) {
+            out.printf("\t\t\t.handler((RoutingContext %s) -> {%n", ctxVariable);
+            out.printf(
+                "\t\t\t\tValidateRequestBodyHandler.validateRequestBody(%s, %s.getValidator(), %s::fromJson);%n",
+                ctxVariable, validationProviderVariable, bodyParam.type().simpleName());
+            out.printf("\t\t\t})%n");
+          } else {
+            out.printf("\t\t\t.handler((RoutingContext %s) -> {%n", ctxVariable);
+            out.printf(
+                "\t\t\t\t%s.put(ContextDataKey.REQUEST_DATA, %s.fromJson(%s.get(ContextDataKey.REQUEST_JSON)));%n",
+                ctxVariable, bodyParam.type().simpleName(), ctxVariable);
+            out.printf("\t\t\t\t%s.next();%n", ctxVariable);
+            out.printf("\t\t\t})%n");
+          }
+        }
+
         out.printf("\t\t\t.handler((RoutingContext %s) -> {%n", ctxVariable);
-        fillHandlerCall(
-            out,
-            am,
-            ctxVariable,
-            handlerVariable,
-            dtoVariable,
-            respVariable,
-            validationProviderVariable);
+        fillHandlerCall(out, am, ctxVariable, handlerVariable, respVariable);
         out.printf("\t\t\t\t});%n");
         out.println();
       }
@@ -231,39 +254,11 @@ public class WebHandlerGenerator extends ProcessorBase {
       MethodRequest request,
       String ctxVariable,
       String handlerVariable,
-      String dtoVariable,
-      String respVariable,
-      String validationProviderVariable) {
-
-    MethodParameter bodyParam = requestBodyType(request.parameters());
-    if (null != bodyParam) {
-      out.printf("\t\t\t\t\tJsonObject json = %s.body().asJsonObject();%n", ctxVariable);
-      out.printf("\t\t\t\t\tif (null == json) {%n");
-      out.printf("\t\t\t\t\t\tlog.warn(\"{} request body is empty\", \"%s\");%n", request.path());
-      out.printf("\t\t\t\t\t\t%s.fail(400);%n", ctxVariable);
-      out.printf("\t\t\t\t\t\treturn;%n");
-      out.printf("\t\t\t\t\t}%n");
-      out.printf(
-          "\t\t\t\t\t%s %s = %s.fromJson(json);%n",
-          bodyParam.type().simpleName(), dtoVariable, bodyParam.type().simpleName());
-
-      if (bodyParam.validateBody()) {
-        out.printf("\t\t\t\t\tValidator _v = %s.getValidator();%n", validationProviderVariable);
-        out.printf(
-            "\t\t\t\t\tSet<ConstraintViolation<%s>> violations = _v.validate(%s);%n",
-            bodyParam.type().simpleName(), dtoVariable);
-        out.println("\t\t\t\t\tif(violations.size() > 0){");
-        out.printf(
-            "\t\t\t\t\t\tResponseWriterUtil.sendRequestHasViolations(%s, violations);%n",
-            ctxVariable);
-        out.println("\t\t\t\t\t\treturn;");
-        out.println("\t\t\t\t\t}");
-      }
-    }
+      String respVariable) {
 
     if (request.isVoid()) {
       out.printf("\t\t\t\t\t%s.%s(", handlerVariable, request.methodName());
-      MethodParams methodParams = getMethodParams(request, ctxVariable, dtoVariable);
+      MethodParams methodParams = getMethodParams(request, ctxVariable);
       out.print(methodParams.params());
       out.println(");");
 
@@ -291,7 +286,7 @@ public class WebHandlerGenerator extends ProcessorBase {
     out.printf(
         "\t\t\t\t\t%s %s = %s.%s(",
         request.returnType().simpleName(), respVariable, handlerVariable, request.methodName());
-    MethodParams methodParams = getMethodParams(request, ctxVariable, dtoVariable);
+    MethodParams methodParams = getMethodParams(request, ctxVariable);
     if (methodParams.routingContextUsed() || methodParams.responseUsed()) {
       throw new GenerationException(
           "cannot consume RoutingContext and specify a return type other than void");
@@ -325,8 +320,7 @@ public class WebHandlerGenerator extends ProcessorBase {
 
   private record MethodParams(String params, boolean routingContextUsed, boolean responseUsed) {}
 
-  private static MethodParams getMethodParams(
-      MethodRequest request, String ctxVariable, String dtoVariable) {
+  private static MethodParams getMethodParams(MethodRequest request, String ctxVariable) {
     AtomicBoolean rcUsed = new AtomicBoolean(false);
     AtomicBoolean responseUsed = new AtomicBoolean(false);
     String params =
@@ -359,7 +353,8 @@ public class WebHandlerGenerator extends ProcessorBase {
                     rcUsed.getAndSet(true);
                     return ctxVariable;
                   }
-                  return dtoVariable;
+
+                  return "(%s) %s.get(ContextDataKey.REQUEST_DATA)".formatted(p.type().simpleName(), ctxVariable);
                 })
             .collect(Collectors.joining(", "));
     return new MethodParams(params, rcUsed.get(), responseUsed.get());

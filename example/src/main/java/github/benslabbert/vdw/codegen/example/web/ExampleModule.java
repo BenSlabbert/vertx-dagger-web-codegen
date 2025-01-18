@@ -7,6 +7,7 @@ import dagger.Module;
     includes = {
       IHandler_Router_ModuleBindings.class,
       Handler_Router_ModuleBindings.class,
+      Example_Router_ModuleBindings.class,
       ModuleBindings.class
     })
 public interface ExampleModule {}

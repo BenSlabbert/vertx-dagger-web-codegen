@@ -10,6 +10,9 @@ public record RequestDto(@NotBlank String data) {
 
   @Nonnull
   public static RequestDto fromJson(JsonObject jsonObject) {
+    if (null == jsonObject) {
+      jsonObject = new JsonObject();
+    }
     Objects.requireNonNull(jsonObject, "jsonObject cannot be null.");
     String data = jsonObject.getString("data", "");
     return new RequestDto(data);
