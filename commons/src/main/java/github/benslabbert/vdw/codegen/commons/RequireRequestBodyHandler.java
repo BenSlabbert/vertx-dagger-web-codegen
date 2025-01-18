@@ -12,7 +12,7 @@ public final class RequireRequestBodyHandler {
   private RequireRequestBodyHandler() {}
 
   /**
-   * Adds the request JSON ody to the request context.<br>
+   * Adds the request JSON body to the request context.<br>
    * If the request body is empty, the request is failed.
    */
   public static void requireJsonBody(RoutingContext ctx, String path) {
