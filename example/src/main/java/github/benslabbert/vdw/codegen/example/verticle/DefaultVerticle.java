@@ -25,7 +25,7 @@ public class DefaultVerticle extends AbstractVerticle {
   @Override
   public void start(Promise<Void> startPromise) {
     log.info("Starting verticle");
-    Provider provider = DaggerProvider.builder().vertx(vertx).build();
+    Provider provider = DaggerProvider.builder().vertx(vertx).config(config()).build();
     provider.init();
 
     ServerFactory serverFactory = provider.serverFactory();

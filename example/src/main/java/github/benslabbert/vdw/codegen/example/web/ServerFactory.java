@@ -4,6 +4,7 @@ package github.benslabbert.vdw.codegen.example.web;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.ext.web.Router;
 import jakarta.inject.Inject;
@@ -13,10 +14,12 @@ import jakarta.inject.Singleton;
 public class ServerFactory {
 
   private final Vertx vertx;
+  private final JsonObject config;
 
   @Inject
-  ServerFactory(Vertx vertx) {
+  ServerFactory(Vertx vertx, JsonObject config) {
     this.vertx = vertx;
+    this.config = config;
   }
 
   public HttpServer create(Router router) {
@@ -24,7 +27,7 @@ public class ServerFactory {
         .createHttpServer(
             new HttpServerOptions()
                 .setTracingPolicy(TracingPolicy.ALWAYS)
-                .setPort(8080)
+                .setPort(config.getInteger("http.port", 8080))
                 .setHost("0.0.0.0"))
         .requestHandler(router);
   }
