@@ -92,28 +92,18 @@
       <plugin>
         <groupId>net.bytebuddy</groupId>
         <artifactId>byte-buddy-maven-plugin</artifactId>
-        <configuration>
-          <incremental>true</incremental>
-          <threads>1</threads>
-          <failFast>true</failFast>
-          <transformations>
-            <transformation>
-              <groupId>github.benslabbert.txmanager</groupId>
-              <artifactId>plugin</artifactId>
-              <plugin>github.benslabbert.txmanager.plugin.TransactionalAdvicePlugin</plugin>
-              <version>${tx-manager.version}</version>
-            </transformation>
-          </transformations>
-          <source />
-          <target />
-        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>github.benslabbert.txmanager</groupId>
+            <artifactId>plugin</artifactId>
+            <version>${tx-manager.version}</version>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
-            <id>transform</id>
             <goals>
               <goal>transform</goal>
             </goals>
-            <phase>process-classes</phase>
           </execution>
         </executions>
       </plugin>

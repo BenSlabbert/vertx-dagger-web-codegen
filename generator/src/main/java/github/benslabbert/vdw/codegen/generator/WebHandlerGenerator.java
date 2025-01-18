@@ -205,7 +205,7 @@ public class WebHandlerGenerator extends ProcessorBase {
           out.printf("\t\t\t.produces(\"%s\")%n", am.produces());
         }
         if (null != am.consumes()) {
-          out.printf("\t\t\t.consumes(\"%s\")%n", am.produces());
+          out.printf("\t\t\t.consumes(\"%s\")%n", am.consumes());
         }
 
         if (null != am.role()) {

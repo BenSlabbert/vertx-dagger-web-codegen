@@ -3,12 +3,16 @@ package github.benslabbert.vdw.codegen.example.web;
 
 import github.benslabbert.vdw.codegen.annotation.HasRole;
 import github.benslabbert.vdw.codegen.annotation.WebHandler;
+import github.benslabbert.vdw.codegen.annotation.WebRequest;
+import github.benslabbert.vdw.codegen.annotation.WebRequest.Consumes;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.Get;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.PathParams;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.Produces;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.QueryParams;
 import github.benslabbert.vdw.codegen.example.service.HandlerService;
 import github.benslabbert.vdw.codegen.example.web.Handler_Both_ParamParser.Handler_Both_Params;
+import github.benslabbert.vdw.codegen.example.web.Handler_Path_ParamParser.Handler_Path_Params;
+import github.benslabbert.vdw.codegen.example.web.Handler_Query_ParamParser.Handler_Query_Params;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import jakarta.inject.Inject;
@@ -30,6 +34,7 @@ class Handler {
   }
 
   @HasRole("admin")
+  @Consumes("*")
   @Produces("text/plain")
   @Get(path = "/buffer")
   Buffer buffer() {
@@ -38,13 +43,18 @@ class Handler {
   }
 
   @Get(path = "/path?q={string:s}")
-  void query() {
-    // do nothing
+  void query(@QueryParams MultiMap queryParams) {
+    Handler_Query_Params params = Handler_Query_ParamParser.parse(queryParams);
+    String s = params.s();
+    log.info("query params: {}", s);
   }
 
-  @Get(path = "/path/{int:param1}/path/{string:param2}")
-  void path() {
-    // do nothing
+  @Get(path = "/path/{int:param1=0}/path/{string:param2}")
+  void path(@PathParams Map<String, String> pathParams) {
+    Handler_Path_Params parse = Handler_Path_ParamParser.parse(pathParams);
+    int i = parse.param1();
+    String s = parse.param2();
+    log.info("path params i: {} s: {}", i, s);
   }
 
   @Get(path = "/some/prefix/{int:param1}/path/{string:param2}/more-path?q={string:q=s}")
