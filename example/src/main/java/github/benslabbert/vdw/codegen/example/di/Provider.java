@@ -12,6 +12,7 @@ import github.benslabbert.vdw.codegen.example.web.ExampleModule;
 import github.benslabbert.vdw.codegen.example.web.RouterFactory;
 import github.benslabbert.vdw.codegen.example.web.ServerFactory;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -35,6 +36,9 @@ public interface Provider {
 
     @BindsInstance
     Builder vertx(Vertx vertx);
+
+    @BindsInstance
+    Builder config(JsonObject config);
 
     Provider build();
   }
