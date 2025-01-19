@@ -3,7 +3,6 @@ package github.benslabbert.vdw.codegen.example.web;
 
 import github.benslabbert.vdw.codegen.annotation.HasRole;
 import github.benslabbert.vdw.codegen.annotation.WebHandler;
-import github.benslabbert.vdw.codegen.annotation.WebRequest;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.Consumes;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.Get;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.PathParams;

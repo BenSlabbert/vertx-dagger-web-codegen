@@ -50,26 +50,9 @@ public interface Provider {
     EagerModule() {}
 
     @Provides
-    @Nullable static Void provideEager() {
-      // this eagerly builds any parameters specified and returns nothing
+    @Nullable static Void provideEager(TransactionManager transactionManager) {
       log.info("eager init");
-      PlatformTransactionManager.setTransactionManager(
-          new TransactionManager() {
-            @Override
-            public void begin() {}
-
-            @Override
-            public void ensureActive() {}
-
-            @Override
-            public void commit() {}
-
-            @Override
-            public void rollback() {}
-
-            @Override
-            public void close() {}
-          });
+      PlatformTransactionManager.setTransactionManager(transactionManager);
       return null;
     }
   }

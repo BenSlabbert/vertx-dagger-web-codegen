@@ -6,7 +6,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.testing.compile.JavaFileObjects;
 import com.google.testing.compile.JavaSourceSubjectFactory;
-import github.benslabbert.vdw.codegen.generator.WebHandlerGenerator;
 import java.net.URL;
 import org.junit.jupiter.api.Test;
 

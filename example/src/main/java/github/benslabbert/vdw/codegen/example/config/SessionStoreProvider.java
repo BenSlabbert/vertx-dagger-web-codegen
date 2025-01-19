@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Module
-public final class SessionStoreProvider {
+final class SessionStoreProvider {
 
   private static final Logger log = LoggerFactory.getLogger(SessionStoreProvider.class);
 
@@ -20,7 +20,7 @@ public final class SessionStoreProvider {
 
   @Singleton
   @Provides
-  public static SessionStore sessionStore(Vertx vertx) {
+  static SessionStore sessionStore(Vertx vertx) {
     if (vertx.isClustered()) {
       log.info("using clustered session store");
       return ClusteredSessionStore.create(vertx);
