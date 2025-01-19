@@ -10,13 +10,13 @@ import jakarta.inject.Singleton;
 import java.time.Duration;
 
 @Module
-public final class SessionHandlerProvider {
+final class SessionHandlerProvider {
 
   private SessionHandlerProvider() {}
 
   @Singleton
   @Provides
-  public static SessionHandler getSessionHandler(SessionStore sessionStore) {
+  static SessionHandler getSessionHandler(SessionStore sessionStore) {
     Duration duration = Duration.ofMinutes(5L);
     return SessionHandler.create(sessionStore)
         .setCookieless(false)

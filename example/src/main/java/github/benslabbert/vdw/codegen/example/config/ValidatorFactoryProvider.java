@@ -9,7 +9,7 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 
 @Singleton
-public final class ValidatorFactoryProvider implements ValidatorProvider, AutoCloseable {
+final class ValidatorFactoryProvider implements ValidatorProvider, AutoCloseable {
 
   private final ValidatorFactory factory;
 

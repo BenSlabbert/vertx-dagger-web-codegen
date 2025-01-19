@@ -51,6 +51,7 @@ public class RouterFactory {
         .handler(sessionHandler)
         .handler(CorsHandler.create())
         .handler(BodyHandler.create().setBodyLimit(1024L * 100L))
+        // this is applied to all handlers/routes
         .handler(BasicAuthHandler.create(authenticationProvider));
 
     routerConfigurers.forEach(rc -> rc.route(router));

@@ -5,6 +5,7 @@ import dagger.Module;
 
 @Module(
     includes = {
+      TransactionManagerProvider.class,
       ConfigModuleBindings.class,
       SessionHandlerProvider.class,
       SessionStoreProvider.class

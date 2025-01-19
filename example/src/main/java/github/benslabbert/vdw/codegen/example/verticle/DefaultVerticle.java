@@ -1,6 +1,7 @@
 /* Licensed under Apache-2.0 2024. */
 package github.benslabbert.vdw.codegen.example.verticle;
 
+import github.benslabbert.txmanager.PlatformTransactionManager;
 import github.benslabbert.vdw.codegen.example.di.DaggerProvider;
 import github.benslabbert.vdw.codegen.example.di.Provider;
 import github.benslabbert.vdw.codegen.example.web.RouterFactory;
@@ -16,16 +17,21 @@ public class DefaultVerticle extends AbstractVerticle {
 
   private static final Logger log = LoggerFactory.getLogger(DefaultVerticle.class);
 
+  private Provider provider = null;
   private HttpServer httpServer = null;
 
   private void setHttpServer(HttpServer httpServer) {
     this.httpServer = httpServer;
   }
 
+  public int getPort() {
+    return httpServer.actualPort();
+  }
+
   @Override
   public void start(Promise<Void> startPromise) {
     log.info("Starting verticle");
-    Provider provider = DaggerProvider.builder().vertx(vertx).config(config()).build();
+    provider = DaggerProvider.builder().vertx(vertx).config(config()).build();
     provider.init();
 
     ServerFactory serverFactory = provider.serverFactory();
@@ -50,6 +56,12 @@ public class DefaultVerticle extends AbstractVerticle {
   @Override
   public void stop(Promise<Void> stopPromise) {
     log.info("Stopping verticle");
+
+    try {
+      PlatformTransactionManager.close();
+    } catch (Exception e) {
+      log.error("failed closing transaction manager", e);
+    }
 
     if (null != httpServer) {
       log.info("Stopping http server");

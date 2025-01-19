@@ -223,13 +223,15 @@ public class WebHandlerGenerator extends ProcessorBase {
           if (bodyParam.validateBody()) {
             out.printf("\t\t\t.handler((RoutingContext %s) -> {%n", ctxVariable);
             out.printf(
-                "\t\t\t\tValidateRequestBodyHandler.validateRequestBody(%s, %s.getValidator(), %s::fromJson);%n",
+                "\t\t\t\tValidateRequestBodyHandler.validateRequestBody(%s, %s.getValidator(),"
+                    + " %s::fromJson);%n",
                 ctxVariable, validationProviderVariable, bodyParam.type().simpleName());
             out.printf("\t\t\t})%n");
           } else {
             out.printf("\t\t\t.handler((RoutingContext %s) -> {%n", ctxVariable);
             out.printf(
-                "\t\t\t\t%s.put(ContextDataKey.REQUEST_DATA, %s.fromJson(%s.get(ContextDataKey.REQUEST_JSON)));%n",
+                "\t\t\t\t%s.put(ContextDataKey.REQUEST_DATA,"
+                    + " %s.fromJson(%s.get(ContextDataKey.REQUEST_JSON)));%n",
                 ctxVariable, bodyParam.type().simpleName(), ctxVariable);
             out.printf("\t\t\t\t%s.next();%n", ctxVariable);
             out.printf("\t\t\t})%n");
@@ -354,7 +356,8 @@ public class WebHandlerGenerator extends ProcessorBase {
                     return ctxVariable;
                   }
 
-                  return "(%s) %s.get(ContextDataKey.REQUEST_DATA)".formatted(p.type().simpleName(), ctxVariable);
+                  return "(%s) %s.get(ContextDataKey.REQUEST_DATA)"
+                      .formatted(p.type().simpleName(), ctxVariable);
                 })
             .collect(Collectors.joining(", "));
     return new MethodParams(params, rcUsed.get(), responseUsed.get());
