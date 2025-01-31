@@ -33,7 +33,7 @@
     <shade.skip>false</shade.skip>
 
     <!--deps-->
-    <vertx.version>5.0.0.CR3</vertx.version>
+    <vertx.version>5.0.0.CR4</vertx.version>
     <tx-manager.version>1.57.0</tx-manager.version>
   </properties>
 
