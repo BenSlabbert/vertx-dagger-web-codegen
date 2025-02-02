@@ -10,6 +10,7 @@ import github.benslabbert.vdw.codegen.annotation.WebRequest.Request;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.Response;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.RoutingContext;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.Session;
+import github.benslabbert.vdw.codegen.annotation.WebRequest.User;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.UserContext;
 
 public record MethodParameter(
@@ -24,4 +25,5 @@ public record MethodParameter(
     Request request,
     Response response,
     UserContext userContext,
+    User user,
     boolean validateBody) {}

@@ -25,6 +25,7 @@ import github.benslabbert.vdw.codegen.annotation.WebRequest.Response;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.RoutingContext;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.Session;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.Trace;
+import github.benslabbert.vdw.codegen.annotation.WebRequest.User;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.UserContext;
 import github.benslabbert.vdw.codegen.commons.ContextDataKey;
 import github.benslabbert.vdw.codegen.commons.RequireRequestBodyHandler;
@@ -136,6 +137,7 @@ public class WebHandlerGenerator extends ProcessorBase {
       out.printf("import %s;%n", HttpServerRequest.class.getCanonicalName());
       out.printf("import %s;%n", HttpServerResponse.class.getCanonicalName());
       out.printf("import %s;%n", io.vertx.ext.web.UserContext.class.getCanonicalName());
+      out.printf("import %s;%n", io.vertx.ext.auth.User.class.getCanonicalName());
       out.printf("import %s;%n", io.vertx.ext.web.Session.class.getCanonicalName());
       out.printf("import %s;%n", Logger.class.getCanonicalName());
       out.printf("import %s;%n", LoggerFactory.class.getCanonicalName());
@@ -349,6 +351,9 @@ public class WebHandlerGenerator extends ProcessorBase {
                     return "%s.response()".formatted(ctxVariable);
                   }
                   if (null != p.userContext()) {
+                    return "%s.userContext()".formatted(ctxVariable);
+                  }
+                  if (null != p.user()) {
                     return "%s.user()".formatted(ctxVariable);
                   }
                   if (null != p.routingContext()) {
@@ -488,6 +493,7 @@ public class WebHandlerGenerator extends ProcessorBase {
                   e.getAnnotation(Request.class),
                   e.getAnnotation(Response.class),
                   e.getAnnotation(UserContext.class),
+                  e.getAnnotation(User.class),
                   null != body && e.getAnnotation(Valid.class) != null);
             })
         .toList();
