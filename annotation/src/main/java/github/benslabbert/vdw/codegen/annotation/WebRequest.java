@@ -37,6 +37,9 @@ public @interface WebRequest {
   @interface UserContext {}
 
   @Target(ElementType.PARAMETER)
+  @interface User {}
+
+  @Target(ElementType.PARAMETER)
   @interface Session {}
 
   /**
