@@ -5,6 +5,7 @@ import dagger.Module;
 import dagger.Provides;
 import github.benslabbert.txmanager.TransactionManager;
 import jakarta.inject.Singleton;
+import java.sql.Connection;
 
 @Module
 class TransactionManagerProvider {
@@ -16,6 +17,11 @@ class TransactionManagerProvider {
   static TransactionManager transactionManager() {
     return new TransactionManager() {
       @Override
+      public Connection getConnection() {
+        return null;
+      }
+
+      @Override
       public void begin() {}
 
       @Override
@@ -23,6 +29,12 @@ class TransactionManagerProvider {
 
       @Override
       public void commit() {}
+
+      @Override
+      public void beforeCommit(Runnable runnable) {}
+
+      @Override
+      public void afterCommit(Runnable runnable) {}
 
       @Override
       public void rollback() {}
