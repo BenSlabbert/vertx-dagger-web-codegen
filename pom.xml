@@ -18,6 +18,7 @@
     <module>annotation</module>
     <module>commons</module>
     <module>example</module>
+    <module>bom</module>
   </modules>
 
   <distributionManagement>
