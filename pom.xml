@@ -34,7 +34,7 @@
     <shade.skip>false</shade.skip>
 
     <!--deps-->
-    <vertx.version>5.0.0.CR4</vertx.version>
+    <vertx.version>5.0.0.CR5</vertx.version>
     <tx-manager.version>1.66.0</tx-manager.version>
   </properties>
 
