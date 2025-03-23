@@ -4,7 +4,7 @@ package github.benslabbert.vdw.codegen.commons.eb;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.internal.ContextInternal;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
 import io.vertx.serviceproxy.ServiceInterceptor;

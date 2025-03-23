@@ -3,8 +3,13 @@ package github.benslabbert.vdw.codegen.example.eb;
 
 import dagger.Module;
 import dagger.Provides;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
+import io.vertx.ext.auth.authentication.AuthenticationProvider;
+import io.vertx.ext.auth.authentication.Credentials;
 import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.auth.authorization.AuthorizationProvider;
 import io.vertx.ext.auth.authorization.RoleBasedAuthorization;
@@ -26,14 +31,23 @@ public interface EBModule {
   static AuthenticationInterceptor authenticationInterceptor() {
     // this can be a singleton
     return AuthenticationInterceptor.create(
-        credentials ->
-            switch (credentials) {
+        new AuthenticationProvider() {
+          @Override
+          public void authenticate(JsonObject jsonObject, Handler<AsyncResult<User>> handler) {
+            throw new UnsupportedOperationException("Not implemented");
+          }
+
+          @Override
+          public Future<User> authenticate(Credentials credentials) {
+            return switch (credentials) {
               case TokenCredentials tc:
                 String token = tc.getToken();
                 yield Future.succeededFuture(User.fromName("name"));
               default:
                 throw new IllegalStateException("Unexpected value: " + credentials);
-            });
+            };
+          }
+        });
   }
 
   @Provides
@@ -46,14 +60,14 @@ public interface EBModule {
           }
 
           @Override
-          public Future<Void> getAuthorizations(User user) {
+          public void getAuthorizations(User user, Handler<AsyncResult<Void>> handler) {
             user.authorizations()
-                .put(
+                .add(
                     getId(),
                     Set.of(
                         RoleBasedAuthorization.create("role-1"),
                         RoleBasedAuthorization.create("role-2")));
-            return Future.succeededFuture();
+            handler.handle(Future.succeededFuture());
           }
         });
   }
