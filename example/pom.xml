@@ -26,7 +26,15 @@
     </dependency>
     <dependency>
       <groupId>github.benslabbert.txmanager</groupId>
+      <artifactId>agent</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>github.benslabbert.txmanager</groupId>
       <artifactId>annotation</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>github.benslabbert.txmanager</groupId>
+      <artifactId>plugin</artifactId>
     </dependency>
     <dependency>
       <groupId>github.benslabbert.txmanager</groupId>
@@ -71,20 +79,15 @@
       <artifactId>mapstruct</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>github.benslabbert.txmanager</groupId>
-      <artifactId>plugin</artifactId>
-      <version>${tx-manager.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>github.benslabbert.vdw.codegen</groupId>
       <artifactId>generator</artifactId>
       <version>${revision}</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
