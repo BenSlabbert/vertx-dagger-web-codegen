@@ -7,20 +7,27 @@ import dagger.Module;
 import dagger.Provides;
 import github.benslabbert.txmanager.PlatformTransactionManager;
 import github.benslabbert.txmanager.TransactionManager;
+import github.benslabbert.vdw.codegen.commons.eb.EventBusServiceConfigurer;
 import github.benslabbert.vdw.codegen.example.config.ConfigModule;
+import github.benslabbert.vdw.codegen.example.eb.EBModule;
 import github.benslabbert.vdw.codegen.example.web.ExampleModule;
 import github.benslabbert.vdw.codegen.example.web.RouterFactory;
 import github.benslabbert.vdw.codegen.example.web.ServerFactory;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.serviceproxy.ProxyHandler;
+import io.vertx.serviceproxy.ServiceException;
+import io.vertx.serviceproxy.ServiceExceptionMessageCodec;
 import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Singleton
-@Component(modules = {Provider.EagerModule.class, ExampleModule.class, ConfigModule.class})
+@Component(
+    modules = {Provider.EagerModule.class, ExampleModule.class, ConfigModule.class, EBModule.class})
 public interface Provider {
 
   Logger log = LoggerFactory.getLogger(Provider.class);
@@ -28,6 +35,10 @@ public interface Provider {
   RouterFactory routerFactory();
 
   ServerFactory serverFactory();
+
+  Set<EventBusServiceConfigurer> eventBusServiceConfigurers();
+
+  Set<ProxyHandler> proxyHandlers();
 
   @Nullable Void init();
 
@@ -50,9 +61,16 @@ public interface Provider {
     EagerModule() {}
 
     @Provides
-    @Nullable static Void provideEager(TransactionManager transactionManager) {
+    @Nullable static Void provideEager(TransactionManager transactionManager, Vertx vertx) {
       log.info("eager init");
       PlatformTransactionManager.setTransactionManager(transactionManager);
+      try {
+        vertx
+            .eventBus()
+            .registerDefaultCodec(ServiceException.class, new ServiceExceptionMessageCodec());
+      } catch (IllegalStateException ex) {
+        // ignore
+      }
       return null;
     }
   }

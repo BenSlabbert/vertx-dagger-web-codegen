@@ -11,7 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.HashSet;
-import java.util.Optional;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
@@ -74,31 +74,33 @@ abstract class ProcessorBase extends AbstractProcessor {
     for (var annotation : annotations) {
       for (var element : roundEnv.getElementsAnnotatedWith(annotation)) {
         try {
-          Optional<GeneratedFile> maybeFile = generateTempFile(element);
-          if (maybeFile.isEmpty()) {
+          List<GeneratedFile> files = generateTempFile(element);
+          if (files.isEmpty()) {
             continue;
           }
-          GeneratedFile generatedFile = maybeFile.get();
-          String absPath = generatedFile.tempFile().toAbsolutePath().toString();
-          printNote("formatting file absPath: " + absPath, element);
 
-          ProcessBuilder processBuilder =
-              new ProcessBuilder(formatterPath.toAbsolutePath().toString(), "-i", absPath);
-          Process process = processBuilder.start();
-          printNote("process error stream", element);
-          print(process.getErrorStream(), element);
-          printNote("process normal stream", element);
-          print(process.getInputStream(), element);
+          for (GeneratedFile generatedFile : files) {
+            String absPath = generatedFile.tempFile().toAbsolutePath().toString();
+            printNote("formatting file absPath: " + absPath, element);
 
-          JavaFileObject builderFile =
-              processingEnv.getFiler().createSourceFile(generatedFile.realFileName());
-          try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
-            for (String line : Files.readAllLines(generatedFile.tempFile())) {
-              out.println(line);
+            ProcessBuilder processBuilder =
+                new ProcessBuilder(formatterPath.toAbsolutePath().toString(), "-i", absPath);
+            Process process = processBuilder.start();
+            printNote("process error stream", element);
+            print(process.getErrorStream(), element);
+            printNote("process normal stream", element);
+            print(process.getInputStream(), element);
+
+            JavaFileObject builderFile =
+                processingEnv.getFiler().createSourceFile(generatedFile.realFileName());
+            try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
+              for (String line : Files.readAllLines(generatedFile.tempFile())) {
+                out.println(line);
+              }
             }
-          }
 
-          Files.deleteIfExists(generatedFile.tempFile());
+            Files.deleteIfExists(generatedFile.tempFile());
+          }
         } catch (Exception e) {
           throw new GenerationException(e);
         }
@@ -144,5 +146,5 @@ abstract class ProcessorBase extends AbstractProcessor {
     printNote(result, element);
   }
 
-  abstract Optional<GeneratedFile> generateTempFile(Element element) throws Exception;
+  abstract List<GeneratedFile> generateTempFile(Element element) throws Exception;
 }

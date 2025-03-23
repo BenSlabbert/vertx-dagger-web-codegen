@@ -56,7 +56,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -77,7 +76,7 @@ public class WebHandlerGenerator extends ProcessorBase {
   }
 
   @Override
-  Optional<GeneratedFile> generateTempFile(Element element) throws Exception {
+  List<GeneratedFile> generateTempFile(Element element) throws Exception {
     WebHandler webHandler = element.getAnnotation(WebHandler.class);
     String path = webHandler.path();
     printNote("processing WebHandler", element);
@@ -250,7 +249,7 @@ public class WebHandlerGenerator extends ProcessorBase {
       out.println();
     }
 
-    return Optional.of(new GeneratedFile(tempFile, classPackage + "." + generatedClassName));
+    return List.of(new GeneratedFile(tempFile, classPackage + "." + generatedClassName));
   }
 
   private static void fillHandlerCall(

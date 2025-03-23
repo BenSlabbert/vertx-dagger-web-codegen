@@ -7,7 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
@@ -19,7 +19,7 @@ public class ModuleGeneration extends ProcessorBase {
   }
 
   @Override
-  Optional<GeneratedFile> generateTempFile(Element element) throws Exception {
+  List<GeneratedFile> generateTempFile(Element element) throws Exception {
     printNote("generate dagger module", element);
 
     String canonicalName = element.asType().toString();
@@ -59,6 +59,6 @@ public class ModuleGeneration extends ProcessorBase {
       out.println();
     }
 
-    return Optional.of(new GeneratedFile(tempFile, classPackage + "." + generatedModuleClassName));
+    return List.of(new GeneratedFile(tempFile, classPackage + "." + generatedModuleClassName));
   }
 }
