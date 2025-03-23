@@ -12,7 +12,6 @@ import io.vertx.ext.web.handler.LoggerFormat;
 import io.vertx.ext.web.handler.LoggerHandler;
 import io.vertx.ext.web.handler.ResponseContentTypeHandler;
 import io.vertx.ext.web.handler.ResponseTimeHandler;
-import io.vertx.ext.web.handler.SecurityAuditLoggerHandler;
 import io.vertx.ext.web.handler.SessionHandler;
 import io.vertx.ext.web.handler.TimeoutHandler;
 import jakarta.inject.Inject;
@@ -45,7 +44,6 @@ public class RouterFactory {
         .route()
         .handler(ResponseContentTypeHandler.create())
         .handler(LoggerHandler.create(false, LoggerFormat.DEFAULT))
-        .handler(SecurityAuditLoggerHandler.create())
         .handler(TimeoutHandler.create())
         .handler(ResponseTimeHandler.create())
         .handler(sessionHandler)

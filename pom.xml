@@ -35,33 +35,24 @@
 
     <!--deps-->
     <vertx.version>5.0.0.CR5</vertx.version>
-    <tx-manager.version>1.80.0</tx-manager.version>
+    <tx-manager.version>1.82.0</tx-manager.version>
   </properties>
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>github.benslabbert.txmanager</groupId>
+        <artifactId>bom</artifactId>
+        <version>${tx-manager.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
       <dependency>
         <groupId>io.vertx</groupId>
         <artifactId>vertx-stack-depchain</artifactId>
         <version>${vertx.version}</version>
         <type>pom</type>
         <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>github.benslabbert.txmanager</groupId>
-        <artifactId>annotation</artifactId>
-        <version>${tx-manager.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>github.benslabbert.txmanager</groupId>
-        <artifactId>txmanager</artifactId>
-        <version>${tx-manager.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>github.benslabbert.txmanager</groupId>
-        <artifactId>plugin</artifactId>
-        <version>${tx-manager.version}</version>
-        <scope>provided</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>
