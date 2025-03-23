@@ -30,6 +30,7 @@ import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -55,13 +56,13 @@ public class WebRequestGenerator extends ProcessorBase {
   }
 
   @Override
-  Optional<GeneratedFile> generateTempFile(Element e) throws Exception {
+  List<GeneratedFile> generateTempFile(Element e) throws Exception {
     String path = getPath(e);
 
     PathParser.ParseResult parseResult = PathParser.parse(path);
 
     if (parseResult.pathParams().isEmpty() && parseResult.queryParams().isEmpty()) {
-      return Optional.empty();
+      return List.of();
     }
 
     Name methodName = e.getSimpleName();
@@ -96,7 +97,7 @@ public class WebRequestGenerator extends ProcessorBase {
       out.printf("import %s;%n", Map.class.getCanonicalName());
       out.printf("import %s;%n", RoutingContext.class.getCanonicalName());
       out.printf("import %s;%n", Instant.class.getCanonicalName());
-      out.printf("import %s%n;", Generated.class.getCanonicalName());
+      out.printf("import %s;%n", Generated.class.getCanonicalName());
       out.println();
 
       out.printf(
@@ -140,7 +141,7 @@ public class WebRequestGenerator extends ProcessorBase {
       out.println("}");
     }
 
-    return Optional.of(new GeneratedFile(tempFile, classPackage + "." + generatedClassName));
+    return List.of(new GeneratedFile(tempFile, classPackage + "." + generatedClassName));
   }
 
   private String getPath(Element e) {

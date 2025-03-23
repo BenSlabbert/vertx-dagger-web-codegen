@@ -1,0 +1,80 @@
+/* Licensed under Apache-2.0 2025. */
+package github.benslabbert.vdw.codegen.generator;
+
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.ParameterizedTypeName;
+import com.squareup.javapoet.TypeName;
+import github.benslabbert.vdw.codegen.annotation.HasRole;
+import io.vertx.core.Future;
+import jakarta.annotation.Nullable;
+import java.util.List;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+
+final class EBGeneratorUtil {
+
+  private EBGeneratorUtil() {}
+
+  static List<ServiceMethod> getMethods(Element e) {
+    return e.getEnclosedElements().stream()
+        .filter(f -> f.getKind() == ElementKind.METHOD)
+        .map(el -> (ExecutableElement) el)
+        .filter(
+            f -> {
+              TypeKind returnTypeKind = f.getReturnType().getKind();
+              if (TypeKind.DECLARED != returnTypeKind) {
+                throw new GenerationException(
+                    "cannot have void return types, only io.vertx.core.Future");
+              }
+              return true;
+            })
+        .map(
+            sm -> {
+              ParameterizedTypeName typeName =
+                  (ParameterizedTypeName) ParameterizedTypeName.get(sm.getReturnType());
+              ClassName rawType = typeName.rawType;
+              if (!rawType.canonicalName().equals(Future.class.getCanonicalName())) {
+                throw new GenerationException("must return: " + Future.class.getCanonicalName());
+              }
+              List<TypeName> typeArguments = typeName.typeArguments;
+
+              TypeName returnType = typeArguments.getFirst();
+
+              List<? extends VariableElement> parameters = sm.getParameters();
+              if (1 != parameters.size()) {
+                throw new GenerationException("method can only have one parameter");
+              }
+              TypeMirror parameterType = parameters.getFirst().asType();
+
+              Name simpleName = sm.getSimpleName();
+
+              HasRole annotation = sm.getAnnotation(HasRole.class);
+              String role = null;
+              if (null != annotation) {
+                role = annotation.value();
+              }
+
+              return new ServiceMethod(
+                  returnType.toString(),
+                  returnType.toString().substring(returnType.toString().lastIndexOf('.') + 1),
+                  parameterType.toString(),
+                  parameterType.toString().substring(parameterType.toString().lastIndexOf('.') + 1),
+                  simpleName.toString(),
+                  role);
+            })
+        .toList();
+  }
+
+  record ServiceMethod(
+      String returnTypeImport,
+      String returnTypeName,
+      String paramTypeImport,
+      String paramTypeName,
+      String methodName,
+      @Nullable String role) {}
+}
