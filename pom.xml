@@ -5,7 +5,7 @@
   <parent>
     <groupId>github.benslabbert</groupId>
     <artifactId>vertx-dagger-bom</artifactId>
-    <version>1.117.0</version>
+    <version>1.126.0</version>
   </parent>
 
   <groupId>github.benslabbert.vdw.codegen</groupId>
@@ -35,9 +35,9 @@
 
     <!--deps-->
     <vertx.version>5.0.0.CR5</vertx.version>
-    <tx-manager.version>1.85.0</tx-manager.version>
+    <tx-manager.version>1.94.0</tx-manager.version>
     <!--https://github.com/google/dagger/issues/4658-->
-    <dagger.version>2.55</dagger.version>
+    <dagger.version>2.56.1</dagger.version>
   </properties>
 
   <dependencyManagement>
