@@ -12,6 +12,16 @@ jobs:
     runs-on: "ubuntu-latest"
     env:
       GH_TOKEN: "${{ secrets.GH_TOKEN }}"
+    timeout-minutes: 360
+    permissions:
+      actions: "read"
+      contents: "read"
+      security-events: "write"
+    strategy:
+      fail-fast: false
+      matrix:
+        language:
+        - "java"
     steps:
     - uses: "actions/checkout@v4"
     - name: "Set up JDK 23"
@@ -25,4 +35,10 @@ jobs:
       uses: "stCarolas/setup-maven@v5"
       with:
         maven-version: "3.9.9"
-    - run: "mvn -s settings.xml clean spotless:check install"
+    - name: "Initialize CodeQL"
+      uses: "github/codeql-action/init@v3"
+      with:
+        languages: "${{ matrix.language }}"
+    - run: "mvn -s settings.xml spotless:check install"
+    - name: "Perform CodeQL Analysis"
+      uses: "github/codeql-action/analyze@v3"
