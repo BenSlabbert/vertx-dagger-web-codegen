@@ -34,10 +34,10 @@
     <shade.skip>false</shade.skip>
 
     <!--deps-->
-    <vertx.version>5.0.0.CR5</vertx.version>
+    <vertx.version>5.0.0.CR6</vertx.version>
     <tx-manager.version>1.94.0</tx-manager.version>
     <!--https://github.com/google/dagger/issues/4658-->
-    <dagger.version>2.56.1</dagger.version>
+    <dagger.version>2.55</dagger.version>
   </properties>
 
   <dependencyManagement>
