@@ -24,11 +24,11 @@ jobs:
         - "java"
     steps:
     - uses: "actions/checkout@v4"
-    - name: "Set up JDK 23"
+    - name: "Set up JDK 24"
       uses: "actions/setup-java@v4"
       with:
         distribution: "zulu"
-        java-version: "23.0.2"
+        java-version: "24"
         java-package: "jdk"
         cache: "maven"
     - name: "Set up Maven"
