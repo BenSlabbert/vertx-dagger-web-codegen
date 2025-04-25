@@ -25,7 +25,7 @@ class DefaultVerticleIT {
                 .setConfig(new JsonObject().put("http.port", 0))
                 .setThreadingModel(ThreadingModel.VIRTUAL_THREAD)
                 .setWorkerPoolSize(1))
-        .onComplete(tc.succeeding(_ -> sendGetRequest(v, tc, verticle.getPort())));
+        .onComplete(tc.succeeding(ignore -> sendGetRequest(v, tc, verticle.getPort())));
   }
 
   @Test
@@ -37,7 +37,7 @@ class DefaultVerticleIT {
                 .setConfig(new JsonObject().put("http.port", 0))
                 .setThreadingModel(ThreadingModel.VIRTUAL_THREAD)
                 .setWorkerPoolSize(1))
-        .onComplete(tc.succeeding(_ -> sendPostRequest(v, tc, verticle.getPort())));
+        .onComplete(tc.succeeding(ignore -> sendPostRequest(v, tc, verticle.getPort())));
   }
 
   @Test
@@ -49,7 +49,7 @@ class DefaultVerticleIT {
                 .setConfig(new JsonObject().put("http.port", 0))
                 .setThreadingModel(ThreadingModel.VIRTUAL_THREAD)
                 .setWorkerPoolSize(1))
-        .onComplete(tc.succeeding(_ -> sendInvalidPostRequest(v, tc, verticle.getPort())));
+        .onComplete(tc.succeeding(ignore -> sendInvalidPostRequest(v, tc, verticle.getPort())));
   }
 
   private void sendGetRequest(Vertx v, VertxTestContext tc, int port) {
