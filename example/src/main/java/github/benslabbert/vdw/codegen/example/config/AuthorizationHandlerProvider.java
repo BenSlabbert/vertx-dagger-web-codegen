@@ -2,9 +2,7 @@
 package github.benslabbert.vdw.codegen.example.config;
 
 import github.benslabbert.vdw.codegen.commons.RoleAuthorizationHandlerProvider;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.authorization.AuthorizationProvider;
 import io.vertx.ext.auth.authorization.RoleBasedAuthorization;
@@ -31,11 +29,12 @@ class AuthorizationHandlerProvider
   }
 
   @Override
-  public void getAuthorizations(User user, Handler<AsyncResult<Void>> handler) {
-    if (user.authorizations().getProviderIds().isEmpty()) {
-      user.authorizations().add(getId(), RoleBasedAuthorization.create("admin"));
+  public Future<Void> getAuthorizations(User user) {
+    if (user.authorizations().contains(getId())) {
+      return Future.succeededFuture();
     }
 
-    handler.handle(Future.succeededFuture());
+    user.authorizations().put(getId(), RoleBasedAuthorization.create("admin"));
+    return Future.succeededFuture();
   }
 }

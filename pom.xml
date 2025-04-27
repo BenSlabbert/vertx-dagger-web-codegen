@@ -5,7 +5,7 @@
   <parent>
     <groupId>github.benslabbert</groupId>
     <artifactId>vertx-dagger-bom</artifactId>
-    <version>3.3.0</version>
+    <version>3.4.0</version>
   </parent>
 
   <groupId>github.benslabbert.vdw.codegen</groupId>
@@ -33,9 +33,7 @@
     <!--config-->
     <shade.skip>false</shade.skip>
 
-    <!--deps-->
-    <vertx.version>5.0.0.CR7</vertx.version>
-    <tx-manager.version>1.99.0</tx-manager.version>
+    <tx-manager.version>1.101.0</tx-manager.version>
   </properties>
 
   <dependencyManagement>
@@ -44,13 +42,6 @@
         <groupId>github.benslabbert.txmanager</groupId>
         <artifactId>bom</artifactId>
         <version>${tx-manager.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>io.vertx</groupId>
-        <artifactId>vertx-stack-depchain</artifactId>
-        <version>${vertx.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

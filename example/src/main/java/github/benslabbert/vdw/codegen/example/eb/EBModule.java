@@ -3,10 +3,7 @@ package github.benslabbert.vdw.codegen.example.eb;
 
 import dagger.Module;
 import dagger.Provides;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.authentication.AuthenticationProvider;
 import io.vertx.ext.auth.authentication.Credentials;
@@ -33,11 +30,6 @@ public interface EBModule {
     return AuthenticationInterceptor.create(
         new AuthenticationProvider() {
           @Override
-          public void authenticate(JsonObject jsonObject, Handler<AsyncResult<User>> handler) {
-            throw new UnsupportedOperationException("Not implemented");
-          }
-
-          @Override
           public Future<User> authenticate(Credentials credentials) {
             return switch (credentials) {
               case TokenCredentials tc:
@@ -60,14 +52,14 @@ public interface EBModule {
           }
 
           @Override
-          public void getAuthorizations(User user, Handler<AsyncResult<Void>> handler) {
+          public Future<Void> getAuthorizations(User user) {
             user.authorizations()
-                .add(
+                .put(
                     getId(),
                     Set.of(
                         RoleBasedAuthorization.create("role-1"),
                         RoleBasedAuthorization.create("role-2")));
-            handler.handle(Future.succeededFuture());
+            return Future.succeededFuture();
           }
         });
   }
