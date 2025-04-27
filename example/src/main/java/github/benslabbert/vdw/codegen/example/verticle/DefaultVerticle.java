@@ -2,6 +2,7 @@
 package github.benslabbert.vdw.codegen.example.verticle;
 
 import github.benslabbert.txmanager.PlatformTransactionManager;
+import github.benslabbert.vdw.codegen.commons.eb.EventBusServiceConfigurer;
 import github.benslabbert.vdw.codegen.example.di.DaggerProvider;
 import github.benslabbert.vdw.codegen.example.di.Provider;
 import github.benslabbert.vdw.codegen.example.web.RouterFactory;
@@ -13,6 +14,7 @@ import io.vertx.core.eventbus.DeliveryContext;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import io.vertx.serviceproxy.ProxyHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,12 +39,9 @@ public class DefaultVerticle extends AbstractVerticle {
     log.info("Starting verticle");
     provider = DaggerProvider.builder().vertx(vertx).config(config()).build();
     provider.init();
+    provider.eventBusServiceConfigurers().forEach(EventBusServiceConfigurer::configure);
 
     eb();
-
-    vertx.eventBus().publish(ADDR, new JsonObject().put("key", "val1"));
-    vertx.eventBus().publish(ADDR, new JsonObject().put("key", "val2"));
-    vertx.eventBus().publish(ADDR, new JsonObject().put("key", "val3"));
 
     ServerFactory serverFactory = provider.serverFactory();
     RouterFactory routerFactory = provider.routerFactory();
@@ -72,6 +71,10 @@ public class DefaultVerticle extends AbstractVerticle {
             (Handler<DeliveryContext<JsonObject>>) e -> e.message().fail(401, ""));
     vertx.eventBus().consumer(ADDR, msg -> log.info("c1 received: {}", msg.body()));
     vertx.eventBus().consumer(ADDR, msg -> log.info("c2 received: {}", msg.body()));
+
+    vertx.eventBus().publish(ADDR, new JsonObject().put("key", "val1"));
+    vertx.eventBus().publish(ADDR, new JsonObject().put("key", "val2"));
+    vertx.eventBus().publish(ADDR, new JsonObject().put("key", "val3"));
   }
 
   @Override
@@ -83,6 +86,8 @@ public class DefaultVerticle extends AbstractVerticle {
     } catch (Exception e) {
       log.error("failed closing transaction manager", e);
     }
+
+    provider.proxyHandlers().forEach(ProxyHandler::close);
 
     if (null != httpServer) {
       log.info("Stopping http server");
