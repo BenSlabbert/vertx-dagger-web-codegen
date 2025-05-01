@@ -15,12 +15,12 @@ import java.lang.annotation.Target;
  *
  * <ul>
  *   <li>{@link java.util.Set} of {@link
- *       github.benslabbert.vdw.codegen.example.eb.EventBusServiceConfigurer}
+ *       github.benslabbert.vdw.codegen.commons.eb.EventBusServiceConfigurer}
  *   <li>{@link java.util.Set} of {@link io.vertx.serviceproxy.ProxyHandler}
  * </ul>
  *
  * to the dependency graph, as well as a concrete implementation of {@link
- * github.benslabbert.vdw.codegen.example.eb.EventBusServiceConfigurer} is created called {interface
+ * github.benslabbert.vdw.codegen.commons.eb.EventBusServiceConfigurer} is created called {interface
  * name}_EventBusServiceConfigurerImpl <br>
  * The server will use this to register its implementation of the {interface name} on the EB.
  */
