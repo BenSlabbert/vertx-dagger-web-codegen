@@ -1,7 +1,19 @@
 {
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "name": "debian",
+  "image": "debian:12",
+  "onCreateCommand": {
+    "apt": "apt update && apt install vim -y"
+  },
   "features": {
     "ghcr.io/devcontainers/features/java:1": {
+      "jdkDistro": "zulu",
+      "version": "21",
+      "installMaven": true,
+      "mavenVersion": "3.9.9"
     },
+     "ghcr.io/devcontainers/features/docker-in-docker:2": {
+       "moby": true,
+       "version": "latest"
+     }
   }
 }
