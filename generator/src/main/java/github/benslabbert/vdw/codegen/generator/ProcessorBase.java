@@ -1,16 +1,20 @@
 /* Licensed under Apache-2.0 2024. */
 package github.benslabbert.vdw.codegen.generator;
 
+import com.google.common.io.CharSink;
+import com.google.common.io.CharSource;
+import com.google.googlejavaformat.java.Formatter;
+import com.google.googlejavaformat.java.FormatterException;
+import com.google.googlejavaformat.java.JavaFormatterOptions;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.PosixFilePermission;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
@@ -23,7 +27,6 @@ import javax.tools.JavaFileObject;
 abstract class ProcessorBase extends AbstractProcessor {
 
   private final Set<String> supportedAnnotationTypes;
-  private Path formatterPath;
 
   ProcessorBase(Set<String> supportedAnnotationTypes) {
     this.supportedAnnotationTypes = supportedAnnotationTypes;
@@ -39,25 +42,31 @@ abstract class ProcessorBase extends AbstractProcessor {
     return supportedAnnotationTypes;
   }
 
-  private void init() {
-    try {
-      printNote("copying formatter binary");
-      InputStream formatterStream = getClass().getClassLoader().getResourceAsStream("formatter");
-      if (null == formatterStream) {
-        throw new GenerationException("unable to load formatter");
-      }
+  private static class FileSource extends CharSource {
 
-      formatterPath = Files.createTempFile("formatter-", "");
-      printNote("formatterPath: " + formatterPath);
-      Files.copy(formatterStream, formatterPath, StandardCopyOption.REPLACE_EXISTING);
-      Set<PosixFilePermission> perms = new HashSet<>();
-      perms.add(PosixFilePermission.OWNER_READ);
-      perms.add(PosixFilePermission.OWNER_WRITE);
-      perms.add(PosixFilePermission.OWNER_EXECUTE);
-      Files.setPosixFilePermissions(formatterPath, perms);
-    } catch (Exception e) {
-      printError(getClass().getCanonicalName() + " init exception: " + e);
-      throw new GenerationException(e);
+    private final Path path;
+
+    private FileSource(Path path) {
+      this.path = path;
+    }
+
+    @Override
+    public Reader openStream() throws IOException {
+      return new InputStreamReader(Files.newInputStream(path));
+    }
+  }
+
+  private static class FileSink extends CharSink {
+
+    private final JavaFileObject builderFile;
+
+    private FileSink(JavaFileObject builderFile) {
+      this.builderFile = builderFile;
+    }
+
+    @Override
+    public Writer openStream() throws IOException {
+      return new PrintWriter(builderFile.openWriter());
     }
   }
 
@@ -69,8 +78,6 @@ abstract class ProcessorBase extends AbstractProcessor {
       return false;
     }
 
-    init();
-
     for (var annotation : annotations) {
       for (var element : roundEnv.getElementsAnnotatedWith(annotation)) {
         try {
@@ -79,43 +86,36 @@ abstract class ProcessorBase extends AbstractProcessor {
             continue;
           }
 
-          for (GeneratedFile generatedFile : files) {
-            String absPath = generatedFile.tempFile().toAbsolutePath().toString();
-            printNote("formatting file absPath: " + absPath, element);
-
-            ProcessBuilder processBuilder =
-                new ProcessBuilder(formatterPath.toAbsolutePath().toString(), "-i", absPath);
-            Process process = processBuilder.start();
-            printNote("process error stream", element);
-            print(process.getErrorStream(), element);
-            printNote("process normal stream", element);
-            print(process.getInputStream(), element);
-
-            JavaFileObject builderFile =
-                processingEnv.getFiler().createSourceFile(generatedFile.realFileName());
-            try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
-              for (String line : Files.readAllLines(generatedFile.tempFile())) {
-                out.println(line);
-              }
-            }
-
-            Files.deleteIfExists(generatedFile.tempFile());
+          for (GeneratedFile file : files) {
+            formatFile(file);
           }
         } catch (Exception e) {
           throw new GenerationException(e);
         }
       }
     }
-
-    // delete temp file
-    try {
-      if (null != formatterPath) {
-        Files.deleteIfExists(formatterPath);
-      }
-    } catch (IOException e) {
-      // swallow
-    }
     return true;
+  }
+
+  private void formatFile(GeneratedFile file) throws IOException {
+    try {
+      CharSource source = new FileSource(file.tempFile());
+      JavaFileObject builderFile = processingEnv.getFiler().createSourceFile(file.realFileName());
+      CharSink output = new FileSink(builderFile);
+
+      JavaFormatterOptions options =
+          JavaFormatterOptions.builder()
+              .formatJavadoc(true)
+              .reorderModifiers(true)
+              .style(JavaFormatterOptions.Style.GOOGLE)
+              .build();
+
+      new Formatter(options).formatSource(source, output);
+    } catch (FormatterException | IOException e) {
+      throw new GenerationException(e);
+    } finally {
+      Files.deleteIfExists(file.tempFile());
+    }
   }
 
   void printNote(CharSequence cs) {
