@@ -40,17 +40,17 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>github.benslabbert.fork</groupId>
-        <artifactId>compile-testing</artifactId>
-        <version>${compile-testing.version}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
         <groupId>github.benslabbert.txmanager</groupId>
         <artifactId>bom</artifactId>
         <version>${tx-manager.version}</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>github.benslabbert.fork</groupId>
+        <artifactId>compile-testing</artifactId>
+        <version>${compile-testing.version}</version>
+        <scope>test</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>
