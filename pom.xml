@@ -34,7 +34,7 @@
     <shade.skip>false</shade.skip>
 
     <!--deps-->
-    <tx-manager.version>1.105.0</tx-manager.version>
+    <tx-manager.version>1.106.0</tx-manager.version>
     <compile-testing.version>1.1.0</compile-testing.version>
   </properties>
 
