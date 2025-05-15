@@ -68,6 +68,13 @@ public class TableGenerator extends ProcessorBase {
     List<TableQuery> tableQueries = getTableQueries(e);
     List<TableDetails> tableDetails = getTableDetails(e);
 
+    if (1 != tableDetails.stream().filter(TableDetails::id).count()) {
+      throw new GenerationException("Table must have exactly one id column");
+    }
+    if (1 != tableDetails.stream().filter(TableDetails::version).count()) {
+      throw new GenerationException("Table must have exactly one version column");
+    }
+
     String interfaceName = annotatedClass.name() + "Repository";
     String className = annotatedClass.name() + "RepositoryImpl";
     GeneratedFile generatedInterface =
