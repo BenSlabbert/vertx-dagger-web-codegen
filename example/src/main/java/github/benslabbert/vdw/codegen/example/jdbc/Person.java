@@ -27,6 +27,7 @@ import java.util.List;
 public record Person(
     @Column("id") @Id("id_seq") long id,
     @Column("first_name") @FindByColumn(returnType = List.class) @InsertOnly String name,
+    @Column("middle_name") String middleName,
     @Column("last_name") @FindByColumn @InsertOnly String lastName,
     @Column("age") @FindByColumn(value = "ageAndGender", fetchSize = 25) int age,
     @Column("gender") @FindByColumn("ageAndGender") @InsertOnly String gender,
@@ -54,6 +55,8 @@ public record Person(
     Builder id(long id);
 
     Builder name(String name);
+
+    Builder middleName(String middleName);
 
     Builder lastName(String lastName);
 
