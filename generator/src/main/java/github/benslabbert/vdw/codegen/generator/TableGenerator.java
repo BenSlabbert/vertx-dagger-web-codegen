@@ -460,12 +460,13 @@ public class TableGenerator extends ProcessorBase {
           versionColumn.fieldName());
       out.println();
 
-      out.println(
+      out.printf(
           """
     private StatementConfiguration.Builder getConfigBuilder() {
-        return new StatementConfiguration.Builder().fetchSize(25).queryTimeout(Duration.ofSeconds(5));
+        return new StatementConfiguration.Builder().fetchSize(%d).queryTimeout(Duration.ofSeconds(5));
     }
-""");
+""",
+          Table.DEFAULT_FETCH_SIZE);
       out.println();
       out.printf(
           """
