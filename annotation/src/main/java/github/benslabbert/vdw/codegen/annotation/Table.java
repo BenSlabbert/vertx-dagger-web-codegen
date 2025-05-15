@@ -7,12 +7,15 @@ import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.List;
 import java.util.stream.Stream;
 
 @Documented
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
 public @interface Table {
+
+  int DEFAULT_FETCH_SIZE = 10;
 
   String value() default "";
 
@@ -38,9 +41,9 @@ public @interface Table {
 
     String sql();
 
-    int fetchSize() default 10;
+    int fetchSize() default DEFAULT_FETCH_SIZE;
 
-    // java.util.List, java.lang.Iterable, java.util.stream.Stream
+    /** Supports: {@link List}, {@link Iterable}, {@link Stream} */
     Class<?> returnType() default Stream.class;
   }
 
@@ -48,10 +51,10 @@ public @interface Table {
   @interface FindByColumn {
     String value() default "";
 
-    // java.util.List, java.lang.Iterable, java.util.stream.Stream
+    /** Supports: {@link List}, {@link Iterable}, {@link Stream} */
     Class<?> returnType() default Stream.class;
 
-    int fetchSize() default 10;
+    int fetchSize() default DEFAULT_FETCH_SIZE;
   }
 
   @Target(ElementType.RECORD_COMPONENT)

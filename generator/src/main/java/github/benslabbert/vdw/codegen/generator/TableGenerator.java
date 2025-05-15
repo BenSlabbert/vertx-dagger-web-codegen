@@ -65,16 +65,8 @@ public class TableGenerator extends ProcessorBase {
         new AnnotatedClass(canonicalName, classPackage, annotatedClassName);
 
     Table table = e.getAnnotation(Table.class);
-
     List<TableQuery> tableQueries = getTableQueries(e);
-    for (TableQuery tableQuery : tableQueries) {
-      System.err.println(tableQuery);
-    }
-
     List<TableDetails> tableDetails = getTableDetails(e);
-    for (TableDetails tableDetail : tableDetails) {
-      System.err.println(tableDetail);
-    }
 
     String interfaceName = annotatedClass.name() + "Repository";
     String className = annotatedClass.name() + "RepositoryImpl";
@@ -218,8 +210,8 @@ public class TableGenerator extends ProcessorBase {
           className);
       out.println();
 
-      // implement methods
       for (TableQuery tq : tableQueries) {
+        boolean defaultFetchSize = Table.DEFAULT_FETCH_SIZE == tq.fetchSize();
         String methodName = tq.name();
         List<String> paramNames = tq.paramNames();
         String methodArgs =
@@ -244,8 +236,9 @@ public class TableGenerator extends ProcessorBase {
             out.println();
           }
           case STREAM_CANONICAL_NAME -> {
-            out.printf(
-                """
+            if (defaultFetchSize) {
+              out.printf(
+                  """
     @Override
     public Stream<%s> %s(%s) {
         String sql = "%s";
@@ -253,7 +246,20 @@ public class TableGenerator extends ProcessorBase {
         return jdbcUtils.stream(sql, this::map, args);
     }
 """,
-                ac.name(), methodName, methodArgs, sanitizedSql, args);
+                  ac.name(), methodName, methodArgs, sanitizedSql, args);
+            } else {
+              out.printf(
+                  """
+    @Override
+    public Stream<%s> %s(%s) {
+        String sql = "%s";
+        Object[] args = {%s};
+        StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
+        return jdbcUtilsFactory.create(cfg).stream(sql, this::map, args);
+    }
+""",
+                  ac.name(), methodName, methodArgs, sanitizedSql, args, tq.fetchSize());
+            }
             out.println();
           }
           case ITERABLE_CANONICAL_NAME -> {
