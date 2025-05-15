@@ -4,6 +4,7 @@ package github.benslabbert.vdw.codegen.generator;
 import github.benslabbert.vdw.codegen.annotation.EventBusService;
 import github.benslabbert.vdw.codegen.commons.eb.ClientProxyUtils;
 import github.benslabbert.vdw.codegen.generator.EBGeneratorUtil.ServiceMethod;
+import github.benslabbert.vdw.codegen.generator.ProcessorBase.GeneratedFile;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -11,9 +12,7 @@ import io.vertx.serviceproxy.ServiceException;
 import io.vertx.serviceproxy.ServiceExceptionMessageCodec;
 import jakarta.annotation.Generated;
 import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -21,7 +20,7 @@ import javax.lang.model.element.Element;
 
 class VertxEBClientProxyGenerator {
 
-  ProcessorBase.GeneratedFile generateTempFile(Element e) throws Exception {
+  GeneratedFile generateTempFile(Element e) {
     EventBusService annotation = e.getAnnotation(EventBusService.class);
     String address = annotation.address();
 
@@ -31,10 +30,9 @@ class VertxEBClientProxyGenerator {
     String classPackage = canonicalName.substring(0, canonicalName.lastIndexOf('.'));
     String generatedClassName = e.getSimpleName() + "VertxEBClientProxy";
 
-    Path tempFile = Files.createTempFile(generatedClassName + "-", ".java");
+    StringWriter stringWriter = StringWriterFactory.create();
 
-    try (PrintWriter out =
-        new PrintWriter(Files.newBufferedWriter(tempFile, StandardOpenOption.WRITE))) {
+    try (PrintWriter out = new PrintWriter(stringWriter)) {
       out.printf("package %s;%n", classPackage);
       out.println();
 
@@ -93,6 +91,6 @@ class VertxEBClientProxyGenerator {
       out.println("}");
     }
 
-    return new ProcessorBase.GeneratedFile(tempFile, classPackage + "." + generatedClassName);
+    return new GeneratedFile(stringWriter, classPackage + "." + generatedClassName);
   }
 }

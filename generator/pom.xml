@@ -34,13 +34,17 @@
       <version>${revision}</version>
     </dependency>
     <dependency>
+      <groupId>github.benslabbert.vertx-dagger-commons</groupId>
+      <artifactId>transaction</artifactId>
+    </dependency>
+    <dependency>
       <groupId>jakarta.annotation</groupId>
       <artifactId>jakarta.annotation-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
-      <scope>runtime</scope>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>github.benslabbert.fork</groupId>

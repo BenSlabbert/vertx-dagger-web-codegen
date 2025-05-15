@@ -2,9 +2,7 @@
 package github.benslabbert.vdw.codegen.generator;
 
 import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -19,7 +17,7 @@ public class ModuleGeneration extends ProcessorBase {
   }
 
   @Override
-  List<GeneratedFile> generateTempFile(Element element) throws Exception {
+  List<GeneratedFile> generateTempFile(Element element) {
     printNote("generate dagger module", element);
 
     String canonicalName = element.asType().toString();
@@ -33,10 +31,9 @@ public class ModuleGeneration extends ProcessorBase {
             .formatted(generatedModuleClassName, generatedRouterClassName),
         element);
 
-    Path tempFile = Files.createTempFile(generatedModuleClassName + "-", ".java");
+    StringWriter stringWriter = StringWriterFactory.create();
 
-    try (PrintWriter out =
-        new PrintWriter(Files.newBufferedWriter(tempFile, StandardOpenOption.WRITE))) {
+    try (PrintWriter out = new PrintWriter(stringWriter)) {
       out.printf("package %s;%n", classPackage);
       out.println();
       out.println("import jakarta.annotation.Generated;");
@@ -59,6 +56,6 @@ public class ModuleGeneration extends ProcessorBase {
       out.println();
     }
 
-    return List.of(new GeneratedFile(tempFile, classPackage + "." + generatedModuleClassName));
+    return List.of(new GeneratedFile(stringWriter, classPackage + "." + generatedModuleClassName));
   }
 }

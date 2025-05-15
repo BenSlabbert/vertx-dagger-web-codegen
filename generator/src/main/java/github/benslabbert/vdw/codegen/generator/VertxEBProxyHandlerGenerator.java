@@ -4,6 +4,7 @@ package github.benslabbert.vdw.codegen.generator;
 import github.benslabbert.vdw.codegen.annotation.EventBusService;
 import github.benslabbert.vdw.codegen.commons.eb.AddUserToContextServiceInterceptor;
 import github.benslabbert.vdw.codegen.commons.eb.ProxyHandlerUtils;
+import github.benslabbert.vdw.codegen.generator.ProcessorBase.GeneratedFile;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -17,9 +18,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 import jakarta.inject.Singleton;
 import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -27,7 +26,7 @@ import javax.lang.model.element.Element;
 
 class VertxEBProxyHandlerGenerator {
 
-  ProcessorBase.GeneratedFile generateTempFile(Element e) throws Exception {
+  GeneratedFile generateTempFile(Element e) {
     EventBusService annotation = e.getAnnotation(EventBusService.class);
     String address = annotation.address();
 
@@ -37,10 +36,9 @@ class VertxEBProxyHandlerGenerator {
     String classPackage = canonicalName.substring(0, canonicalName.lastIndexOf('.'));
     String generatedClassName = e.getSimpleName() + "VertxEBProxyHandler";
 
-    Path tempFile = Files.createTempFile(generatedClassName + "-", ".java");
+    StringWriter stringWriter = StringWriterFactory.create();
 
-    try (PrintWriter out =
-        new PrintWriter(Files.newBufferedWriter(tempFile, StandardOpenOption.WRITE))) {
+    try (PrintWriter out = new PrintWriter(stringWriter)) {
       out.printf("package %s;%n", classPackage);
       out.println();
 
@@ -137,6 +135,6 @@ class VertxEBProxyHandlerGenerator {
       out.println("}");
     }
 
-    return new ProcessorBase.GeneratedFile(tempFile, classPackage + "." + generatedClassName);
+    return new GeneratedFile(stringWriter, classPackage + "." + generatedClassName);
   }
 }

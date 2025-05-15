@@ -6,15 +6,13 @@ import com.google.common.io.CharSource;
 import com.google.googlejavaformat.java.Formatter;
 import com.google.googlejavaformat.java.FormatterException;
 import com.google.googlejavaformat.java.JavaFormatterOptions;
-import java.io.BufferedReader;
+import jakarta.annotation.Nonnull;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
@@ -42,17 +40,18 @@ abstract class ProcessorBase extends AbstractProcessor {
     return supportedAnnotationTypes;
   }
 
-  private static class FileSource extends CharSource {
+  private static class StringSource extends CharSource {
 
-    private final Path path;
+    private final StringWriter writer;
 
-    private FileSource(Path path) {
-      this.path = path;
+    private StringSource(StringWriter writer) {
+      this.writer = writer;
     }
 
+    @Nonnull
     @Override
-    public Reader openStream() throws IOException {
-      return new InputStreamReader(Files.newInputStream(path));
+    public Reader openStream() {
+      return new StringReader(writer.toString());
     }
   }
 
@@ -64,13 +63,12 @@ abstract class ProcessorBase extends AbstractProcessor {
       this.builderFile = builderFile;
     }
 
+    @Nonnull
     @Override
     public Writer openStream() throws IOException {
       return new PrintWriter(builderFile.openWriter());
     }
   }
-
-  record GeneratedFile(Path tempFile, String realFileName) {}
 
   @Override
   public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
@@ -97,10 +95,11 @@ abstract class ProcessorBase extends AbstractProcessor {
     return true;
   }
 
-  private void formatFile(GeneratedFile file) throws IOException {
+  private void formatFile(GeneratedFile generatedFile) {
     try {
-      CharSource source = new FileSource(file.tempFile());
-      JavaFileObject builderFile = processingEnv.getFiler().createSourceFile(file.realFileName());
+      CharSource source = new StringSource(generatedFile.stringWriter());
+      JavaFileObject builderFile =
+          processingEnv.getFiler().createSourceFile(generatedFile.realFileName());
       CharSink output = new FileSink(builderFile);
 
       JavaFormatterOptions options =
@@ -113,8 +112,6 @@ abstract class ProcessorBase extends AbstractProcessor {
       new Formatter(options).formatSource(source, output);
     } catch (FormatterException | IOException e) {
       throw new GenerationException(e);
-    } finally {
-      Files.deleteIfExists(file.tempFile());
     }
   }
 
@@ -134,17 +131,7 @@ abstract class ProcessorBase extends AbstractProcessor {
     processingEnv.getMessager().printNote(cs, element);
   }
 
-  private void print(InputStream is, Element element) throws IOException {
-    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-    StringBuilder builder = new StringBuilder();
-    String line;
-    while ((line = reader.readLine()) != null) {
-      builder.append(line);
-      builder.append(System.getProperty("line.separator"));
-    }
-    String result = builder.toString();
-    printNote(result, element);
-  }
+  abstract List<GeneratedFile> generateTempFile(Element element);
 
-  abstract List<GeneratedFile> generateTempFile(Element element) throws Exception;
+  record GeneratedFile(StringWriter stringWriter, String realFileName) {}
 }

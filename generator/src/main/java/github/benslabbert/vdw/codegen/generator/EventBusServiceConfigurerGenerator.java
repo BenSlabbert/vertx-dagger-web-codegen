@@ -2,29 +2,27 @@
 package github.benslabbert.vdw.codegen.generator;
 
 import github.benslabbert.vdw.codegen.commons.eb.EventBusServiceConfigurer;
+import github.benslabbert.vdw.codegen.generator.ProcessorBase.GeneratedFile;
 import jakarta.annotation.Generated;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import javax.lang.model.element.Element;
 
 class EventBusServiceConfigurerGenerator {
 
-  ProcessorBase.GeneratedFile generateTempFile(Element e) throws Exception {
+  GeneratedFile generateTempFile(Element e) {
     String canonicalName = e.asType().toString();
     String classPackage = canonicalName.substring(0, canonicalName.lastIndexOf('.'));
     String generatedClassName = e.getSimpleName() + "_EventBusServiceConfigurerImpl";
     String proxyName = e.getSimpleName() + "VertxEBProxyHandler";
 
-    Path tempFile = Files.createTempFile(generatedClassName + "-", ".java");
+    StringWriter stringWriter = StringWriterFactory.create();
 
-    try (PrintWriter out =
-        new PrintWriter(Files.newBufferedWriter(tempFile, StandardOpenOption.WRITE))) {
+    try (PrintWriter out = new PrintWriter(stringWriter)) {
       out.printf("package %s;%n", classPackage);
       out.println();
 
@@ -61,6 +59,6 @@ class EventBusServiceConfigurerGenerator {
       out.println("}");
     }
 
-    return new ProcessorBase.GeneratedFile(tempFile, classPackage + "." + generatedClassName);
+    return new GeneratedFile(stringWriter, classPackage + "." + generatedClassName);
   }
 }
