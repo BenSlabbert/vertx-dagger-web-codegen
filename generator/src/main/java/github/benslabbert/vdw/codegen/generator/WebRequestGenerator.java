@@ -24,9 +24,7 @@ import io.vertx.core.MultiMap;
 import io.vertx.ext.web.RoutingContext;
 import jakarta.annotation.Generated;
 import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.io.StringWriter;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -56,7 +54,7 @@ public class WebRequestGenerator extends ProcessorBase {
   }
 
   @Override
-  List<GeneratedFile> generateTempFile(Element e) throws Exception {
+  List<GeneratedFile> generateTempFile(Element e) {
     String path = getPath(e);
 
     PathParser.ParseResult parseResult = PathParser.parse(path);
@@ -77,10 +75,9 @@ public class WebRequestGenerator extends ProcessorBase {
     String generatedClassName = enclosingClassName.toString() + "_" + string + "_" + "ParamParser";
     String generatedRecordName = enclosingClassName.toString() + "_" + string + "_" + "Params";
 
-    Path tempFile = Files.createTempFile(generatedClassName + "-", ".java");
+    StringWriter stringWriter = StringWriterFactory.create();
 
-    try (PrintWriter out =
-        new PrintWriter(Files.newBufferedWriter(tempFile, StandardOpenOption.WRITE))) {
+    try (PrintWriter out = new PrintWriter(stringWriter)) {
       out.printf("package %s;%n", classPackage);
       out.println();
 
@@ -141,7 +138,7 @@ public class WebRequestGenerator extends ProcessorBase {
       out.println("}");
     }
 
-    return List.of(new GeneratedFile(tempFile, classPackage + "." + generatedClassName));
+    return List.of(new GeneratedFile(stringWriter, classPackage + "." + generatedClassName));
   }
 
   private String getPath(Element e) {

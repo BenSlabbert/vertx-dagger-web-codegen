@@ -14,7 +14,7 @@ public class VertxEBProxyGenerators extends ProcessorBase {
   }
 
   @Override
-  List<GeneratedFile> generateTempFile(Element e) throws Exception {
+  List<GeneratedFile> generateTempFile(Element e) {
     if (ElementKind.INTERFACE != e.getKind()) {
       throw new GenerationException("@EventBusService can only be applied to interfaces");
     }

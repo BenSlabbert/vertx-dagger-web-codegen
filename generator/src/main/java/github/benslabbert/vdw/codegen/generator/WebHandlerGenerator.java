@@ -48,9 +48,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
@@ -76,7 +74,7 @@ public class WebHandlerGenerator extends ProcessorBase {
   }
 
   @Override
-  List<GeneratedFile> generateTempFile(Element element) throws Exception {
+  List<GeneratedFile> generateTempFile(Element element) {
     WebHandler webHandler = element.getAnnotation(WebHandler.class);
     String path = webHandler.path();
     printNote("processing WebHandler", element);
@@ -115,10 +113,9 @@ public class WebHandlerGenerator extends ProcessorBase {
 
     printNote("generated class: " + generatedClassName, element);
 
-    Path tempFile = Files.createTempFile(generatedClassName + "-", ".java");
+    StringWriter stringWriter = StringWriterFactory.create();
 
-    try (PrintWriter out =
-        new PrintWriter(Files.newBufferedWriter(tempFile, StandardOpenOption.WRITE))) {
+    try (PrintWriter out = new PrintWriter(stringWriter)) {
       out.printf("package %s;%n", classPackage);
       out.println();
 
@@ -249,7 +246,7 @@ public class WebHandlerGenerator extends ProcessorBase {
       out.println();
     }
 
-    return List.of(new GeneratedFile(tempFile, classPackage + "." + generatedClassName));
+    return List.of(new GeneratedFile(stringWriter, classPackage + "." + generatedClassName));
   }
 
   private static void fillHandlerCall(

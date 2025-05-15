@@ -1,6 +1,7 @@
 /* Licensed under Apache-2.0 2024. */
 package github.benslabbert.vdw.codegen.example;
 
+import github.benslabbert.vdw.codegen.example.jdbc.Person;
 import io.vertx.core.ThreadingModel;
 import io.vertx.launcher.application.HookContext;
 import io.vertx.launcher.application.VertxApplication;
@@ -16,6 +17,11 @@ public class Main extends VertxApplication {
     log.info("Starting");
     int code = new Main(args).launch();
     log.info("launch successful ? {}", 0 == code);
+
+    Person person = Person.builder().id(1L).name("name").build();
+    log.info("person {}", person);
+    person = person.toBuilder().build();
+    log.info("person {}", person);
   }
 
   private Main(String[] args) {

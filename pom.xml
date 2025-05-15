@@ -35,6 +35,7 @@
 
     <!--deps-->
     <tx-manager.version>1.113.0</tx-manager.version>
+    <vertx-dagger-commons.version>1.125.0</vertx-dagger-commons.version>
     <compile-testing.version>1.1.0</compile-testing.version>
   </properties>
 
@@ -44,6 +45,13 @@
         <groupId>github.benslabbert.txmanager</groupId>
         <artifactId>bom</artifactId>
         <version>${tx-manager.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>github.benslabbert.vertx-dagger-commons</groupId>
+        <artifactId>bom</artifactId>
+        <version>${vertx-dagger-commons.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
