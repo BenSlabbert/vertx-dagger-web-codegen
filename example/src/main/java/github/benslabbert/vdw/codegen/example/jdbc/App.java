@@ -108,12 +108,18 @@ public class App {
               }
               return ids;
             },
-            params.toArray());
+            1L);
     log.info("execute {}", execute);
 
     Person save =
         personRepository.save(
-            Person.builder().name("name").lastName("other").age(21).gender("female").build());
+            Person.builder()
+                .name("name")
+                .lastName("other")
+                .age(21)
+                .gender("female")
+                .middleName("middle")
+                .build());
 
     save = save.toBuilder().name("new_name").age(22).build();
     save = personRepository.save(save);
@@ -133,11 +139,17 @@ public class App {
 
     personRepository.women().forEach(w -> log.info("women {}", w));
 
-    //    personRepository.name("name").forEach(p -> log.info("name {}", p));
-    //
-    //    personRepository.lastName("other").forEach(p -> log.info("lastName {}", p));
-    //
-    //    personRepository.ageAndGender(22, "female").forEach(p -> log.info("ageAndGender {}", p));
+    personRepository.first_name("name").forEach(p -> log.info("name {}", p));
+
+    try (Stream<Person> s = personRepository.last_name("other")) {
+      s.forEach(p -> log.info("lastName {}", p));
+    }
+
+    try (Stream<Person> s = personRepository.age(22)) {
+      s.forEach(p -> log.info("age {}", p));
+    }
+
+    personRepository.gender("female").forEach(p -> log.info("gender {}", p));
 
     Optional<Person> id = personRepository.id(10);
     log.info("id {}", id);

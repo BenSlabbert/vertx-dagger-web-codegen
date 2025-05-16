@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.lang.model.element.Element;
@@ -78,7 +79,7 @@ public class TableGenerator extends ProcessorBase {
     String interfaceName = annotatedClass.name() + "Repository";
     String className = annotatedClass.name() + "RepositoryImpl";
     GeneratedFile generatedInterface =
-        generateInterface(annotatedClass, tableQueries, interfaceName);
+        generateInterface(annotatedClass, tableQueries, tableDetails, interfaceName);
 
     GeneratedFile generatedRepository =
         generateRepository(
@@ -202,6 +203,7 @@ public class TableGenerator extends ProcessorBase {
 
       out.printf(
           """
+    private final JdbcQueryRunnerFactory jdbcQueryRunnerFactory;
     private final JdbcUtilsFactory jdbcUtilsFactory;
     private final JdbcQueryRunner jdbcQueryRunner;
     private final JdbcUtils jdbcUtils;
@@ -209,6 +211,7 @@ public class TableGenerator extends ProcessorBase {
     @Inject
     %s(JdbcQueryRunnerFactory jdbcQueryRunnerFactory, JdbcUtilsFactory jdbcUtilsFactory) {
         StatementConfiguration cfg = getConfigBuilder().build();
+        this.jdbcQueryRunnerFactory = jdbcQueryRunnerFactory;
         this.jdbcUtilsFactory = jdbcUtilsFactory;
         this.jdbcQueryRunner = jdbcQueryRunnerFactory.create(cfg);
         this.jdbcUtils = jdbcUtilsFactory.create(cfg);
@@ -230,8 +233,11 @@ public class TableGenerator extends ProcessorBase {
 
         switch (tq.returnType()) {
           case LIST_CANONICAL_NAME -> {
-            out.printf(
-                """
+            System.err.println("list return type");
+            System.err.println("defaultFetchSize ? " + defaultFetchSize);
+            if (defaultFetchSize) {
+              out.printf(
+                  """
     @Override
     public List<%s> %s(%s) {
         String sql = "%s";
@@ -239,8 +245,22 @@ public class TableGenerator extends ProcessorBase {
         return jdbcQueryRunner.query(sql, this::mapToList, args);
     }
 """,
-                ac.name(), methodName, methodArgs, sanitizedSql, args);
-            out.println();
+                  ac.name(), methodName, methodArgs, sanitizedSql, args);
+              out.println();
+            } else {
+              out.printf(
+                  """
+    @Override
+    public List<%s> %s(%s) {
+        String sql = "%s";
+        Object[] args = {%s};
+        StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
+        return jdbcQueryRunnerFactory.create(cfg).query(sql, this::mapToList, args);
+    }
+""",
+                  ac.name(), methodName, methodArgs, sanitizedSql, args, tq.fetchSize());
+              out.println();
+            }
           }
           case STREAM_CANONICAL_NAME -> {
             if (defaultFetchSize) {
@@ -270,8 +290,9 @@ public class TableGenerator extends ProcessorBase {
             out.println();
           }
           case ITERABLE_CANONICAL_NAME -> {
-            out.printf(
-                """
+            if (defaultFetchSize) {
+              out.printf(
+                  """
     @Override
     public Iterable<%s> %s(%s) {
         String sql = "%s";
@@ -279,17 +300,150 @@ public class TableGenerator extends ProcessorBase {
         return jdbcQueryRunner.query(sql, this::mapToList, args);
     }
 """,
-                ac.name(), methodName, methodArgs, sanitizedSql, args);
-            out.println();
+                  ac.name(), methodName, methodArgs, sanitizedSql, args);
+              out.println();
+            } else {
+              out.printf(
+                  """
+    @Override
+    public Iterable<%s> %s(%s) {
+        String sql = "%s";
+        Object[] args = {%s};
+        StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
+        return jdbcQueryRunnerFactory.create(cfg).query(sql, this::mapToList, args);
+    }
+""",
+                  ac.name(), methodName, methodArgs, sanitizedSql, args, tq.fetchSize());
+              out.println();
+            }
           }
-          default ->
-              throw new GenerationException(
-                  "unexpected return type: %s only List, Stream and Iterable are supported"
-                      .formatted(tq.returnType()));
+          default -> unsupportedReturnType(tq.returnType());
         }
       }
 
-      // todo Findbycolumn
+      for (TableDetails td : tableDetails) {
+        TableDetails.FindByColumn fbc = td.findByColumn();
+        if (null == fbc || null == fbc.columnName()) {
+          continue;
+        }
+        boolean defaultFetchSize = Table.DEFAULT_FETCH_SIZE == fbc.fetchSize();
+
+        switch (fbc.returnType()) {
+          case LIST_CANONICAL_NAME -> {
+            if (defaultFetchSize) {
+              out.printf(
+                  """
+    @Override
+    public List<%s> %s(Object %s) {
+        String sql = "SELECT * FROM %s WHERE %s = ?";
+        Object[] args = {%s};
+        return jdbcQueryRunner.query(sql, this::mapToList, args);
+    }
+""",
+                  ac.name(),
+                  td.columnName(),
+                  td.columnName(),
+                  table.value(),
+                  td.columnName(),
+                  td.columnName());
+            } else {
+              out.printf(
+                  """
+    @Override
+    public List<%s> %s(Object %s) {
+        String sql = "SELECT * FROM %s WHERE %s = ?";
+        Object[] args = {%s};
+        StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
+        return jdbcQueryRunnerFactory.create(cfg).query(sql, this::mapToList, args);
+    }
+""",
+                  ac.name(),
+                  td.columnName(),
+                  td.columnName(),
+                  table.value(),
+                  td.columnName(),
+                  td.columnName(),
+                  fbc.fetchSize());
+            }
+          }
+          case STREAM_CANONICAL_NAME -> {
+            if (defaultFetchSize) {
+              out.printf(
+                  """
+    @Override
+    public Stream<%s> %s(Object %s) {
+        String sql = "SELECT * FROM %s WHERE %s = ?";
+        Object[] args = {%s};
+        return jdbcUtils.stream(sql, this::map, args);
+    }
+""",
+                  ac.name(),
+                  td.columnName(),
+                  td.columnName(),
+                  table.value(),
+                  td.columnName(),
+                  td.columnName());
+            } else {
+              out.printf(
+                  """
+    @Override
+    public Stream<%s> %s(Object %s) {
+        String sql = "SELECT * FROM %s WHERE %s = ?";
+        Object[] args = {%s};
+        StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
+        return jdbcUtilsFactory.create(cfg).stream(sql, this::map, args);
+    }
+""",
+                  ac.name(),
+                  td.columnName(),
+                  td.columnName(),
+                  table.value(),
+                  td.columnName(),
+                  td.columnName(),
+                  fbc.fetchSize());
+            }
+            out.println();
+          }
+          case ITERABLE_CANONICAL_NAME -> {
+            if (defaultFetchSize) {
+              out.printf(
+                  """
+    @Override
+    public Iterable<%s> %s(Object %s) {
+        String sql = "SELECT * FROM %s WHERE %s = ?";
+        Object[] args = {%s};
+        return jdbcQueryRunner.query(sql, this::mapToList, args);
+    }
+""",
+                  ac.name(),
+                  td.columnName(),
+                  td.columnName(),
+                  table.value(),
+                  td.columnName(),
+                  td.columnName());
+            } else {
+              out.printf(
+                  """
+    @Override
+    public Iterable<%s> %s(Object %s) {
+        String sql = "SELECT * FROM %s WHERE %s = ?";
+        Object[] args = {%s};
+        StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
+        return jdbcQueryRunnerFactory.create(cfg).query(sql, this::mapToList, args);
+    }
+""",
+                  ac.name(),
+                  td.columnName(),
+                  td.columnName(),
+                  table.value(),
+                  td.columnName(),
+                  td.columnName(),
+                  fbc.fetchSize());
+            }
+          }
+          default -> unsupportedReturnType(fbc.returnType());
+        }
+      }
 
       // common queries
       out.printf(
@@ -525,8 +679,17 @@ public class TableGenerator extends ProcessorBase {
     return new GeneratedFile(stringWriter, ac.classPackage() + "." + className);
   }
 
+  private static void unsupportedReturnType(String returnType) {
+    throw new GenerationException(
+        "unexpected return type: %s only List, Stream and Iterable are supported"
+            .formatted(returnType));
+  }
+
   private GeneratedFile generateInterface(
-      AnnotatedClass ac, List<TableQuery> tableQueries, String interfaceName) {
+      AnnotatedClass ac,
+      List<TableQuery> tableQueries,
+      List<TableDetails> tableDetails,
+      String interfaceName) {
     String varName = ac.name().substring(0, 1).toLowerCase();
 
     StringWriter stringWriter = StringWriterFactory.create();
@@ -558,14 +721,29 @@ public class TableGenerator extends ProcessorBase {
               out.printf("\tStream<%s> %s(%s);%n", ac.name(), tq.name(), params);
           case ITERABLE_CANONICAL_NAME ->
               out.printf("\tIterable<%s> %s(%s);%n", ac.name(), tq.name(), params);
-          default ->
-              throw new GenerationException(
-                  "unexpected return type: %s only List, Stream and Iterable are supported"
-                      .formatted(tq.returnType()));
+          default -> unsupportedReturnType(tq.returnType());
         }
       }
 
-      // todo: findByColumn
+      for (TableDetails td : tableDetails) {
+        TableDetails.FindByColumn fbc = td.findByColumn();
+        if (null == fbc || null == fbc.columnName()) {
+          continue;
+        }
+
+        switch (fbc.returnType()) {
+          case LIST_CANONICAL_NAME ->
+              out.printf(
+                  "\tList<%s> %s(Object %s);%n", ac.name(), td.columnName(), td.columnName());
+          case STREAM_CANONICAL_NAME ->
+              out.printf(
+                  "\tStream<%s> %s(Object %s);%n", ac.name(), td.columnName(), td.columnName());
+          case ITERABLE_CANONICAL_NAME ->
+              out.printf(
+                  "\tIterable<%s> %s(Object %s);%n", ac.name(), td.columnName(), td.columnName());
+          default -> unsupportedReturnType(fbc.returnType());
+        }
+      }
 
       // common queries
       out.printf("\tStream<%s> all();%n", ac.name());
@@ -602,7 +780,11 @@ public class TableGenerator extends ProcessorBase {
               int paramIndex = sql.indexOf(':');
               if (paramIndex == -1) {
                 return new TableQuery(
-                    sql, query.name(), query.fetchSize(), getQueryReturnType(query), List.of());
+                    sql,
+                    query.name(),
+                    query.fetchSize(),
+                    getReturnType(query::returnType),
+                    List.of());
               }
 
               List<String> paramNames = new ArrayList<>();
@@ -620,7 +802,11 @@ public class TableGenerator extends ProcessorBase {
               }
 
               return new TableQuery(
-                  sql, query.name(), query.fetchSize(), getQueryReturnType(query), paramNames);
+                  sql,
+                  query.name(),
+                  query.fetchSize(),
+                  getReturnType(query::returnType),
+                  paramNames);
             })
         .toList();
   }
@@ -638,6 +824,7 @@ public class TableGenerator extends ProcessorBase {
               }
               Table.InsertOnly insertOnly = ee.getAnnotation(Table.InsertOnly.class);
               Table.Version version = ee.getAnnotation(Table.Version.class);
+              Table.FindByColumn findByColumn = ee.getAnnotation(Table.FindByColumn.class);
               String fieldName = ee.getSimpleName().toString();
               TypeMirror type = ee.asType();
 
@@ -650,6 +837,15 @@ public class TableGenerator extends ProcessorBase {
                 isReference = qualifiedName.equals(Reference.class.getCanonicalName());
               }
 
+              TableDetails.FindByColumn fbc = null;
+              if (null != findByColumn && findByColumn.value().isBlank()) {
+                fbc =
+                    new TableDetails.FindByColumn(
+                        findByColumn.value(),
+                        findByColumn.fetchSize(),
+                        getReturnType(findByColumn::returnType));
+              }
+
               return new TableDetails(
                   column.value(),
                   fieldName,
@@ -657,15 +853,16 @@ public class TableGenerator extends ProcessorBase {
                   id != null,
                   insertOnly != null,
                   version != null,
-                  isReference);
+                  isReference,
+                  fbc);
             })
         .toList();
   }
 
-  private static String getQueryReturnType(Table.Query query) {
-    // query is a mirrored type, we cannot access the class
+  private static String getReturnType(Supplier<Class<?>> supplier) {
+    // class in the annotation is a mirrored type
     try {
-      var ignore = query.returnType(); // NOSONAR this method invocation thrown
+      var ignore = supplier.get(); // NOSONAR this method invocation thrown
       throw new GenerationException("expected MirroredTypeException");
     } catch (MirroredTypeException e) {
       TypeMirror typeMirror = e.getTypeMirror();
@@ -685,5 +882,9 @@ public class TableGenerator extends ProcessorBase {
       boolean id,
       boolean insertOnly,
       boolean version,
-      boolean isReference) {}
+      boolean isReference,
+      FindByColumn findByColumn) {
+
+    private record FindByColumn(String columnName, int fetchSize, String returnType) {}
+  }
 }
