@@ -13,7 +13,7 @@ import jakarta.annotation.Nonnull;
 import java.util.List;
 
 @Table("person")
-@Query(name = "adults", sql = "SELECT * FROM person WHERE age > 21", returnType = List.class)
+@Query(name = "adults", sql = "SELECT * FROM person WHERE age > 21", returnType = Iterable.class)
 @Query(
     name = "byAgeGroup",
     sql = "SELECT * FROM person WHERE age > :minAge and age < :maxAge",
@@ -27,8 +27,8 @@ public record Person(
     @Column("id") @Id("id_seq") long id,
     @Column("first_name") @FindByColumn(returnType = List.class) @InsertOnly String name,
     @Column("last_name") @FindByColumn @InsertOnly String lastName,
-    @Column("age") @FindByColumn(value = "ageAndGender", fetchSize = 25) int age,
-    @Column("gender") @FindByColumn("ageAndGender") @InsertOnly String gender,
+    @Column("age") @FindByColumn(fetchSize = 25) int age,
+    @Column("gender") @FindByColumn(returnType = Iterable.class) @InsertOnly String gender,
     @Column("address_id") @Nonnull Reference<Address> address,
     @Column("version") @Version int version)
     implements Reference<Person> {
