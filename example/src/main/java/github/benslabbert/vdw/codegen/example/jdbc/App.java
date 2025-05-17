@@ -139,7 +139,7 @@ public class App {
       men.forEach(p -> log.info("men {}", p));
     }
 
-    personRepository.women().forEach(w -> log.info("women {}", w));
+    personRepository.women(w -> log.info("women {}", w));
 
     personRepository.first_name("name").forEach(p -> log.info("name {}", p));
 
@@ -147,9 +147,7 @@ public class App {
       s.forEach(p -> log.info("lastName {}", p));
     }
 
-    try (Stream<Person> s = personRepository.age(22)) {
-      s.forEach(p -> log.info("age {}", p));
-    }
+    personRepository.age(22, p -> log.info("age {}", p));
 
     personRepository.gender("female").forEach(p -> log.info("gender {}", p));
 

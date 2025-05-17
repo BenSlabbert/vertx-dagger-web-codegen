@@ -13,6 +13,7 @@ import github.benslabbert.vdw.codegen.commons.jdbc.Reference;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import java.util.List;
+import java.util.function.Consumer;
 
 @Table("person")
 @Query(
@@ -29,14 +30,14 @@ import java.util.List;
 @Query(
     name = "women",
     sql = "SELECT * FROM person WHERE gender = 'female'",
-    returnType = Iterable.class)
+    returnType = Consumer.class)
 public record Person(
     @Column("id") @Id("id_seq") long id,
     @Column("first_name") @FindByColumn(fetchSize = 1, returnType = List.class) @InsertOnly
         String name,
     @Column("middle_name") @Nullable String middleName,
     @Column("last_name") @FindByColumn @InsertOnly String lastName,
-    @Column("age") @FindByColumn(fetchSize = 25) int age,
+    @Column("age") @FindByColumn(fetchSize = 25, returnType = Consumer.class) int age,
     @Column("gender") @FindByColumn(fetchSize = 50, returnType = Iterable.class) @InsertOnly
         String gender,
     @Column("address_id") @Nonnull Reference<Address> address,

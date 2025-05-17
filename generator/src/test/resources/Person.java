@@ -11,6 +11,7 @@ import github.benslabbert.vdw.codegen.annotation.Table.Version;
 import github.benslabbert.vdw.codegen.commons.jdbc.Reference;
 import jakarta.annotation.Nonnull;
 import java.util.List;
+import java.util.function.Consumer;
 
 @Table("person")
 @Query(name = "adults", sql = "SELECT * FROM person WHERE age > 21", returnType = Iterable.class)
@@ -22,12 +23,12 @@ import java.util.List;
 @Query(
     name = "women",
     sql = "SELECT * FROM person WHERE gender = 'female'",
-    returnType = Iterable.class)
+    returnType = Consumer.class)
 public record Person(
     @Column("id") @Id("id_seq") long id,
     @Column("first_name") @FindByColumn(returnType = List.class) @InsertOnly String name,
     @Column("last_name") @FindByColumn @InsertOnly String lastName,
-    @Column("age") @FindByColumn(fetchSize = 25) int age,
+    @Column("age") @FindByColumn(fetchSize = 25, returnType = Consumer.class) int age,
     @Column("gender") @FindByColumn(returnType = Iterable.class) @InsertOnly String gender,
     @Column("address_id") @Nonnull Reference<Address> address,
     @Column("version") @Version int version)

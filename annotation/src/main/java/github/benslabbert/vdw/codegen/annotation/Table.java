@@ -8,6 +8,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 @Documented
@@ -43,7 +44,7 @@ public @interface Table {
 
     int fetchSize() default DEFAULT_FETCH_SIZE;
 
-    /** Supports: {@link List}, {@link Iterable}, {@link Stream} */
+    /** Supports: {@link List}, {@link Iterable}, {@link Stream}, {@link Consumer} */
     Class<?> returnType() default Stream.class;
   }
 
@@ -51,7 +52,7 @@ public @interface Table {
   @interface FindByColumn {
     String value() default "";
 
-    /** Supports: {@link List}, {@link Iterable}, {@link Stream} */
+    /** Supports: {@link List}, {@link Iterable}, {@link Stream}, {@link Consumer} */
     Class<?> returnType() default Stream.class;
 
     int fetchSize() default DEFAULT_FETCH_SIZE;
