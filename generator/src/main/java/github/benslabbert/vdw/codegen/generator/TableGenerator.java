@@ -4,6 +4,7 @@ package github.benslabbert.vdw.codegen.generator;
 import static java.util.function.Predicate.not;
 
 import com.google.common.base.Strings;
+import com.google.errorprone.annotations.MustBeClosed;
 import github.benslabbert.vdw.codegen.annotation.Table;
 import github.benslabbert.vdw.codegen.commons.jdbc.Reference;
 import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcQueryRunner;
@@ -27,6 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -46,6 +48,7 @@ public class TableGenerator extends ProcessorBase {
   private static final String LIST_CANONICAL_NAME = "java.util.List";
   private static final String STREAM_CANONICAL_NAME = "java.util.stream.Stream";
   private static final String ITERABLE_CANONICAL_NAME = "java.lang.Iterable";
+  private static final String CONSUMER_CANONICAL_NAME = "java.util.function.Consumer";
 
   public TableGenerator() {
     super(Set.of(Table.class.getCanonicalName()));
@@ -124,6 +127,7 @@ public class TableGenerator extends ProcessorBase {
       out.printf("package %s;%n", ac.classPackage());
       out.println();
       out.printf("import %s;%n", Generated.class.getCanonicalName());
+      out.printf("import %s;%n", MustBeClosed.class.getCanonicalName());
       out.printf("import %s;%n", Inject.class.getCanonicalName());
       out.printf("import %s;%n", Singleton.class.getCanonicalName());
       out.printf("import %s;%n", JdbcQueryRunner.class.getCanonicalName());
@@ -142,6 +146,7 @@ public class TableGenerator extends ProcessorBase {
       out.printf("import %s;%n", List.class.getCanonicalName());
       out.printf("import %s;%n", ac.canonicalName());
       out.printf("import %s;%n", Reference.class.getCanonicalName());
+      out.printf("import %s;%n", Consumer.class.getCanonicalName());
       out.printf("import static %s.not;%n", Predicate.class.getCanonicalName());
       out.println();
 
@@ -264,6 +269,7 @@ public class TableGenerator extends ProcessorBase {
               out.printf(
                   """
     @Override
+    @MustBeClosed
     public Stream<%s> %s(%s) {
         String sql = "%s";
         Object[] args = {%s};
@@ -275,6 +281,7 @@ public class TableGenerator extends ProcessorBase {
               out.printf(
                   """
     @Override
+    @MustBeClosed
     public Stream<%s> %s(%s) {
         String sql = "%s";
         Object[] args = {%s};
@@ -311,6 +318,59 @@ public class TableGenerator extends ProcessorBase {
     }
 """,
                   ac.name(), methodName, methodArgs, sanitizedSql, args, tq.fetchSize());
+              out.println();
+            }
+          }
+          case CONSUMER_CANONICAL_NAME -> {
+            String p;
+            if (methodArgs.isBlank()) {
+              p = "Consumer<%s> consumer".formatted(ac.name);
+            } else {
+              p = String.join(", ", methodArgs, "Consumer<%s> consumer".formatted(ac.name));
+            }
+            if (defaultFetchSize) {
+              out.printf(
+                  """
+    public void %s(%s) {
+        String sql = "%s";
+        Object[] args = {%s};
+        jdbcQueryRunner.query(
+            sql,
+            rs -> {
+            %s %s = map(rs);
+            consumer.accept(%s);
+            return null;
+            },
+            args);
+    }
+""",
+                  methodName, p, sanitizedSql, methodArgs, ac.name(), varName, varName);
+              out.println();
+            } else {
+              out.printf(
+                  """
+    public void %s(%s) {
+        String sql = "%s";
+        Object[] args = {%s};
+        StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
+        jdbcQueryRunnerFactory.create(cfg).query(
+            sql,
+            rs -> {
+            %s %s = map(rs);
+            consumer.accept(%s);
+            return null;
+            },
+            args);
+    }
+""",
+                  methodName,
+                  p,
+                  sanitizedSql,
+                  methodArgs,
+                  tq.fetchSize(),
+                  ac.name(),
+                  varName,
+                  varName);
               out.println();
             }
           }
@@ -368,6 +428,7 @@ public class TableGenerator extends ProcessorBase {
               out.printf(
                   """
     @Override
+    @MustBeClosed
     public Stream<%s> %s(Object %s) {
         String sql = "SELECT * FROM %s WHERE %s = ?";
         Object[] args = {%s};
@@ -384,6 +445,7 @@ public class TableGenerator extends ProcessorBase {
               out.printf(
                   """
     @Override
+    @MustBeClosed
     public Stream<%s> %s(Object %s) {
         String sql = "SELECT * FROM %s WHERE %s = ?";
         Object[] args = {%s};
@@ -438,6 +500,63 @@ public class TableGenerator extends ProcessorBase {
                   fbc.fetchSize());
             }
           }
+          case CONSUMER_CANONICAL_NAME -> {
+            if (defaultFetchSize) {
+              out.printf(
+                  """
+    public void %s(Object %s, Consumer<%s> consumer) {
+        String sql = "SELECT * FROM %s WHERE %s = ?";
+        Object[] args = {%s};
+        jdbcQueryRunner.query(
+            sql,
+            rs -> {
+            %s %s = map(rs);
+            consumer.accept(%s);
+            return null;
+            },
+            args);
+    }
+""",
+                  td.columnName(),
+                  td.columnName(),
+                  ac.name(),
+                  table.value(),
+                  td.columnName(),
+                  td.columnName(),
+                  ac.name(),
+                  varName,
+                  varName);
+              out.println();
+            } else {
+              out.printf(
+                  """
+    public void %s(Object %s, Consumer<%s> consumer) {
+        String sql = "SELECT * FROM %s WHERE %s = ?";
+        Object[] args = {%s};
+        StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
+        jdbcQueryRunnerFactory.create(cfg).query(
+            sql,
+            rs -> {
+            %s %s = map(rs);
+            consumer.accept(%s);
+            return null;
+            },
+            args);
+    }
+""",
+                  td.columnName(),
+                  td.columnName(),
+                  ac.name(),
+                  table.value(),
+                  td.columnName(),
+                  td.columnName(),
+                  fbc.fetchSize(),
+                  ac.name(),
+                  varName,
+                  varName);
+              out.println();
+            }
+          }
           default -> unsupportedReturnType(fbc.returnType());
         }
       }
@@ -446,6 +565,7 @@ public class TableGenerator extends ProcessorBase {
       out.printf(
           """
     @Override
+    @MustBeClosed
     public Stream<%s> all() {
         String sql = "SELECT * FROM %s order by %s";
         return jdbcUtils.stream(sql, this::map);
@@ -710,7 +830,7 @@ public class TableGenerator extends ProcessorBase {
 
   private static void unsupportedReturnType(String returnType) {
     throw new GenerationException(
-        "unexpected return type: %s only List, Stream and Iterable are supported"
+        "unexpected return type: %s only List, Stream, Consumer and Iterable are supported"
             .formatted(returnType));
   }
 
@@ -727,10 +847,12 @@ public class TableGenerator extends ProcessorBase {
       out.printf("package %s;%n", ac.classPackage());
       out.println();
       out.printf("import %s;%n", Generated.class.getCanonicalName());
+      out.printf("import %s;%n", MustBeClosed.class.getCanonicalName());
       out.printf("import %s;%n", Optional.class.getCanonicalName());
       out.printf("import %s;%n", Collection.class.getCanonicalName());
       out.printf("import %s;%n", Stream.class.getCanonicalName());
       out.printf("import %s;%n", List.class.getCanonicalName());
+      out.printf("import %s;%n", Consumer.class.getCanonicalName());
       out.printf("import %s;%n", ac.canonicalName());
       out.println();
 
@@ -746,10 +868,21 @@ public class TableGenerator extends ProcessorBase {
         switch (tq.returnType()) {
           case LIST_CANONICAL_NAME ->
               out.printf("\tList<%s> %s(%s);%n", ac.name(), tq.name(), params);
-          case STREAM_CANONICAL_NAME ->
-              out.printf("\tStream<%s> %s(%s);%n", ac.name(), tq.name(), params);
+          case STREAM_CANONICAL_NAME -> {
+            out.println("\t@MustBeClosed");
+            out.printf("\tStream<%s> %s(%s);%n", ac.name(), tq.name(), params);
+          }
           case ITERABLE_CANONICAL_NAME ->
               out.printf("\tIterable<%s> %s(%s);%n", ac.name(), tq.name(), params);
+          case CONSUMER_CANONICAL_NAME -> {
+            String p;
+            if (params.isBlank()) {
+              p = "Consumer<%s> consumer".formatted(ac.name);
+            } else {
+              p = String.join(", ", params, "Consumer<%s> consumer".formatted(ac.name));
+            }
+            out.printf("\tvoid %s(%s);%n", tq.name(), p);
+          }
           default -> unsupportedReturnType(tq.returnType());
         }
       }
@@ -764,17 +897,28 @@ public class TableGenerator extends ProcessorBase {
           case LIST_CANONICAL_NAME ->
               out.printf(
                   "\tList<%s> %s(Object %s);%n", ac.name(), td.columnName(), td.columnName());
-          case STREAM_CANONICAL_NAME ->
-              out.printf(
-                  "\tStream<%s> %s(Object %s);%n", ac.name(), td.columnName(), td.columnName());
+          case STREAM_CANONICAL_NAME -> {
+            out.println("\t@MustBeClosed");
+            out.printf(
+                "\tStream<%s> %s(Object %s);%n", ac.name(), td.columnName(), td.columnName());
+          }
           case ITERABLE_CANONICAL_NAME ->
               out.printf(
                   "\tIterable<%s> %s(Object %s);%n", ac.name(), td.columnName(), td.columnName());
+          case CONSUMER_CANONICAL_NAME ->
+              out.printf(
+                  "\tvoid %s(%s);%n",
+                  td.columnName(),
+                  String.join(
+                      ", ",
+                      "Object %s".formatted(td.columnName()),
+                      "Consumer<%s> consumer".formatted(ac.name())));
           default -> unsupportedReturnType(fbc.returnType());
         }
       }
 
       // common queries
+      out.println("\t@MustBeClosed");
       out.printf("\tStream<%s> all();%n", ac.name());
       out.printf("\tOptional<%s> id(long id);%n", ac.name());
       out.printf("\tdefault %s requireId(long id) {%n", ac.name());
