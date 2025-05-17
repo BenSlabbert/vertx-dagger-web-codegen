@@ -13,4 +13,12 @@ public interface Reference<T> {
   default boolean isNew() {
     return 0 == id();
   }
+
+  static <T> Reference<T> of(long id) {
+    return () -> id;
+  }
+
+  static <T> Reference<T> create() {
+    return () -> 0L;
+  }
 }
