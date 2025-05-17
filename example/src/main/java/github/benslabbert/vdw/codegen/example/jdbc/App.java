@@ -8,6 +8,7 @@ import github.benslabbert.txmanager.PlatformTransactionManager;
 import github.benslabbert.txmanager.annotation.AfterCommit;
 import github.benslabbert.txmanager.annotation.BeforeCommit;
 import github.benslabbert.txmanager.annotation.Transactional;
+import github.benslabbert.vdw.codegen.commons.jdbc.Reference;
 import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcQueryRunner;
 import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcQueryRunnerFactory;
 import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcQueryRunnerFactory_Impl;
@@ -119,6 +120,7 @@ public class App {
                 .age(21)
                 .gender("female")
                 .middleName("middle")
+                .address(Reference.of(1000003L))
                 .build());
 
     save = save.toBuilder().name("new_name").age(22).build();

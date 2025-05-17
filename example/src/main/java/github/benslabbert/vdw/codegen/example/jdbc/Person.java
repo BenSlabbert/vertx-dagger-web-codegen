@@ -11,6 +11,7 @@ import github.benslabbert.vdw.codegen.annotation.Table.Query;
 import github.benslabbert.vdw.codegen.annotation.Table.Version;
 import github.benslabbert.vdw.codegen.commons.jdbc.Reference;
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import java.util.List;
 
 @Table("person")
@@ -33,7 +34,7 @@ public record Person(
     @Column("id") @Id("id_seq") long id,
     @Column("first_name") @FindByColumn(fetchSize = 1, returnType = List.class) @InsertOnly
         String name,
-    @Column("middle_name") String middleName,
+    @Column("middle_name") @Nullable String middleName,
     @Column("last_name") @FindByColumn @InsertOnly String lastName,
     @Column("age") @FindByColumn(fetchSize = 25) int age,
     @Column("gender") @FindByColumn(fetchSize = 50, returnType = Iterable.class) @InsertOnly
@@ -43,7 +44,7 @@ public record Person(
     implements Reference<Person> {
 
   public static Builder builder() {
-    return new AutoBuilder_Person_Builder().id(0).version(0).address(() -> 0L);
+    return new AutoBuilder_Person_Builder().id(0).version(0).address(Reference.create());
   }
 
   public Builder toBuilder() {

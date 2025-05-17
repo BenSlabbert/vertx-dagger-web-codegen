@@ -51,8 +51,6 @@ public class TableGenerator extends ProcessorBase {
     super(Set.of(Table.class.getCanonicalName()));
   }
 
-  private record AnnotatedClass(String canonicalName, String classPackage, String name) {}
-
   @Override
   List<GeneratedFile> generateTempFile(Element e) {
     if (ElementKind.RECORD != e.getKind()) {
@@ -143,6 +141,7 @@ public class TableGenerator extends ProcessorBase {
       out.printf("import %s;%n", Stream.class.getCanonicalName());
       out.printf("import %s;%n", List.class.getCanonicalName());
       out.printf("import %s;%n", ac.canonicalName());
+      out.printf("import %s;%n", Reference.class.getCanonicalName());
       out.printf("import static %s.not;%n", Predicate.class.getCanonicalName());
       out.println();
 
@@ -233,8 +232,6 @@ public class TableGenerator extends ProcessorBase {
 
         switch (tq.returnType()) {
           case LIST_CANONICAL_NAME -> {
-            System.err.println("list return type");
-            System.err.println("defaultFetchSize ? " + defaultFetchSize);
             if (defaultFetchSize) {
               out.printf(
                   """
@@ -633,12 +630,12 @@ public class TableGenerator extends ProcessorBase {
           """
     private %s mapSingle(ResultSet rs) throws SQLException {
         if (!rs.next()) {
-          throw new SQLException("could not save %s");
+          throw new SQLException("expecting at least one result");
         }
         return map(rs);
     }
 """,
-          ac.name(), ac.name());
+          ac.name());
       out.println();
       out.printf(
           """
@@ -663,13 +660,22 @@ public class TableGenerator extends ProcessorBase {
 """,
           ac.name(), ac.name());
       out.println();
-      out.printf(
-          """
-    private %s map(ResultSet rs) throws SQLException {
-        return null;
-    }
-""",
-          ac.name());
+
+      out.printf("\tprivate %s map(ResultSet rs) throws SQLException {%n", ac.name());
+      out.printf("\t\treturn %s.builder()%n", ac.name());
+      for (TableDetails td : tableDetails) {
+        if (td.isReference()) {
+          out.printf(
+              "\t\t.%s(Reference.of(rs.%s(\"%s\")))%n",
+              td.fieldName(), getResultSetGetter(td), td.columnName());
+        } else {
+          out.printf(
+              "\t\t.%s(rs.%s(\"%s\"))%n", td.fieldName(), getResultSetGetter(td), td.columnName());
+        }
+      }
+      out.println("\t\t.build();");
+      out.println("\t}");
+
       out.println();
 
       // end of class
@@ -677,6 +683,29 @@ public class TableGenerator extends ProcessorBase {
     }
 
     return new GeneratedFile(stringWriter, ac.classPackage() + "." + className);
+  }
+
+  private static String getResultSetGetter(TableDetails td) {
+    if (td.isReference()) {
+      return "getLong";
+    }
+    TypeMirror type = td.element().asType();
+    return switch (type.getKind()) {
+      case INT -> "getInt";
+      case LONG -> "getLong";
+      case BOOLEAN -> "getBoolean";
+      case DECLARED ->
+          switch (getCanonicalName((DeclaredType) type)) {
+            case "java.lang.String" -> "getString";
+            case "java.sql.Date" -> "getDate";
+            case "java.sql.Timestamp" -> "getTimestamp";
+            default ->
+                throw new GenerationException(
+                    "unexpected type: %s for ResultSet getter".formatted(type));
+          };
+      default ->
+          throw new GenerationException("unexpected type: %s for ResultSet getter".formatted(type));
+    };
   }
 
   private static void unsupportedReturnType(String returnType) {
@@ -811,6 +840,11 @@ public class TableGenerator extends ProcessorBase {
         .toList();
   }
 
+  private static String getCanonicalName(DeclaredType declaredType) {
+    TypeElement typeElement = (TypeElement) declaredType.asElement();
+    return typeElement.getQualifiedName().toString();
+  }
+
   private static List<TableDetails> getTableDetails(Element e) {
     return e.getEnclosedElements().stream()
         .filter(ee -> ee.getKind() == ElementKind.RECORD_COMPONENT)
@@ -831,9 +865,7 @@ public class TableGenerator extends ProcessorBase {
               boolean isReference = false;
 
               if (TypeKind.DECLARED == type.getKind()) {
-                DeclaredType declaredType = (DeclaredType) type;
-                TypeElement typeElement = (TypeElement) declaredType.asElement();
-                String qualifiedName = typeElement.getQualifiedName().toString();
+                String qualifiedName = getCanonicalName((DeclaredType) type);
                 isReference = qualifiedName.equals(Reference.class.getCanonicalName());
               }
 
@@ -847,6 +879,7 @@ public class TableGenerator extends ProcessorBase {
               }
 
               return new TableDetails(
+                  ee,
                   column.value(),
                   fieldName,
                   null == id ? null : id.value(),
@@ -876,6 +909,7 @@ public class TableGenerator extends ProcessorBase {
       String sql, String name, int fetchSize, String returnType, List<String> paramNames) {}
 
   private record TableDetails(
+      RecordComponentElement element,
       String columnName,
       String fieldName,
       String sequenceName,
@@ -887,4 +921,6 @@ public class TableGenerator extends ProcessorBase {
 
     private record FindByColumn(String columnName, int fetchSize, String returnType) {}
   }
+
+  private record AnnotatedClass(String canonicalName, String classPackage, String name) {}
 }
