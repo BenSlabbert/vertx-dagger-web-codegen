@@ -34,8 +34,8 @@
     <shade.skip>false</shade.skip>
 
     <!--deps-->
-    <tx-manager.version>1.113.0</tx-manager.version>
-    <vertx-dagger-commons.version>1.133.0</vertx-dagger-commons.version>
+    <tx-manager.version>1.114.0</tx-manager.version>
+    <vertx-dagger-commons.version>1.134.0</vertx-dagger-commons.version>
     <compile-testing.version>1.1.0</compile-testing.version>
   </properties>
 
