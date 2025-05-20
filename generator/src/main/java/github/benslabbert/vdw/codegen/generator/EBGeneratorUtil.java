@@ -7,11 +7,11 @@ import com.squareup.javapoet.TypeName;
 import github.benslabbert.vdw.codegen.annotation.HasRole;
 import io.vertx.core.Future;
 import jakarta.annotation.Nullable;
+import jakarta.validation.Valid;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -36,7 +36,7 @@ final class EBGeneratorUtil {
         .map(
             sm -> {
               ParameterizedTypeName typeName =
-                  (ParameterizedTypeName) ParameterizedTypeName.get(sm.getReturnType());
+                  (ParameterizedTypeName) TypeName.get(sm.getReturnType());
               ClassName rawType = typeName.rawType;
               if (!rawType.canonicalName().equals(Future.class.getCanonicalName())) {
                 throw new GenerationException("must return: " + Future.class.getCanonicalName());
@@ -49,9 +49,10 @@ final class EBGeneratorUtil {
               if (1 != parameters.size()) {
                 throw new GenerationException("method can only have one parameter");
               }
-              TypeMirror parameterType = parameters.getFirst().asType();
-
-              Name simpleName = sm.getSimpleName();
+              VariableElement parameter = parameters.getFirst();
+              TypeMirror typeMirror = parameter.asType();
+              TypeName tn = TypeName.get(typeMirror);
+              String parameterTypeCanonicalName = tn.withoutAnnotations().toString();
 
               HasRole annotation = sm.getAnnotation(HasRole.class);
               String role = null;
@@ -59,13 +60,17 @@ final class EBGeneratorUtil {
                 role = annotation.value();
               }
 
+              String paramSimpleName =
+                  parameterTypeCanonicalName.substring(
+                      parameterTypeCanonicalName.lastIndexOf('.') + 1);
               return new ServiceMethod(
                   returnType.toString(),
                   returnType.toString().substring(returnType.toString().lastIndexOf('.') + 1),
-                  parameterType.toString(),
-                  parameterType.toString().substring(parameterType.toString().lastIndexOf('.') + 1),
-                  simpleName.toString(),
-                  role);
+                  parameterTypeCanonicalName,
+                  paramSimpleName,
+                  sm.getSimpleName().toString(),
+                  role,
+                  null != parameter.getAnnotation(Valid.class));
             })
         .toList();
   }
@@ -76,5 +81,6 @@ final class EBGeneratorUtil {
       String paramTypeImport,
       String paramTypeName,
       String methodName,
-      @Nullable String role) {}
+      @Nullable String role,
+      boolean validated) {}
 }

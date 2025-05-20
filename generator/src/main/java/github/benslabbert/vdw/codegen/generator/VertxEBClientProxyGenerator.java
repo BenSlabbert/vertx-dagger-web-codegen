@@ -11,6 +11,7 @@ import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.serviceproxy.ServiceException;
 import io.vertx.serviceproxy.ServiceExceptionMessageCodec;
 import jakarta.annotation.Generated;
+import jakarta.validation.Valid;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
@@ -37,6 +38,7 @@ class VertxEBClientProxyGenerator {
       out.println();
 
       out.printf("import %s;%n", Generated.class.getCanonicalName());
+      out.printf("import %s;%n", Valid.class.getCanonicalName());
       out.printf("import %s;%n", ClientProxyUtils.class.getCanonicalName());
       out.printf("import %s;%n", Future.class.getCanonicalName());
       out.printf("import %s;%n", Vertx.class.getCanonicalName());

@@ -5,12 +5,13 @@ import github.benslabbert.vdw.codegen.annotation.EventBusService;
 import github.benslabbert.vdw.codegen.annotation.HasRole;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
+import jakarta.validation.Valid;
 
 @EventBusService(address = "example.address.my")
 interface ExampleService {
 
   @HasRole("admin")
-  Future<ExampleResponse> execute(ExampleRequest request);
+  Future<ExampleResponse> execute(@Valid ExampleRequest request);
 
   record ExampleRequest(String data) {
 
