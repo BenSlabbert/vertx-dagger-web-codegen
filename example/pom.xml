@@ -55,8 +55,16 @@
       <artifactId>transaction</artifactId>
     </dependency>
     <dependency>
+      <groupId>github.benslabbert.vertx-json-writer</groupId>
+      <artifactId>annotation</artifactId>
+    </dependency>
+    <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-json-schema</artifactId>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
@@ -203,6 +211,11 @@
               <groupId>org.mapstruct</groupId>
               <artifactId>mapstruct-processor</artifactId>
               <version>${org.mapstruct.version}</version>
+            </path>
+            <path>
+              <groupId>github.benslabbert.vertx-json-writer</groupId>
+              <artifactId>processor</artifactId>
+              <version>${revision}</version>
             </path>
             <path>
               <groupId>github.benslabbert.vdw.codegen</groupId>

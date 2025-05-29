@@ -5,6 +5,7 @@ import github.benslabbert.vdw.codegen.annotation.EventBusService;
 import github.benslabbert.vdw.codegen.annotation.HasRole;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
+import io.vertx.json.schema.Validator;
 import jakarta.validation.Valid;
 
 @EventBusService(address = "ADDR")
@@ -24,6 +25,10 @@ public interface ExampleService {
 
     static DataRequest fromJson(JsonObject json) {
       return new DataRequest(json.getString("data"));
+    }
+
+    static Validator getValidator() {
+      return null;
     }
   }
 
