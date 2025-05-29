@@ -13,6 +13,8 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
@@ -20,6 +22,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
 abstract class ProcessorBase extends AbstractProcessor {
@@ -79,7 +82,13 @@ abstract class ProcessorBase extends AbstractProcessor {
     for (var annotation : annotations) {
       for (var element : roundEnv.getElementsAnnotatedWith(annotation)) {
         try {
+          Instant start = Instant.now();
           List<GeneratedFile> files = generateTempFile(element);
+          Duration duration = Duration.between(start, Instant.now());
+          processingEnv
+              .getMessager()
+              .printMessage(
+                  Diagnostic.Kind.NOTE, "%s: processing time %s".formatted(element, duration));
           if (files.isEmpty()) {
             continue;
           }
@@ -97,7 +106,6 @@ abstract class ProcessorBase extends AbstractProcessor {
 
   private void formatFile(GeneratedFile generatedFile) {
     try {
-      System.err.println(generatedFile.stringWriter());
       CharSource source = new StringSource(generatedFile.stringWriter());
       JavaFileObject builderFile =
           processingEnv.getFiler().createSourceFile(generatedFile.realFileName());
@@ -110,7 +118,13 @@ abstract class ProcessorBase extends AbstractProcessor {
               .style(JavaFormatterOptions.Style.GOOGLE)
               .build();
 
+      Instant start = Instant.now();
       new Formatter(options).formatSource(source, output);
+      processingEnv
+          .getMessager()
+          .printMessage(
+              Diagnostic.Kind.NOTE,
+              "formatting time %s".formatted(Duration.between(start, Instant.now())));
     } catch (FormatterException | IOException e) {
       throw new GenerationException(e);
     }
