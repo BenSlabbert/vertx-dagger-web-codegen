@@ -214,8 +214,8 @@ public class WebHandlerGenerator extends ProcessorBase {
         if (null != bodyParam) {
           out.printf("\t\t\t.handler((RoutingContext %s) -> {%n", ctxVariable);
           out.printf(
-              "\t\t\t\tRequireRequestBodyHandler.requireJsonBody(%s, \"%s\");%n",
-              ctxVariable, am.path());
+              "\t\t\t\tRequireRequestBodyHandler.requireJsonBody(%s, %s.getValidator(), \"%s\");%n",
+              ctxVariable, bodyParam.type().simpleName(), am.path());
           out.printf("\t\t\t})%n");
 
           if (bodyParam.validateBody()) {

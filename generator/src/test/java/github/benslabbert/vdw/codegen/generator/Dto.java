@@ -2,6 +2,7 @@
 package github.benslabbert.vdw.codegen.generator;
 
 import io.vertx.core.json.JsonObject;
+import io.vertx.json.schema.Validator;
 
 public record Dto(String data) {
 
@@ -14,4 +15,14 @@ public record Dto(String data) {
     json.put("data", data);
     return json;
   }
+
+  public static Validator getValidator() {
+    return null;
+  }
+
+  public static Builder builder() {
+    return null;
+  }
+
+  public interface Builder {}
 }

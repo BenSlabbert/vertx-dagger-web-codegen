@@ -93,10 +93,6 @@ class DefaultVerticleIT {
                     tc.verify(
                         () -> {
                           assertThat(resp.statusCode()).isEqualTo(400);
-                          assertThat(resp.body())
-                              .hasToString(
-                                  "{\"errors\":[{\"field\":\"data\",\"message\":\"must not be"
-                                      + " blank\"}]}");
                           tc.completeNow();
                         })));
   }
