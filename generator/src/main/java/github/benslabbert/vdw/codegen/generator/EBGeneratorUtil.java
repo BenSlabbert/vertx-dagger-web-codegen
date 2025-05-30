@@ -1,9 +1,9 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.generator;
 
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.ParameterizedTypeName;
-import com.squareup.javapoet.TypeName;
+import com.palantir.javapoet.ClassName;
+import com.palantir.javapoet.ParameterizedTypeName;
+import com.palantir.javapoet.TypeName;
 import github.benslabbert.vdw.codegen.annotation.HasRole;
 import io.vertx.core.Future;
 import jakarta.annotation.Nullable;
@@ -37,11 +37,11 @@ final class EBGeneratorUtil {
             sm -> {
               ParameterizedTypeName typeName =
                   (ParameterizedTypeName) TypeName.get(sm.getReturnType());
-              ClassName rawType = typeName.rawType;
+              ClassName rawType = typeName.rawType();
               if (!rawType.canonicalName().equals(Future.class.getCanonicalName())) {
                 throw new GenerationException("must return: " + Future.class.getCanonicalName());
               }
-              List<TypeName> typeArguments = typeName.typeArguments;
+              List<TypeName> typeArguments = typeName.typeArguments();
 
               TypeName returnType = typeArguments.getFirst();
 
