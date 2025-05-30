@@ -1,7 +1,7 @@
 /* Licensed under Apache-2.0 2024. */
 package github.benslabbert.vdw.codegen.generator;
 
-import com.squareup.javapoet.ClassName;
+import com.palantir.javapoet.ClassName;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.Body;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.Headers;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.PathParams;

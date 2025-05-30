@@ -1,7 +1,7 @@
 /* Licensed under Apache-2.0 2024. */
 package github.benslabbert.vdw.codegen.generator;
 
-import com.squareup.javapoet.ClassName;
+import com.palantir.javapoet.ClassName;
 import java.util.List;
 
 record MethodRequest(
