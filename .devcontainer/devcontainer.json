@@ -1,6 +1,9 @@
 {
   "name": "debian",
   "image": "debian:12",
+  "forwardPorts": [
+    "22:2222"
+  ],
   "onCreateCommand": {
     "apt": "apt update && apt install vim -y"
   },
