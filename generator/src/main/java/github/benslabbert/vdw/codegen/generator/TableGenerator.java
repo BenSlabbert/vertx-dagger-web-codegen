@@ -946,6 +946,9 @@ public class TableGenerator extends ProcessorBase {
 
   private static List<TableQuery> getTableQueries(Element e) {
     Table.Queries queries = e.getAnnotation(Table.Queries.class);
+    if (null == queries) {
+      return List.of();
+    }
     return Arrays.stream(queries.value())
         .map(
             query -> {
