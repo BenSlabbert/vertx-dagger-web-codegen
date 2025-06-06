@@ -215,7 +215,7 @@
             <path>
               <groupId>github.benslabbert.vertx-json-writer</groupId>
               <artifactId>processor</artifactId>
-              <version>${revision}</version>
+              <version>${vertx-json-writer.version}</version>
             </path>
             <path>
               <groupId>github.benslabbert.vdw.codegen</groupId>
