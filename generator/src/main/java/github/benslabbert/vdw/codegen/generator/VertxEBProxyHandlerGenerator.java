@@ -10,6 +10,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
+import io.vertx.json.schema.OutputUnit;
 import io.vertx.serviceproxy.AuthenticationInterceptor;
 import io.vertx.serviceproxy.AuthorizationInterceptor;
 import io.vertx.serviceproxy.ProxyHandler;
@@ -69,6 +70,7 @@ class VertxEBProxyHandlerGenerator {
       out.printf("import %s;%n", Set.class.getCanonicalName());
       out.printf("import %s;%n", ValidatorProvider.class.getCanonicalName());
       out.printf("import %s;%n", Validator.class.getCanonicalName());
+      out.printf("import %s;%n", OutputUnit.class.getCanonicalName());
       for (EBGeneratorUtil.ServiceMethod m : methods) {
         out.printf("import %s;%n", m.paramTypeImport());
         out.printf("import %s;%n", m.returnTypeImport());
@@ -83,71 +85,80 @@ class VertxEBProxyHandlerGenerator {
       out.printf("public final class %s extends ProxyHandler {%n", generatedClassName);
       out.println();
       out.println(
-          "\tprivate final Provider<AuthorizationInterceptor> authorizationInterceptorProvider;");
-      out.println("\tprivate final AuthenticationInterceptor authenticationInterceptor;");
-      out.printf("\tprivate final %s service;%n", e.getSimpleName());
-      out.println("\tprivate final ValidatorProvider validatorProvider;");
-      out.println("\tprivate final Vertx vertx;");
+          "private final Provider<AuthorizationInterceptor> authorizationInterceptorProvider;");
+      out.println("private final AuthenticationInterceptor authenticationInterceptor;");
+      out.printf("private final %s service;%n", e.getSimpleName());
+      out.println("private final ValidatorProvider validatorProvider;");
+      out.println("private final Vertx vertx;");
       out.println();
 
-      out.println("\t@Inject");
+      out.println("@Inject");
       out.printf(
-          "\t%s(Vertx vertx, ValidatorProvider validatorProvider, %s service,"
-              + " AuthenticationInterceptor authenticationInterceptor,"
-              + " Provider<AuthorizationInterceptor> authorizationInterceptorProvider) {%n",
+          """
+    %s(Vertx vertx, ValidatorProvider validatorProvider, %s service,
+    AuthenticationInterceptor authenticationInterceptor,
+    Provider<AuthorizationInterceptor> authorizationInterceptorProvider) {
+""",
           generatedClassName, e.getSimpleName());
-      out.println("\t\tthis.vertx = vertx;");
-      out.println("\t\tthis.service = service;");
-      out.println("\t\tthis.validatorProvider = validatorProvider;");
-      out.println("\t\tthis.authenticationInterceptor = authenticationInterceptor;");
-      out.println("\t\tthis.authorizationInterceptorProvider = authorizationInterceptorProvider;");
-      out.println("\t}");
+      out.println("this.vertx = vertx;");
+      out.println("this.service = service;");
+      out.println("this.validatorProvider = validatorProvider;");
+      out.println("this.authenticationInterceptor = authenticationInterceptor;");
+      out.println("this.authorizationInterceptorProvider = authorizationInterceptorProvider;");
+      out.println("}");
       out.println();
 
-      out.println("\tpublic void register() {");
-      out.println("\t\tList<InterceptorHolder> interceptorHolders =");
-      out.println("\t\t\tList.of(");
-      out.println("\t\t\t\tnew InterceptorHolder(authenticationInterceptor),");
+      out.println("public void register() {");
+      out.println("List<InterceptorHolder> interceptorHolders =");
+      out.println("List.of(");
+      out.println("new InterceptorHolder(authenticationInterceptor),");
 
       for (EBGeneratorUtil.ServiceMethod m : methods) {
         if (null == m.role()) {
           continue;
         }
         out.printf(
-            "\t\t\t\tProxyHandlerUtils.roleForAction(authorizationInterceptorProvider, \"%s\","
-                + " \"%s\"),%n",
+            "ProxyHandlerUtils.roleForAction(authorizationInterceptorProvider, \"%s\", \"%s\"),%n",
             m.methodName(), m.role());
       }
-      out.println("\t\t\t\tAddUserToContextServiceInterceptor.create()");
-      out.println("\t\t\t);");
-      out.printf("\t\tthis.consumer = register(vertx, \"%s\", interceptorHolders);%n", address);
-      out.println("\t}");
+      out.println("AddUserToContextServiceInterceptor.create()");
+      out.println(");");
+      out.printf("this.consumer = register(vertx, \"%s\", interceptorHolders);%n", address);
+      out.println("}");
       out.println();
 
-      out.println("\t@Override");
-      out.println("\tpublic void handle(Message<JsonObject> msg) {");
-      out.println("\t\tProxyHandlerUtils.handleMessage(msg, this::execute);");
-      out.println("\t}");
+      out.println("@Override");
+      out.println("public void handle(Message<JsonObject> msg) {");
+      out.println("ProxyHandlerUtils.handleMessage(msg, this::execute);");
+      out.println("}");
       out.println();
 
-      out.println("\tprivate Future<JsonObject> execute(String action, JsonObject request) {");
-      out.println("\t\treturn switch (action) {");
+      out.println("private Future<JsonObject> execute(String action, JsonObject request) {");
+      out.println("return switch (action) {");
       for (EBGeneratorUtil.ServiceMethod m : methods) {
+        out.printf(
+            """
+case "%s" -> {
+    io.vertx.json.schema.Validator validator = %s.getValidator();
+    OutputUnit outputUnit = validator.validate(request);
+    if (!outputUnit.getValid()) {
+        yield Future.failedFuture(new ServiceException(400, outputUnit.toString(), outputUnit.toJson()));
+    }
+""",
+            m.methodName(), m.paramTypeName());
+
         if (m.validated()) {
           out.printf(
               """
-    case "%s" -> {
         %s r = %s.fromJson(request);
         Set<ConstraintViolation<%s>> violations = validatorProvider.getValidator().validate(r);
         if (!violations.isEmpty()) {
-          yield service.%s(r).map(%s::toJson);
+            JsonObject json = getErrorJson(violations);
+            yield Future.failedFuture(new ServiceException(400, json.encode(), json));
         }
 
-        JsonObject json = getErrorJson(violations);
-        yield Future.failedFuture(new ServiceException(400, json.encode(), json));
-    }
+        yield service.%s(r).map(%s::toJson);
 """,
-              m.methodName(),
               m.paramTypeName(),
               m.paramTypeName(),
               m.paramTypeName(),
@@ -155,18 +166,19 @@ class VertxEBProxyHandlerGenerator {
               m.returnTypeName());
         } else {
           out.printf(
-              "\t\t\tcase \"%s\" -> service.%s(%s.fromJson(request)).map(%s::toJson);%n",
-              m.methodName(), m.methodName(), m.paramTypeName(), m.returnTypeName());
+              "yield service.%s(%s.fromJson(request)).map(%s::toJson);%n",
+              m.methodName(), m.paramTypeName(), m.returnTypeName());
         }
+        out.println("}");
       }
       out.println(
-          "\t\t\tcase null -> Future.failedFuture(new IllegalStateException(\"Action cannot be"
+          "case null -> Future.failedFuture(new IllegalStateException(\"Action cannot be"
               + " null\"));");
       out.println(
-          "\t\t\tdefault -> Future.failedFuture(new IllegalStateException(\"Unknown action: \" +"
+          "default -> Future.failedFuture(new IllegalStateException(\"Unknown action: \" +"
               + " action));");
-      out.println("\t\t};");
-      out.println("\t}");
+      out.println("};");
+      out.println("}");
       out.println();
 
       out.println(
