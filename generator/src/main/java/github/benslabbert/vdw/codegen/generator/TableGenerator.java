@@ -380,7 +380,7 @@ public class TableGenerator extends ProcessorBase {
 
       for (TableDetails td : tableDetails) {
         TableDetails.FindByColumn fbc = td.findByColumn();
-        if (null == fbc || null == fbc.columnName()) {
+        if (null == fbc) {
           continue;
         }
         boolean defaultFetchSize = Table.DEFAULT_FETCH_SIZE == fbc.fetchSize();
@@ -559,6 +559,23 @@ public class TableGenerator extends ProcessorBase {
           }
           default -> unsupportedReturnType(fbc.returnType());
         }
+      }
+
+      for (TableDetails td : tableDetails) {
+        if (!td.isFindOneByColumn()) {
+          continue;
+        }
+
+        out.printf(
+            """
+    @Override
+    public Optional<%s> %s(Object %s) {
+        String sql = "SELECT * FROM %s WHERE %s = ? limit 1";
+        Object[] args = {%s};
+        return jdbcQueryRunner.query(sql, this::mapOptional, args);
+    }
+""",
+            ac.name(), td.columnName(), varName, table.value(), td.columnName(), varName);
       }
 
       // common queries
@@ -889,7 +906,7 @@ public class TableGenerator extends ProcessorBase {
 
       for (TableDetails td : tableDetails) {
         TableDetails.FindByColumn fbc = td.findByColumn();
-        if (null == fbc || null == fbc.columnName()) {
+        if (null == fbc) {
           continue;
         }
 
@@ -915,6 +932,14 @@ public class TableGenerator extends ProcessorBase {
                       "Consumer<%s> consumer".formatted(ac.name())));
           default -> unsupportedReturnType(fbc.returnType());
         }
+      }
+
+      for (TableDetails td : tableDetails) {
+        if (!td.isFindOneByColumn()) {
+          continue;
+        }
+
+        out.printf("\tOptional<%s> %s(Object %s);%n", ac.name(), td.columnName(), td.columnName());
       }
 
       // common queries
@@ -1006,6 +1031,12 @@ public class TableGenerator extends ProcessorBase {
               Table.InsertOnly insertOnly = ee.getAnnotation(Table.InsertOnly.class);
               Table.Version version = ee.getAnnotation(Table.Version.class);
               Table.FindByColumn findByColumn = ee.getAnnotation(Table.FindByColumn.class);
+              Table.FindOneByColumn findOneByColumn = ee.getAnnotation(Table.FindOneByColumn.class);
+
+              if (null != findByColumn && null != findOneByColumn) {
+                throw new GenerationException("cannot have both findByColumn and findOneByColumn");
+              }
+
               String fieldName = ee.getSimpleName().toString();
               TypeMirror type = ee.asType();
 
@@ -1020,9 +1051,7 @@ public class TableGenerator extends ProcessorBase {
               if (null != findByColumn && findByColumn.value().isBlank()) {
                 fbc =
                     new TableDetails.FindByColumn(
-                        findByColumn.value(),
-                        findByColumn.fetchSize(),
-                        getReturnType(findByColumn::returnType));
+                        findByColumn.fetchSize(), getReturnType(findByColumn::returnType));
               }
 
               return new TableDetails(
@@ -1034,6 +1063,7 @@ public class TableGenerator extends ProcessorBase {
                   insertOnly != null,
                   version != null,
                   isReference,
+                  null != findOneByColumn,
                   fbc);
             })
         .toList();
@@ -1064,9 +1094,10 @@ public class TableGenerator extends ProcessorBase {
       boolean insertOnly,
       boolean version,
       boolean isReference,
+      boolean isFindOneByColumn,
       FindByColumn findByColumn) {
 
-    private record FindByColumn(String columnName, int fetchSize, String returnType) {}
+    private record FindByColumn(int fetchSize, String returnType) {}
   }
 
   private record AnnotatedClass(String canonicalName, String classPackage, String name) {}

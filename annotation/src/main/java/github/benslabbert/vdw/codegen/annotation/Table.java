@@ -59,6 +59,11 @@ public @interface Table {
   }
 
   @Target(ElementType.RECORD_COMPONENT)
+  @interface FindOneByColumn {
+    String value() default "";
+  }
+
+  @Target(ElementType.RECORD_COMPONENT)
   @interface InsertOnly {}
 
   @Target(ElementType.RECORD_COMPONENT)
