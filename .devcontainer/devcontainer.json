@@ -12,7 +12,7 @@
       "jdkDistro": "zulu",
       "version": "21.0.7",
       "installMaven": true,
-      "mavenVersion": "3.9.9"
+      "mavenVersion": "3.9.10"
     },
      "ghcr.io/devcontainers/features/docker-in-docker:2": {
        "moby": true,
