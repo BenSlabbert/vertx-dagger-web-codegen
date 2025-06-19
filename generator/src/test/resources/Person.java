@@ -4,6 +4,7 @@ package github.benslabbert.vdw.codegen.example.jdbc;
 import github.benslabbert.vdw.codegen.annotation.Table;
 import github.benslabbert.vdw.codegen.annotation.Table.Column;
 import github.benslabbert.vdw.codegen.annotation.Table.FindByColumn;
+import github.benslabbert.vdw.codegen.annotation.Table.FindOneByColumn;
 import github.benslabbert.vdw.codegen.annotation.Table.Id;
 import github.benslabbert.vdw.codegen.annotation.Table.InsertOnly;
 import github.benslabbert.vdw.codegen.annotation.Table.Query;
@@ -28,6 +29,7 @@ public record Person(
     @Column("id") @Id("id_seq") long id,
     @Column("first_name") @FindByColumn(returnType = List.class) @InsertOnly String name,
     @Column("last_name") @FindByColumn @InsertOnly String lastName,
+    @Column("unique") @FindOneByColumn @InsertOnly String unique,
     @Column("age") @FindByColumn(fetchSize = 25, returnType = Consumer.class) int age,
     @Column("gender") @FindByColumn(returnType = Iterable.class) @InsertOnly String gender,
     @Column("address_id") @Nonnull Reference<Address> address,
@@ -47,8 +49,8 @@ public record Person(
   @Nonnull
   @Override
   public String toString() {
-    return "Person{id=%d, name='%s', lastName='%s', age=%d, gender='%s', address=%d, version=%d}"
-        .formatted(id, name, lastName, age, gender, address.id(), version);
+    return "Person{id=%d, name='%s', lastName='%s', unique='%s', age=%d, gender='%s', address=%d, version=%d}"
+        .formatted(id, name, lastName, unique, age, gender, address.id(), version);
   }
 
   public interface Builder {
@@ -57,6 +59,8 @@ public record Person(
     Builder name(String name);
 
     Builder lastName(String lastName);
+
+    Builder unique(String unique);
 
     Builder age(int age);
 
