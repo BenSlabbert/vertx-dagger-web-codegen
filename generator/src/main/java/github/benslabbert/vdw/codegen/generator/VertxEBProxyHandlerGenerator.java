@@ -30,6 +30,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class VertxEBProxyHandlerGenerator {
 
@@ -71,6 +73,8 @@ class VertxEBProxyHandlerGenerator {
       out.printf("import %s;%n", ValidatorProvider.class.getCanonicalName());
       out.printf("import %s;%n", Validator.class.getCanonicalName());
       out.printf("import %s;%n", OutputUnit.class.getCanonicalName());
+      out.printf("import %s;%n", Logger.class.getCanonicalName());
+      out.printf("import %s;%n", LoggerFactory.class.getCanonicalName());
       for (EBGeneratorUtil.ServiceMethod m : methods) {
         out.printf("import %s;%n", m.paramTypeImport());
         out.printf("import %s;%n", m.returnTypeImport());
@@ -83,6 +87,10 @@ class VertxEBProxyHandlerGenerator {
           getClass().getCanonicalName(),
           LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
       out.printf("public final class %s extends ProxyHandler {%n", generatedClassName);
+      out.println();
+      out.printf(
+          "private static final Logger log = LoggerFactory.getLogger(%s.class);%n",
+          generatedClassName);
       out.println();
       out.println(
           "private final Provider<AuthorizationInterceptor> authorizationInterceptorProvider;");
@@ -123,7 +131,9 @@ class VertxEBProxyHandlerGenerator {
       }
       out.println("AddUserToContextServiceInterceptor.create()");
       out.println(");");
-      out.printf("this.consumer = register(vertx, \"%s\", interceptorHolders);%n", address);
+      out.printf("register(vertx, \"%s\", interceptorHolders)%n", address);
+      out.println(".endHandler(ignore -> log.info(\"stream ended\"))");
+      out.println(".exceptionHandler(err -> log.error(\"stream error\", err));");
       out.println("}");
       out.println();
 
