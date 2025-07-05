@@ -4,6 +4,7 @@ package github.benslabbert.vdw.codegen.generator;
 import com.palantir.javapoet.ClassName;
 import com.palantir.javapoet.TypeName;
 import github.benslabbert.vdw.codegen.annotation.HasRole;
+import github.benslabbert.vdw.codegen.annotation.RequiresModuleGeneration;
 import github.benslabbert.vdw.codegen.annotation.WebHandler;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.All;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.Body;

@@ -1,5 +1,5 @@
 /* Licensed under Apache-2.0 2024. */
-package github.benslabbert.vdw.codegen.generator;
+package github.benslabbert.vdw.codegen.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
