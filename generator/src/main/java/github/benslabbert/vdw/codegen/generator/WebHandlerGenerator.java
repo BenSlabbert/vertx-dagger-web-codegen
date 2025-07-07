@@ -4,6 +4,7 @@ package github.benslabbert.vdw.codegen.generator;
 import com.palantir.javapoet.ClassName;
 import com.palantir.javapoet.TypeName;
 import github.benslabbert.vdw.codegen.annotation.HasRole;
+import github.benslabbert.vdw.codegen.annotation.HasRoles;
 import github.benslabbert.vdw.codegen.annotation.RequiresModuleGeneration;
 import github.benslabbert.vdw.codegen.annotation.WebHandler;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.All;
@@ -52,6 +53,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -207,8 +209,15 @@ public class WebHandlerGenerator extends ProcessorBase {
           out.printf("\t\t\t.consumes(\"%s\")%n", am.consumes());
         }
 
-        if (null != am.role()) {
-          out.printf("\t\t\t.handler(%s.forRole(\"%s\"))%n", authProviderVariable, am.role());
+        if (null != am.roles()) {
+          if (1 == am.roles().size()) {
+            out.printf(
+                "\t\t\t.handler(%s.forRole(\"%s\"))%n",
+                authProviderVariable, am.roles().getFirst());
+          } else {
+            String roles = String.join(", ", am.roles());
+            out.printf("\t\t\t.handler(%s.forRoles(\"%s\"))%n", authProviderVariable, roles);
+          }
         }
 
         MethodParameter bodyParam = requestBodyType(am.parameters());
@@ -434,7 +443,7 @@ public class WebHandlerGenerator extends ProcessorBase {
   }
 
   private MethodRequest buildMethodRequest(Element e, String basePath) {
-    HasRole hasRole = e.getAnnotation(HasRole.class);
+    HasRoles hasRoles = e.getAnnotation(HasRoles.class);
     Produces produces = e.getAnnotation(Produces.class);
     Consumes consumes = e.getAnnotation(Consumes.class);
     RequestMethodDetails requestMethodDetails = getRequestMethodDetails(e);
@@ -451,7 +460,7 @@ public class WebHandlerGenerator extends ProcessorBase {
           ee.getSimpleName().toString(),
           requestMethodDetails.method(),
           path,
-          null == hasRole ? null : hasRole.value(),
+          null == hasRoles ? null : Arrays.stream(hasRoles.value()).map(HasRole::value).toList(),
           null == produces ? null : produces.value(),
           null == consumes ? null : consumes.value(),
           requestMethodDetails.responseCode(),
@@ -464,7 +473,7 @@ public class WebHandlerGenerator extends ProcessorBase {
         ee.getSimpleName().toString(),
         requestMethodDetails.method(),
         path,
-        null == hasRole ? null : hasRole.value(),
+        null == hasRoles ? null : Arrays.stream(hasRoles.value()).map(HasRole::value).toList(),
         null == produces ? null : produces.value(),
         null == consumes ? null : consumes.value(),
         requestMethodDetails.responseCode(),
