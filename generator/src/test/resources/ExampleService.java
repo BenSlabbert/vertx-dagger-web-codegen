@@ -14,6 +14,7 @@ public interface ExampleService {
   @HasRole("role-1")
   Future<DataResponse> getData(@Valid DataRequest request);
 
+  @HasRole("role-1")
   @HasRole("role-2")
   Future<MetaResponse> getMeta(DataRequest request);
 

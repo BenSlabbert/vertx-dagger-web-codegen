@@ -111,6 +111,8 @@ class ExampleHandler {
   @Get(path = "/p4")
   void getVoidWithRequestBody(@Body Dto dto) {}
 
+  @HasRole("role1")
+  @HasRole("role2")
   @Get(path = "/p4")
   void validBody(@Valid @Body Dto dto) {}
 
