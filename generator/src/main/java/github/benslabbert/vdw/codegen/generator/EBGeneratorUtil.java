@@ -5,9 +5,11 @@ import com.palantir.javapoet.ClassName;
 import com.palantir.javapoet.ParameterizedTypeName;
 import com.palantir.javapoet.TypeName;
 import github.benslabbert.vdw.codegen.annotation.HasRole;
+import github.benslabbert.vdw.codegen.annotation.HasRoles;
 import io.vertx.core.Future;
 import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
+import java.util.Arrays;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -54,10 +56,10 @@ final class EBGeneratorUtil {
               TypeName tn = TypeName.get(typeMirror);
               String parameterTypeCanonicalName = tn.withoutAnnotations().toString();
 
-              HasRole annotation = sm.getAnnotation(HasRole.class);
-              String role = null;
-              if (null != annotation) {
-                role = annotation.value();
+              HasRoles hasRoles = sm.getAnnotation(HasRoles.class);
+              List<String> roles = null;
+              if (null != hasRoles) {
+                roles = Arrays.stream(hasRoles.value()).map(HasRole::value).toList();
               }
 
               String paramSimpleName =
@@ -69,7 +71,7 @@ final class EBGeneratorUtil {
                   parameterTypeCanonicalName,
                   paramSimpleName,
                   sm.getSimpleName().toString(),
-                  role,
+                  roles,
                   null != parameter.getAnnotation(Valid.class));
             })
         .toList();
@@ -81,6 +83,6 @@ final class EBGeneratorUtil {
       String paramTypeImport,
       String paramTypeName,
       String methodName,
-      @Nullable String role,
+      @Nullable List<String> roles,
       boolean validated) {}
 }

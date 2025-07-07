@@ -4,6 +4,7 @@ package github.benslabbert.vdw.codegen.commons.eb;
 import io.vertx.core.Future;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.authorization.OrAuthorization;
 import io.vertx.ext.auth.authorization.RoleBasedAuthorization;
 import io.vertx.serviceproxy.AuthorizationInterceptor;
 import io.vertx.serviceproxy.HelperUtils;
@@ -27,6 +28,19 @@ public final class ProxyHandlerUtils {
     RoleBasedAuthorization authorization = RoleBasedAuthorization.create(role);
     AuthorizationInterceptor authorizationInterceptor = authorizationInterceptorProvider.get();
     return new InterceptorHolder(action, authorizationInterceptor.addAuthorization(authorization));
+  }
+
+  public static InterceptorHolder rolesForAction(
+      Provider<AuthorizationInterceptor> authorizationInterceptorProvider,
+      String action,
+      String... roles) {
+    OrAuthorization orAuthorization = OrAuthorization.create();
+    for (String role : roles) {
+      orAuthorization.addAuthorization(RoleBasedAuthorization.create(role));
+    }
+    AuthorizationInterceptor authorizationInterceptor = authorizationInterceptorProvider.get();
+    return new InterceptorHolder(
+        action, authorizationInterceptor.addAuthorization(orAuthorization));
   }
 
   public static void replyWithError(Message<JsonObject> msg, Throwable t) {

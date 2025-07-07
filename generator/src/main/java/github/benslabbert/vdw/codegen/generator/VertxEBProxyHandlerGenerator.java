@@ -122,12 +122,21 @@ class VertxEBProxyHandlerGenerator {
       out.println("new InterceptorHolder(authenticationInterceptor),");
 
       for (EBGeneratorUtil.ServiceMethod m : methods) {
-        if (null == m.role()) {
+        if (null == m.roles()) {
           continue;
         }
-        out.printf(
-            "ProxyHandlerUtils.roleForAction(authorizationInterceptorProvider, \"%s\", \"%s\"),%n",
-            m.methodName(), m.role());
+        if (1 == m.roles().size()) {
+          out.printf(
+              "ProxyHandlerUtils.roleForAction(authorizationInterceptorProvider, \"%s\","
+                  + " \"%s\"),%n",
+              m.methodName(), m.roles().getFirst());
+        } else {
+          String roles = String.join(", ", m.roles());
+          out.printf(
+              "ProxyHandlerUtils.rolesForAction(authorizationInterceptorProvider, \"%s\","
+                  + " \"%s\"),%n",
+              m.methodName(), roles);
+        }
       }
       out.println("AddUserToContextServiceInterceptor.create()");
       out.println(");");
