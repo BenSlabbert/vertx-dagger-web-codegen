@@ -4,7 +4,6 @@ package github.benslabbert.vdw.codegen.generator;
 import com.palantir.javapoet.ClassName;
 import com.palantir.javapoet.TypeName;
 import github.benslabbert.vdw.codegen.annotation.HasRole;
-import github.benslabbert.vdw.codegen.annotation.HasRoles;
 import github.benslabbert.vdw.codegen.annotation.RequiresModuleGeneration;
 import github.benslabbert.vdw.codegen.annotation.WebHandler;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.All;
@@ -443,7 +442,7 @@ public class WebHandlerGenerator extends ProcessorBase {
   }
 
   private MethodRequest buildMethodRequest(Element e, String basePath) {
-    HasRoles hasRoles = e.getAnnotation(HasRoles.class);
+    HasRole hasRole = e.getAnnotation(HasRole.class);
     Produces produces = e.getAnnotation(Produces.class);
     Consumes consumes = e.getAnnotation(Consumes.class);
     RequestMethodDetails requestMethodDetails = getRequestMethodDetails(e);
@@ -460,7 +459,7 @@ public class WebHandlerGenerator extends ProcessorBase {
           ee.getSimpleName().toString(),
           requestMethodDetails.method(),
           path,
-          null == hasRoles ? null : Arrays.stream(hasRoles.value()).map(HasRole::value).toList(),
+          null == hasRole ? null : Arrays.stream(hasRole.value()).distinct().toList(),
           null == produces ? null : produces.value(),
           null == consumes ? null : consumes.value(),
           requestMethodDetails.responseCode(),
@@ -473,7 +472,7 @@ public class WebHandlerGenerator extends ProcessorBase {
         ee.getSimpleName().toString(),
         requestMethodDetails.method(),
         path,
-        null == hasRoles ? null : Arrays.stream(hasRoles.value()).map(HasRole::value).toList(),
+        null == hasRole ? null : Arrays.stream(hasRole.value()).toList(),
         null == produces ? null : produces.value(),
         null == consumes ? null : consumes.value(),
         requestMethodDetails.responseCode(),

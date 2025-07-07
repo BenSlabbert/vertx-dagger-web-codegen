@@ -21,7 +21,7 @@ public interface DataService {
   @HasRole("role-1")
   Future<DataResponse> getData(@Valid DataRequest request);
 
-  @HasRole("role-2")
+  @HasRole({"role-1", "role-2"})
   Future<MetaResponse> getMeta(DataRequest request);
 
   record DataRequest(String data) {

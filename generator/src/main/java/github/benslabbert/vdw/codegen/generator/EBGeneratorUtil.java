@@ -5,7 +5,6 @@ import com.palantir.javapoet.ClassName;
 import com.palantir.javapoet.ParameterizedTypeName;
 import com.palantir.javapoet.TypeName;
 import github.benslabbert.vdw.codegen.annotation.HasRole;
-import github.benslabbert.vdw.codegen.annotation.HasRoles;
 import io.vertx.core.Future;
 import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
@@ -56,10 +55,10 @@ final class EBGeneratorUtil {
               TypeName tn = TypeName.get(typeMirror);
               String parameterTypeCanonicalName = tn.withoutAnnotations().toString();
 
-              HasRoles hasRoles = sm.getAnnotation(HasRoles.class);
+              HasRole hasRoles = sm.getAnnotation(HasRole.class);
               List<String> roles = null;
               if (null != hasRoles) {
-                roles = Arrays.stream(hasRoles.value()).map(HasRole::value).toList();
+                roles = Arrays.stream(hasRoles.value()).distinct().toList();
               }
 
               String paramSimpleName =
