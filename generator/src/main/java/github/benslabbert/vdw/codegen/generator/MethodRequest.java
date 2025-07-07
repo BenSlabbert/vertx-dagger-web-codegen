@@ -8,7 +8,7 @@ record MethodRequest(
     String methodName,
     String httpMethod,
     String path,
-    String role,
+    List<String> roles,
     String produces,
     String consumes,
     int responseCode,

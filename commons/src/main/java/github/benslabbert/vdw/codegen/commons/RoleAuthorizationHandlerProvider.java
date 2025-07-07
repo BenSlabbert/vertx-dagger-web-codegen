@@ -6,4 +6,6 @@ import io.vertx.ext.web.handler.AuthorizationHandler;
 public interface RoleAuthorizationHandlerProvider {
 
   AuthorizationHandler forRole(String role);
+
+  AuthorizationHandler forRoles(String... roles);
 }

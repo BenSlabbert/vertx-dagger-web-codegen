@@ -5,6 +5,7 @@ import github.benslabbert.vdw.codegen.commons.RoleAuthorizationHandlerProvider;
 import io.vertx.core.Future;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.authorization.AuthorizationProvider;
+import io.vertx.ext.auth.authorization.OrAuthorization;
 import io.vertx.ext.auth.authorization.RoleBasedAuthorization;
 import io.vertx.ext.web.handler.AuthorizationHandler;
 import jakarta.inject.Inject;
@@ -21,6 +22,15 @@ class AuthorizationHandlerProvider
   public AuthorizationHandler forRole(String role) {
     return AuthorizationHandler.create(RoleBasedAuthorization.create(role))
         .addAuthorizationProvider(this);
+  }
+
+  @Override
+  public AuthorizationHandler forRoles(String... roles) {
+    OrAuthorization orAuthorization = OrAuthorization.create();
+    for (String role : roles) {
+      orAuthorization.addAuthorization(RoleBasedAuthorization.create(role));
+    }
+    return AuthorizationHandler.create(orAuthorization).addAuthorizationProvider(this);
   }
 
   @Override
