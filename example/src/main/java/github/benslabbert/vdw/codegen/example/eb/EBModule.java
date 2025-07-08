@@ -5,8 +5,6 @@ import dagger.Module;
 import dagger.Provides;
 import io.vertx.core.Future;
 import io.vertx.ext.auth.User;
-import io.vertx.ext.auth.authentication.AuthenticationProvider;
-import io.vertx.ext.auth.authentication.Credentials;
 import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.auth.authorization.AuthorizationProvider;
 import io.vertx.ext.auth.authorization.RoleBasedAuthorization;
@@ -26,20 +24,13 @@ public interface EBModule {
   @Provides
   @Singleton
   static AuthenticationInterceptor authenticationInterceptor() {
-    // this can be a singleton
     return AuthenticationInterceptor.create(
-        new AuthenticationProvider() {
-          @Override
-          public Future<User> authenticate(Credentials credentials) {
-            return switch (credentials) {
-              case TokenCredentials tc:
-                String token = tc.getToken();
-                yield Future.succeededFuture(User.fromName("name"));
-              default:
-                throw new IllegalStateException("Unexpected value: " + credentials);
-            };
-          }
-        });
+        credentials ->
+            switch (credentials) {
+              case TokenCredentials tc -> Future.succeededFuture(User.fromName("name"));
+              case null -> throw new IllegalStateException("cannot be null");
+              default -> throw new IllegalStateException("Unexpected value: " + credentials);
+            });
   }
 
   @Provides
