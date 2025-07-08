@@ -214,8 +214,9 @@ public class WebHandlerGenerator extends ProcessorBase {
                 "\t\t\t.handler(%s.forRole(\"%s\"))%n",
                 authProviderVariable, am.roles().getFirst());
           } else {
-            String roles = String.join(", ", am.roles());
-            out.printf("\t\t\t.handler(%s.forRoles(\"%s\"))%n", authProviderVariable, roles);
+            String roles =
+                am.roles().stream().map(s -> "\"" + s + "\"").collect(Collectors.joining(", "));
+            out.printf("\t\t\t.handler(%s.forRoles(%s))%n", authProviderVariable, roles);
           }
         }
 
@@ -472,7 +473,7 @@ public class WebHandlerGenerator extends ProcessorBase {
         ee.getSimpleName().toString(),
         requestMethodDetails.method(),
         path,
-        null == hasRole ? null : Arrays.stream(hasRole.value()).toList(),
+        null == hasRole ? null : Arrays.stream(hasRole.value()).distinct().toList(),
         null == produces ? null : produces.value(),
         null == consumes ? null : consumes.value(),
         requestMethodDetails.responseCode(),

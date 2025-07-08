@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.lang.model.element.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,10 +132,10 @@ class VertxEBProxyHandlerGenerator {
                   + " \"%s\"),%n",
               m.methodName(), m.roles().getFirst());
         } else {
-          String roles = String.join(", ", m.roles());
+          String roles =
+              m.roles().stream().map(s -> "\"" + s + "\"").collect(Collectors.joining(", "));
           out.printf(
-              "ProxyHandlerUtils.rolesForAction(authorizationInterceptorProvider, \"%s\","
-                  + " \"%s\"),%n",
+              "ProxyHandlerUtils.rolesForAction(authorizationInterceptorProvider, \"%s\",%s),%n",
               m.methodName(), roles);
         }
       }
