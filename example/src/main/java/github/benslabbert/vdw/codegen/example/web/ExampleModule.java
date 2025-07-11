@@ -14,6 +14,7 @@ import dagger.Module;
       SessionHandler_Router_ModuleBindings.class,
       UserContextHandler_Router_ModuleBindings.class,
       UserHandler_Router_ModuleBindings.class,
+      NoAuthHandler_Router_ModuleBindings.class,
       ModuleBindings.class
     })
 public interface ExampleModule {}

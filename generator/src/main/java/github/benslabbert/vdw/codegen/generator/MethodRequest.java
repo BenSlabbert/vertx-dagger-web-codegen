@@ -14,4 +14,9 @@ record MethodRequest(
     int responseCode,
     boolean isVoid,
     ClassName returnType,
-    List<MethodParameter> parameters) {}
+    List<MethodParameter> parameters) {
+
+  boolean hasRoles() {
+    return null != roles && !roles.isEmpty();
+  }
+}
