@@ -4,6 +4,7 @@ package github.benslabbert.vdw.codegen.generator;
 import com.palantir.javapoet.ClassName;
 import com.palantir.javapoet.TypeName;
 import github.benslabbert.vdw.codegen.annotation.HasRole;
+import github.benslabbert.vdw.codegen.annotation.NoAuthCheck;
 import github.benslabbert.vdw.codegen.annotation.RequiresModuleGeneration;
 import github.benslabbert.vdw.codegen.annotation.WebHandler;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.All;
@@ -56,6 +57,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -78,6 +80,8 @@ public class WebHandlerGenerator extends ProcessorBase {
   @Override
   List<GeneratedFile> generateTempFile(Element element) {
     WebHandler webHandler = element.getAnnotation(WebHandler.class);
+    NoAuthCheck noAuthCheck = element.getAnnotation(NoAuthCheck.class);
+    boolean enableAuth = null == noAuthCheck;
     String path = webHandler.path();
     printNote("processing WebHandler", element);
 
@@ -102,6 +106,20 @@ public class WebHandlerGenerator extends ProcessorBase {
         "found (%d) methods with WebRequest annotations".formatted(annotatedMethods.size()),
         element);
     annotatedMethods.forEach(am -> printNote("am: " + am, element));
+
+    if (!enableAuth) {
+      boolean anyMatch = annotatedMethods.stream().anyMatch(MethodRequest::hasRoles);
+      if (anyMatch) {
+        throw new GenerationException(
+            "cannot use @NoAuthCheck and @Roles annotations on the same handler");
+      }
+    }
+
+    boolean useValidator =
+        annotatedMethods.stream()
+            .map(am -> requestBodyType(am.parameters()))
+            .filter(Objects::nonNull)
+            .anyMatch(MethodParameter::validateBody);
 
     String canonicalName = element.asType().toString();
     String classPackage = canonicalName.substring(0, canonicalName.lastIndexOf('.'));
@@ -164,20 +182,52 @@ public class WebHandlerGenerator extends ProcessorBase {
           "\tprivate static final Logger log = LoggerFactory.getLogger(%s.class);%n",
           generatedClassName);
       out.println();
-      out.printf("\tprivate final RoleAuthorizationHandlerProvider %s;%n", authProviderVariable);
-      out.printf("\tprivate final ValidatorProvider %s;%n", validationProviderVariable);
+
+      if (enableAuth) {
+        out.printf("\tprivate final RoleAuthorizationHandlerProvider %s;%n", authProviderVariable);
+      }
+
+      if (useValidator) {
+        out.printf("\tprivate final ValidatorProvider %s;%n", validationProviderVariable);
+      }
+
       out.printf("\tprivate final %s %s;%n", handlerName, handlerVariable);
       out.println();
       out.println("\t@Inject");
-      out.printf(
-          "\t%s(RoleAuthorizationHandlerProvider %s, ValidatorProvider %s, %s %s) {%n",
-          generatedClassName,
-          authProviderVariable,
-          validationProviderVariable,
-          handlerName,
-          handlerVariable);
-      out.printf("\t\tthis.%s = %s;%n", authProviderVariable, authProviderVariable);
-      out.printf("\t\tthis.%s = %s;%n", validationProviderVariable, validationProviderVariable);
+
+      if (enableAuth && useValidator) {
+        out.printf(
+            "\t%s(RoleAuthorizationHandlerProvider %s, ValidatorProvider %s, %s %s) {%n",
+            generatedClassName,
+            authProviderVariable,
+            validationProviderVariable,
+            handlerName,
+            handlerVariable);
+      }
+
+      if (!enableAuth && useValidator) {
+        out.printf(
+            "\t%s(ValidatorProvider %s, %s %s) {%n",
+            generatedClassName, validationProviderVariable, handlerName, handlerVariable);
+      }
+
+      if (enableAuth && !useValidator) {
+        out.printf(
+            "\t%s(RoleAuthorizationHandlerProvider %s, %s %s) {%n",
+            generatedClassName, authProviderVariable, handlerName, handlerVariable);
+      }
+
+      if (!enableAuth && !useValidator) {
+        out.printf("\t%s(%s %s) {%n", generatedClassName, handlerName, handlerVariable);
+      }
+
+      if (enableAuth) {
+        out.printf("\t\tthis.%s = %s;%n", authProviderVariable, authProviderVariable);
+      }
+
+      if (useValidator) {
+        out.printf("\t\tthis.%s = %s;%n", validationProviderVariable, validationProviderVariable);
+      }
       out.printf("\t\tthis.%s = %s;%n", handlerVariable, handlerVariable);
       out.println("\t}");
       out.println();

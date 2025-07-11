@@ -106,6 +106,10 @@ abstract class ProcessorBase extends AbstractProcessor {
 
   private void formatFile(GeneratedFile generatedFile) {
     try {
+      System.err.println("file");
+      System.err.println("########");
+      System.err.println(generatedFile.stringWriter());
+      System.err.println("########");
       CharSource source = new StringSource(generatedFile.stringWriter());
       JavaFileObject builderFile =
           processingEnv.getFiler().createSourceFile(generatedFile.realFileName());
