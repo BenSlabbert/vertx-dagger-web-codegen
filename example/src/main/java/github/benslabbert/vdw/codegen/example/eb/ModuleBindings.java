@@ -12,4 +12,13 @@ interface ModuleBindings {
 
   @Binds
   ExampleService bindExampleService(ExampleServiceImpl service);
+
+  @Binds
+  DataServiceNoAuthNoValidation bindDataServiceNoAuthNoValidation(Impl service);
+
+  @Binds
+  DataServiceNoRoles bindDataServiceNoRoles(Impl service);
+
+  @Binds
+  DataServiceNoValidation bindDataServiceNoValidation(Impl service);
 }

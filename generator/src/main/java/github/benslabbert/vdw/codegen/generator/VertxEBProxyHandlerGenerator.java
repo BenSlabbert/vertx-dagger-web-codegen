@@ -2,6 +2,7 @@
 package github.benslabbert.vdw.codegen.generator;
 
 import github.benslabbert.vdw.codegen.annotation.EventBusService;
+import github.benslabbert.vdw.codegen.annotation.NoAuthCheck;
 import github.benslabbert.vdw.codegen.commons.ValidatorProvider;
 import github.benslabbert.vdw.codegen.commons.eb.AddUserToContextServiceInterceptor;
 import github.benslabbert.vdw.codegen.commons.eb.ProxyHandlerUtils;
@@ -29,6 +30,7 @@ import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.lang.model.element.Element;
@@ -40,8 +42,32 @@ class VertxEBProxyHandlerGenerator {
   GeneratedFile generateTempFile(Element e) {
     EventBusService annotation = e.getAnnotation(EventBusService.class);
     String address = annotation.address();
+    NoAuthCheck noAuthCheck = e.getAnnotation(NoAuthCheck.class);
+    boolean enableAuth = null == noAuthCheck;
 
     List<EBGeneratorUtil.ServiceMethod> methods = EBGeneratorUtil.getMethods(e);
+
+    if (!enableAuth) {
+      boolean anyMatch =
+          methods.stream()
+              .map(EBGeneratorUtil.ServiceMethod::roles)
+              .filter(Objects::nonNull)
+              .anyMatch(roles -> !roles.isEmpty());
+      if (anyMatch) {
+        throw new GenerationException(
+            "cannot use @NoAuthCheck and @Roles annotations on the same handler");
+      }
+    }
+
+    boolean noRolesSpecified =
+        methods.stream()
+            .map(EBGeneratorUtil.ServiceMethod::roles)
+            .anyMatch(r -> null == r || r.isEmpty());
+    if (noRolesSpecified) {
+      enableAuth = false;
+    }
+
+    boolean useValidator = methods.stream().anyMatch(EBGeneratorUtil.ServiceMethod::validated);
 
     String canonicalName = e.asType().toString();
     String classPackage = canonicalName.substring(0, canonicalName.lastIndexOf('.'));
@@ -95,27 +121,66 @@ class VertxEBProxyHandlerGenerator {
           "private static final Logger log = LoggerFactory.getLogger(%s.class);%n",
           generatedClassName);
       out.println();
-      out.println(
-          "private final Provider<AuthorizationInterceptor> authorizationInterceptorProvider;");
-      out.println("private final AuthenticationInterceptor authenticationInterceptor;");
+      if (enableAuth) {
+        out.println(
+            "private final Provider<AuthorizationInterceptor> authorizationInterceptorProvider;");
+        out.println("private final AuthenticationInterceptor authenticationInterceptor;");
+      }
+      if (useValidator) {
+        out.println("private final ValidatorProvider validatorProvider;");
+      }
       out.printf("private final %s service;%n", e.getSimpleName());
-      out.println("private final ValidatorProvider validatorProvider;");
       out.println("private final Vertx vertx;");
       out.println();
 
       out.println("@Inject");
-      out.printf(
-          """
-    %s(Vertx vertx, ValidatorProvider validatorProvider, %s service,
-    AuthenticationInterceptor authenticationInterceptor,
-    Provider<AuthorizationInterceptor> authorizationInterceptorProvider) {
-""",
-          generatedClassName, e.getSimpleName());
+
+      if (enableAuth && useValidator) {
+        out.printf(
+            """
+            %s(Vertx vertx,
+            %s service,
+            ValidatorProvider validatorProvider,
+            AuthenticationInterceptor authenticationInterceptor,
+            Provider<AuthorizationInterceptor> authorizationInterceptorProvider) {
+            """,
+            generatedClassName, e.getSimpleName());
+      }
+
+      if (enableAuth && !useValidator) {
+        out.printf(
+            """
+            %s(Vertx vertx,
+            %s service,
+            AuthenticationInterceptor authenticationInterceptor,
+            Provider<AuthorizationInterceptor> authorizationInterceptorProvider) {
+            """,
+            generatedClassName, e.getSimpleName());
+      }
+
+      if (!enableAuth && useValidator) {
+        out.printf(
+            """
+            %s(Vertx vertx,
+            %s service,
+            ValidatorProvider validatorProvider) {
+            """,
+            generatedClassName, e.getSimpleName());
+      }
+
+      if (!enableAuth && !useValidator) {
+        out.printf("%s(Vertx vertx, %s service) {", generatedClassName, e.getSimpleName());
+      }
+
       out.println("this.vertx = vertx;");
       out.println("this.service = service;");
-      out.println("this.validatorProvider = validatorProvider;");
-      out.println("this.authenticationInterceptor = authenticationInterceptor;");
-      out.println("this.authorizationInterceptorProvider = authorizationInterceptorProvider;");
+      if (useValidator) {
+        out.println("this.validatorProvider = validatorProvider;");
+      }
+      if (enableAuth) {
+        out.println("this.authenticationInterceptor = authenticationInterceptor;");
+        out.println("this.authorizationInterceptorProvider = authorizationInterceptorProvider;");
+      }
       out.println("try {");
       out.println(
           "this.vertx.eventBus().registerDefaultCodec(ServiceException.class, new"
@@ -127,7 +192,9 @@ class VertxEBProxyHandlerGenerator {
       out.println("public void register() {");
       out.println("List<InterceptorHolder> interceptorHolders =");
       out.println("List.of(");
-      out.println("new InterceptorHolder(authenticationInterceptor),");
+      if (enableAuth) {
+        out.println("new InterceptorHolder(authenticationInterceptor),");
+      }
 
       for (EBGeneratorUtil.ServiceMethod m : methods) {
         if (null == m.roles()) {
@@ -146,7 +213,9 @@ class VertxEBProxyHandlerGenerator {
               m.methodName(), roles);
         }
       }
-      out.println("AddUserToContextServiceInterceptor.create()");
+      if (enableAuth) {
+        out.println("AddUserToContextServiceInterceptor.create()");
+      }
       out.println(");");
       out.printf("register(vertx, \"%s\", interceptorHolders)%n", address);
       out.println(".endHandler(ignore -> log.info(\"stream ended\"))");
