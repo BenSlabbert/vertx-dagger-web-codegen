@@ -62,7 +62,7 @@ class VertxEBProxyHandlerGenerator {
     boolean noRolesSpecified =
         methods.stream()
             .map(EBGeneratorUtil.ServiceMethod::roles)
-            .anyMatch(r -> null == r || r.isEmpty());
+            .allMatch(r -> null == r || r.isEmpty());
     if (noRolesSpecified) {
       enableAuth = false;
     }
