@@ -116,11 +116,11 @@ class VertxEBProxyHandlerGenerator {
       out.println("this.validatorProvider = validatorProvider;");
       out.println("this.authenticationInterceptor = authenticationInterceptor;");
       out.println("this.authorizationInterceptorProvider = authorizationInterceptorProvider;");
-      out.println("\t\ttry {");
+      out.println("try {");
       out.println(
-          "\t\t\tthis.vertx.eventBus().registerDefaultCodec(ServiceException.class, new"
+          "this.vertx.eventBus().registerDefaultCodec(ServiceException.class, new"
               + " ServiceExceptionMessageCodec());");
-      out.println("\t\t} catch (IllegalStateException ex) { /* ignore */ }");
+      out.println("} catch (IllegalStateException ex) { /* ignore */ }");
       out.println("}");
       out.println();
 
