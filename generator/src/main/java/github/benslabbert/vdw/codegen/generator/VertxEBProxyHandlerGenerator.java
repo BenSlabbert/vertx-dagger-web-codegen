@@ -15,6 +15,7 @@ import io.vertx.serviceproxy.AuthenticationInterceptor;
 import io.vertx.serviceproxy.AuthorizationInterceptor;
 import io.vertx.serviceproxy.ProxyHandler;
 import io.vertx.serviceproxy.ServiceException;
+import io.vertx.serviceproxy.ServiceExceptionMessageCodec;
 import io.vertx.serviceproxy.impl.InterceptorHolder;
 import jakarta.annotation.Generated;
 import jakarta.inject.Inject;
@@ -69,6 +70,7 @@ class VertxEBProxyHandlerGenerator {
       out.printf("import %s;%n", Singleton.class.getCanonicalName());
       out.printf("import %s;%n", List.class.getCanonicalName());
       out.printf("import %s;%n", ServiceException.class.getCanonicalName());
+      out.printf("import %s;%n", ServiceExceptionMessageCodec.class.getCanonicalName());
       out.printf("import %s;%n", ConstraintViolation.class.getCanonicalName());
       out.printf("import %s;%n", Set.class.getCanonicalName());
       out.printf("import %s;%n", ValidatorProvider.class.getCanonicalName());
@@ -114,6 +116,11 @@ class VertxEBProxyHandlerGenerator {
       out.println("this.validatorProvider = validatorProvider;");
       out.println("this.authenticationInterceptor = authenticationInterceptor;");
       out.println("this.authorizationInterceptorProvider = authorizationInterceptorProvider;");
+      out.println("\t\ttry {");
+      out.println(
+          "\t\t\tthis.vertx.eventBus().registerDefaultCodec(ServiceException.class, new"
+              + " ServiceExceptionMessageCodec());");
+      out.println("\t\t} catch (IllegalStateException ex) { /* ignore */ }");
       out.println("}");
       out.println();
 
