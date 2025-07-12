@@ -7,13 +7,19 @@ import static com.google.common.truth.Truth.assertThat;
 import com.google.testing.compile.JavaFileObjects;
 import com.google.testing.compile.JavaSourceSubjectFactory;
 import java.net.URL;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class ServiceTest {
 
-  @Test
-  void test() {
-    URL resource = this.getClass().getClassLoader().getResource("ExampleService.java");
+  @ParameterizedTest
+  @CsvSource({
+    "ExampleService.java",
+    "ExampleServiceNoAuth.java",
+    "ExampleServiceNoAuthNoValidator.java"
+  })
+  void test(String file) {
+    URL resource = this.getClass().getClassLoader().getResource(file);
     assertThat(resource).isNotNull();
 
     assertAbout(JavaSourceSubjectFactory.javaSource())
