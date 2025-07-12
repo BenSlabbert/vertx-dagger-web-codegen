@@ -115,6 +115,12 @@ public class WebHandlerGenerator extends ProcessorBase {
       }
     }
 
+    boolean noRolesSpecified =
+        annotatedMethods.stream().allMatch(m -> null == m.roles() || m.roles().isEmpty());
+    if (noRolesSpecified) {
+      enableAuth = false;
+    }
+
     boolean useValidator =
         annotatedMethods.stream()
             .map(am -> requestBodyType(am.parameters()))
