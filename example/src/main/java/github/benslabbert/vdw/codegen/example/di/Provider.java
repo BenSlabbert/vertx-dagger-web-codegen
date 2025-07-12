@@ -16,8 +16,6 @@ import github.benslabbert.vdw.codegen.example.web.ServerFactory;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ProxyHandler;
-import io.vertx.serviceproxy.ServiceException;
-import io.vertx.serviceproxy.ServiceExceptionMessageCodec;
 import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -64,13 +62,6 @@ public interface Provider {
     @Nullable static Void provideEager(TransactionManager transactionManager, Vertx vertx) {
       log.info("eager init");
       PlatformTransactionManager.setTransactionManager(transactionManager);
-      try {
-        vertx
-            .eventBus()
-            .registerDefaultCodec(ServiceException.class, new ServiceExceptionMessageCodec());
-      } catch (IllegalStateException ex) {
-        // ignore
-      }
       return null;
     }
   }
