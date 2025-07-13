@@ -19,6 +19,7 @@ import github.benslabbert.vdw.codegen.annotation.WebRequest.Request;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.Response;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.Trace;
 import github.benslabbert.vdw.codegen.generator.Dto;
+import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
@@ -30,6 +31,11 @@ import jakarta.validation.Valid;
 
 @WebHandler(path = "/route")
 class ExampleHandler {
+
+  @Get
+  Future<Dto> future() {
+    return Future.succeededFuture(new Dto("data"));
+  }
 
   @Get
   Buffer buffer() {
