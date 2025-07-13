@@ -1,6 +1,7 @@
 /* Licensed under Apache-2.0 2024. */
 package github.benslabbert.vdw.codegen.example.web;
 
+import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.RoutingContext;
 import jakarta.inject.Inject;
@@ -29,5 +30,10 @@ class IHandlerImpl implements IHandler {
   @Override
   public ResponseDto data(RequestDto dto) {
     return mapper.map(dto);
+  }
+
+  @Override
+  public Future<ResponseDto> future(RequestDto dto) {
+    return Future.succeededFuture(mapper.map(dto));
   }
 }

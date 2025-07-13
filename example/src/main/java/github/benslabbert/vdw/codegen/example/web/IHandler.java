@@ -7,6 +7,7 @@ import github.benslabbert.vdw.codegen.annotation.WebRequest.Body;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.Get;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.Post;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.Produces;
+import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.RoutingContext;
 import jakarta.validation.Valid;
@@ -23,4 +24,7 @@ interface IHandler {
 
   @Post(path = "/data")
   ResponseDto data(@Valid @Body RequestDto dto);
+
+  @Post(path = "/data")
+  Future<ResponseDto> future(@Valid @Body RequestDto dto);
 }

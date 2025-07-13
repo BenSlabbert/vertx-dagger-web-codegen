@@ -2,6 +2,7 @@
 package github.benslabbert.vdw.codegen.generator;
 
 import com.palantir.javapoet.ClassName;
+import com.palantir.javapoet.ParameterizedTypeName;
 import com.palantir.javapoet.TypeName;
 import github.benslabbert.vdw.codegen.annotation.HasRole;
 import github.benslabbert.vdw.codegen.annotation.NoAuthCheck;
@@ -37,6 +38,7 @@ import github.benslabbert.vdw.codegen.commons.RouterConfigurer;
 import github.benslabbert.vdw.codegen.commons.ValidateRequestBodyHandler;
 import github.benslabbert.vdw.codegen.commons.ValidatorProvider;
 import io.netty.handler.codec.http.HttpHeaderValues;
+import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
@@ -174,6 +176,7 @@ public class WebHandlerGenerator extends ProcessorBase {
       out.printf("import %s;%n", RequireRequestBodyHandler.class.getCanonicalName());
       out.printf("import %s;%n", ValidateRequestBodyHandler.class.getCanonicalName());
       out.printf("import %s;%n", ContextDataKey.class.getCanonicalName());
+      out.printf("import %s;%n", Future.class.getCanonicalName());
       out.println();
 
       out.println("@RequiresModuleGeneration");
@@ -338,20 +341,27 @@ public class WebHandlerGenerator extends ProcessorBase {
 
     boolean isStringReturn = false;
     boolean isBufferReturn = false;
+    boolean isFutureReturn = false;
     if (request.returnType().canonicalName().startsWith("java.lang.")) {
       if (!"String".equals(request.returnType().simpleName())) {
         throw new GenerationException(
-            "unsupported return type: " + request.returnType().simpleName());
+            "unsupported java.lang return type: " + request.returnType().simpleName());
       }
       isStringReturn = true;
     }
     if ("io.vertx.core.buffer.Buffer".equals(request.returnType().canonicalName())) {
       isBufferReturn = true;
     }
+    if (request.returnType().canonicalName().startsWith("io.vertx.core.Future")) {
+      isFutureReturn = true;
+    }
 
     out.printf(
         "\t\t\t\t\t%s %s = %s.%s(",
-        request.returnType().simpleName(), respVariable, handlerVariable, request.methodName());
+        isFutureReturn ? futureVariable(request) : request.returnType().simpleName(),
+        respVariable,
+        handlerVariable,
+        request.methodName());
     MethodParams methodParams = getMethodParams(request, ctxVariable);
     if (methodParams.routingContextUsed() || methodParams.responseUsed()) {
       throw new GenerationException(
@@ -368,11 +378,23 @@ public class WebHandlerGenerator extends ProcessorBase {
       out.printf(
           "\t\t\t\t\tResponseWriterUtil.sendBuffer(%s, %d, %s);%n",
           ctxVariable, request.responseCode(), respVariable);
+    } else if (isFutureReturn) {
+      out.printf(
+          "\t\t\t\t\tResponseWriterUtil.sendFuture(%s, %d, %s.map(f -> f.toJson()));%n",
+          ctxVariable, request.responseCode(), respVariable);
     } else {
       out.printf(
           "\t\t\t\t\tResponseWriterUtil.sendJson(%s, %d, %s.toJson());%n",
           ctxVariable, request.responseCode(), respVariable);
     }
+  }
+
+  private static String futureVariable(MethodRequest methodRequest) {
+    TypeMirror typeMirror = methodRequest.executableElement().getReturnType();
+    ParameterizedTypeName pt = (ParameterizedTypeName) TypeName.get(typeMirror);
+    String futureType = pt.typeArguments().getFirst().toString();
+    String substring = futureType.substring(futureType.lastIndexOf('.') + 1);
+    return "Future<%s>".formatted(substring);
   }
 
   private static MethodParameter requestBodyType(List<MethodParameter> parameters) {
@@ -438,7 +460,15 @@ public class WebHandlerGenerator extends ProcessorBase {
         imports.add(p.type().canonicalName());
       }
       if (!am.isVoid()) {
-        imports.add(am.returnType().canonicalName());
+        String canonicalName = am.returnType().canonicalName();
+        if (canonicalName.contains(Future.class.getCanonicalName())) {
+          TypeMirror typeMirror = am.executableElement().getReturnType();
+          ParameterizedTypeName pt = (ParameterizedTypeName) TypeName.get(typeMirror);
+          String futureType = pt.typeArguments().getFirst().toString();
+          imports.add(futureType);
+        } else {
+          imports.add(canonicalName);
+        }
       }
     }
 
@@ -522,7 +552,8 @@ public class WebHandlerGenerator extends ProcessorBase {
           requestMethodDetails.responseCode(),
           true,
           null,
-          getMethodParameters(ee.getParameters()));
+          getMethodParameters(ee.getParameters()),
+          ee);
     }
 
     return new MethodRequest(
@@ -535,7 +566,8 @@ public class WebHandlerGenerator extends ProcessorBase {
         requestMethodDetails.responseCode(),
         false,
         className(returnType),
-        getMethodParameters(ee.getParameters()));
+        getMethodParameters(ee.getParameters()),
+        ee);
   }
 
   private static List<MethodParameter> getMethodParameters(List<? extends VariableElement> ve) {
@@ -563,6 +595,21 @@ public class WebHandlerGenerator extends ProcessorBase {
 
   private static ClassName className(TypeMirror typeMirror) {
     TypeName typeName = TypeName.get(typeMirror);
+
+    if (typeName instanceof ParameterizedTypeName pt) {
+      ClassName className = pt.rawType();
+
+      if (Future.class.getCanonicalName().equals(className.canonicalName())) {
+        List<TypeName> typeNames = pt.typeArguments();
+        if (1 != typeNames.size()) {
+          throw new GenerationException(
+              "generic parameter can have only 1 argument, but found: " + typeNames);
+        }
+
+        return className;
+      }
+    }
+
     String canonicalName = typeName.toString();
     int idx = canonicalName.lastIndexOf('.');
     if (-1 == idx) {

@@ -4,6 +4,7 @@ package github.benslabbert.vdw.codegen.commons;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import io.netty.handler.codec.http.HttpHeaderValues;
+import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
@@ -25,6 +26,10 @@ public final class ResponseWriterUtil {
 
   public static void sendBuffer(RoutingContext ctx, int statusCode, Buffer buffer) {
     ctx.response().setStatusCode(statusCode).end(buffer);
+  }
+
+  public static void sendFuture(RoutingContext ctx, int statusCode, Future<JsonObject> future) {
+    future.onFailure(ctx::fail).onSuccess(json -> sendJson(ctx, statusCode, json));
   }
 
   public static void sendString(RoutingContext ctx, int statusCode, String msg) {
