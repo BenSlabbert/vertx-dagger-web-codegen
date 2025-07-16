@@ -38,6 +38,9 @@
     <vertx-json-writer.version>1.142.0</vertx-json-writer.version>
     <vertx-dagger-commons.version>1.171.0</vertx-dagger-commons.version>
     <compile-testing.version>1.2.0</compile-testing.version>
+
+    <!--plugins-->
+    <flatten-maven-plugin.version>1.7.0</flatten-maven-plugin.version>
   </properties>
 
   <dependencyManagement>
