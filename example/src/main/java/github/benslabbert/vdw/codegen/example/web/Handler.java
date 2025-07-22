@@ -56,12 +56,12 @@ class Handler {
     log.info("path params i: {} s: {}", i, s);
   }
 
-  @Get(path = "/some/prefix/{int:param1}/path/{string:param2}/more-path?q={string:q=s}")
+  @Get(path = "/some/prefix/{int:param1}/path/{string:param2}/more-path?q={string:qqq=s}")
   void both(@PathParams Map<String, String> pathParams, @QueryParams MultiMap queryParams) {
     Handler_Both_Params params = Handler_Both_ParamParser.parse(queryParams, pathParams);
     int i = params.param1();
     String s = params.param2();
-    String q = params.q();
+    String q = params.qqq();
     log.info("param1={}, param2={}, q={}", i, s, q);
   }
 }

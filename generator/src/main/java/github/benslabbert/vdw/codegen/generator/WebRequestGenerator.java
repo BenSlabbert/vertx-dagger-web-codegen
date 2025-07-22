@@ -72,8 +72,8 @@ public class WebRequestGenerator extends ProcessorBase {
     String string =
         methodName.toString().substring(0, 1).toUpperCase() + methodName.toString().substring(1);
 
-    String generatedClassName = enclosingClassName.toString() + "_" + string + "_" + "ParamParser";
-    String generatedRecordName = enclosingClassName.toString() + "_" + string + "_" + "Params";
+    String generatedClassName = enclosingClassName.toString() + "_" + string + "_ParamParser";
+    String generatedRecordName = enclosingClassName.toString() + "_" + string + "_Params";
 
     StringWriter stringWriter = StringWriterFactory.create();
 
@@ -125,7 +125,9 @@ public class WebRequestGenerator extends ProcessorBase {
       out.println();
       out.printf("\t\treturn new %s(", generatedRecordName);
       String args =
-          Stream.concat(parseResult.pathParams().stream(), parseResult.queryParams().stream())
+          Stream.concat(
+                  parseResult.pathParams().stream(),
+                  parseResult.queryParams().stream().map(PathParser.QueryParam::param))
               .map(PathParser.Param::name)
               .collect(Collectors.joining(", "));
       out.printf("%s", args);
@@ -193,7 +195,9 @@ public class WebRequestGenerator extends ProcessorBase {
     out.printf("\trecord %s(", generatedRecordName);
 
     String recordArgs =
-        Stream.concat(parseResult.pathParams().stream(), parseResult.queryParams().stream())
+        Stream.concat(
+                parseResult.pathParams().stream(),
+                parseResult.queryParams().stream().map(PathParser.QueryParam::param))
             .map(
                 p -> {
                   String name = p.name();
@@ -247,10 +251,11 @@ public class WebRequestGenerator extends ProcessorBase {
       }
     }
 
-    for (PathParser.Param queryParam : parseResult.queryParams()) {
-      String name = queryParam.name();
+    for (PathParser.QueryParam queryParam : parseResult.queryParams()) {
+      String queryParamName = queryParam.queryParamName();
+      PathParser.Param param = queryParam.param();
       String type =
-          switch (queryParam.type()) {
+          switch (param.type()) {
             case INT -> "Integer";
             case LONG -> "Long";
             case BOOLEAN -> "Boolean";
@@ -260,20 +265,21 @@ public class WebRequestGenerator extends ProcessorBase {
             case STRING -> "String";
           };
 
-      Optional<String> optional = queryParam.defaultValue();
+      Optional<String> optional = param.defaultValue();
       if (optional.isPresent()) {
-        if (queryParam.type() == PathParser.Type.STRING) {
+        if (param.type() == PathParser.Type.STRING) {
           out.printf(
               "\t\t%s %s = rp.getQueryParam(\"%s\", \"%s\", %sParser.create());%n",
-              type, name, name, optional.get(), type);
+              type, param.name(), queryParamName, optional.get(), type);
         } else {
           out.printf(
               "\t\t%s %s = rp.getQueryParam(\"%s\", %s, %sParser.create());%n",
-              type, name, name, optional.get(), type);
+              type, param.name(), queryParamName, optional.get(), type);
         }
       } else {
         out.printf(
-            "\t\t%s %s = rp.getQueryParam(\"%s\", %sParser.create());%n", type, name, name, type);
+            "\t\t%s %s = rp.getQueryParam(\"%s\", %sParser.create());%n",
+            type, param.name(), queryParamName, type);
       }
     }
   }
