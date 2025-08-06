@@ -16,6 +16,7 @@ import java.io.Writer;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
@@ -27,6 +28,8 @@ import javax.tools.JavaFileObject;
 
 abstract class ProcessorBase extends AbstractProcessor {
 
+  private static final String SKIP_FMT = "skipFmt";
+
   private final Set<String> supportedAnnotationTypes;
 
   ProcessorBase(Set<String> supportedAnnotationTypes) {
@@ -36,6 +39,11 @@ abstract class ProcessorBase extends AbstractProcessor {
   @Override
   public SourceVersion getSupportedSourceVersion() {
     return SourceVersion.latestSupported();
+  }
+
+  @Override
+  public Set<String> getSupportedOptions() {
+    return Set.of(SKIP_FMT);
   }
 
   @Override
@@ -94,7 +102,18 @@ abstract class ProcessorBase extends AbstractProcessor {
           }
 
           for (GeneratedFile file : files) {
-            formatFile(file);
+            Map<String, String> options = processingEnv.getOptions();
+            boolean skipFmt = options.containsKey(SKIP_FMT);
+            if (skipFmt) {
+              JavaFileObject builderFile =
+                  processingEnv.getFiler().createSourceFile(file.realFileName());
+
+              try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
+                file.stringWriter().getBuffer().chars().forEach(i -> out.print((char) i));
+              }
+            } else {
+              formatFile(file);
+            }
           }
         } catch (Exception e) {
           throw new GenerationException(e);
