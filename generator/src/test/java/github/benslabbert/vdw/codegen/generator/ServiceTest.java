@@ -6,6 +6,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.testing.compile.JavaFileObjects;
 import com.google.testing.compile.JavaSourceSubjectFactory;
+import com.google.testing.compile.JavaSourcesSubject;
 import java.net.URL;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -13,18 +14,32 @@ import org.junit.jupiter.params.provider.CsvSource;
 class ServiceTest {
 
   @ParameterizedTest
-  @CsvSource({
-    "ExampleService.java",
-    "ExampleServiceNoAuth.java",
-    "ExampleServiceNoAuthNoValidator.java"
-  })
-  void test(String file) {
+  @CsvSource(
+      useHeadersInDisplayName = true,
+      delimiter = '|',
+      textBlock =
+          """
+Source File                             | skipFmt
+
+ExampleService.java                     | true
+ExampleService.java                     | false
+ExampleServiceNoAuth.java               | true
+ExampleServiceNoAuth.java               | false
+ExampleServiceNoAuthNoValidator.java    | true
+ExampleServiceNoAuthNoValidator.java    | false
+""")
+  void test(String file, boolean skipFmt) {
     URL resource = this.getClass().getClassLoader().getResource(file);
     assertThat(resource).isNotNull();
 
-    assertAbout(JavaSourceSubjectFactory.javaSource())
-        .that(JavaFileObjects.forResource(resource))
-        .processedWith(new VertxEBProxyGenerators())
-        .compilesWithoutError();
+    JavaSourcesSubject.SingleSourceAdapter sourceAdapter =
+        assertAbout(JavaSourceSubjectFactory.javaSource())
+            .that(JavaFileObjects.forResource(resource));
+
+    if (skipFmt) {
+      sourceAdapter.withCompilerOptions("-AskipFmt");
+    }
+
+    sourceAdapter.processedWith(new VertxEBProxyGenerators()).compilesWithoutError();
   }
 }
