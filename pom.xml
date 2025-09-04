@@ -41,7 +41,7 @@
     <!--deps-->
     <tx-manager.version>1.168.0</tx-manager.version>
     <vertx-json-writer.version>1.175.0</vertx-json-writer.version>
-    <vertx-dagger-commons.version>1.210.0</vertx-dagger-commons.version>
+    <vertx-dagger-commons.version>1.211.0</vertx-dagger-commons.version>
     <compile-testing.version>1.2.0</compile-testing.version>
 
     <!--plugins-->
