@@ -25,6 +25,8 @@ jobs:
         java-version:
         - "21"
         - "23"
+        - "24"
+        - "25"
         distribution:
         - "zulu"
         - "temurin"
