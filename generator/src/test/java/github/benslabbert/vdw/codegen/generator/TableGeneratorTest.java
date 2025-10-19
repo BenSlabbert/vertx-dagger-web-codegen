@@ -16,7 +16,7 @@ class TableGeneratorTest {
   @ParameterizedTest
   @CsvSource(
       textBlock =
-          """
+"""
 true
 false
 """)

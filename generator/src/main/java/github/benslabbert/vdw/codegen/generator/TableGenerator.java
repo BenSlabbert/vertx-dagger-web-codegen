@@ -165,7 +165,7 @@ public class TableGenerator extends ProcessorBase {
           setColumns.isEmpty() ? versionSetClause : setColumns + ", " + versionSetClause;
 
       out.printf(
-          """
+"""
     private static final String UPDATE_SQL =
       \"""
         update %s
@@ -184,7 +184,7 @@ public class TableGenerator extends ProcessorBase {
       String repeat = Strings.repeat(", ?", allColumnNames.size());
 
       out.printf(
-          """
+"""
     private static final String INSERT_SQL =
       \"""
         insert into %s (%s)
@@ -196,7 +196,7 @@ public class TableGenerator extends ProcessorBase {
       out.println();
 
       out.printf(
-          """
+"""
     private static final String DELETE_SQL =
       \"""
         DELETE FROM %s WHERE %s = ? and %s = ?
@@ -206,7 +206,7 @@ public class TableGenerator extends ProcessorBase {
       out.println();
 
       out.printf(
-          """
+"""
     private final JdbcQueryRunnerFactory jdbcQueryRunnerFactory;
     private final JdbcUtilsFactory jdbcUtilsFactory;
     private final JdbcQueryRunner jdbcQueryRunner;
@@ -239,7 +239,7 @@ public class TableGenerator extends ProcessorBase {
           case LIST_CANONICAL_NAME -> {
             if (defaultFetchSize) {
               out.printf(
-                  """
+"""
     @Override
     public List<%s> %s(%s) {
         String sql = "%s";
@@ -251,7 +251,7 @@ public class TableGenerator extends ProcessorBase {
               out.println();
             } else {
               out.printf(
-                  """
+"""
     @Override
     public List<%s> %s(%s) {
         String sql = "%s";
@@ -267,7 +267,7 @@ public class TableGenerator extends ProcessorBase {
           case STREAM_CANONICAL_NAME -> {
             if (defaultFetchSize) {
               out.printf(
-                  """
+"""
     @Override
     @MustBeClosed
     public Stream<%s> %s(%s) {
@@ -279,7 +279,7 @@ public class TableGenerator extends ProcessorBase {
                   ac.name(), methodName, methodArgs, sanitizedSql, args);
             } else {
               out.printf(
-                  """
+"""
     @Override
     @MustBeClosed
     public Stream<%s> %s(%s) {
@@ -296,7 +296,7 @@ public class TableGenerator extends ProcessorBase {
           case ITERABLE_CANONICAL_NAME -> {
             if (defaultFetchSize) {
               out.printf(
-                  """
+"""
     @Override
     public Iterable<%s> %s(%s) {
         String sql = "%s";
@@ -308,7 +308,7 @@ public class TableGenerator extends ProcessorBase {
               out.println();
             } else {
               out.printf(
-                  """
+"""
     @Override
     public Iterable<%s> %s(%s) {
         String sql = "%s";
@@ -330,7 +330,7 @@ public class TableGenerator extends ProcessorBase {
             }
             if (defaultFetchSize) {
               out.printf(
-                  """
+"""
     public void %s(%s) {
         String sql = "%s";
         Object[] args = {%s};
@@ -348,7 +348,7 @@ public class TableGenerator extends ProcessorBase {
               out.println();
             } else {
               out.printf(
-                  """
+"""
     public void %s(%s) {
         String sql = "%s";
         Object[] args = {%s};
@@ -389,7 +389,7 @@ public class TableGenerator extends ProcessorBase {
           case LIST_CANONICAL_NAME -> {
             if (defaultFetchSize) {
               out.printf(
-                  """
+"""
     @Override
     public List<%s> %s(Object %s) {
         String sql = "SELECT * FROM %s WHERE %s = ?";
@@ -405,7 +405,7 @@ public class TableGenerator extends ProcessorBase {
                   td.columnName());
             } else {
               out.printf(
-                  """
+"""
     @Override
     public List<%s> %s(Object %s) {
         String sql = "SELECT * FROM %s WHERE %s = ?";
@@ -426,7 +426,7 @@ public class TableGenerator extends ProcessorBase {
           case STREAM_CANONICAL_NAME -> {
             if (defaultFetchSize) {
               out.printf(
-                  """
+"""
     @Override
     @MustBeClosed
     public Stream<%s> %s(Object %s) {
@@ -443,7 +443,7 @@ public class TableGenerator extends ProcessorBase {
                   td.columnName());
             } else {
               out.printf(
-                  """
+"""
     @Override
     @MustBeClosed
     public Stream<%s> %s(Object %s) {
@@ -466,7 +466,7 @@ public class TableGenerator extends ProcessorBase {
           case ITERABLE_CANONICAL_NAME -> {
             if (defaultFetchSize) {
               out.printf(
-                  """
+"""
     @Override
     public Iterable<%s> %s(Object %s) {
         String sql = "SELECT * FROM %s WHERE %s = ?";
@@ -482,7 +482,7 @@ public class TableGenerator extends ProcessorBase {
                   td.columnName());
             } else {
               out.printf(
-                  """
+"""
     @Override
     public Iterable<%s> %s(Object %s) {
         String sql = "SELECT * FROM %s WHERE %s = ?";
@@ -503,7 +503,7 @@ public class TableGenerator extends ProcessorBase {
           case CONSUMER_CANONICAL_NAME -> {
             if (defaultFetchSize) {
               out.printf(
-                  """
+"""
     public void %s(Object %s, Consumer<%s> consumer) {
         String sql = "SELECT * FROM %s WHERE %s = ?";
         Object[] args = {%s};
@@ -529,7 +529,7 @@ public class TableGenerator extends ProcessorBase {
               out.println();
             } else {
               out.printf(
-                  """
+"""
     public void %s(Object %s, Consumer<%s> consumer) {
         String sql = "SELECT * FROM %s WHERE %s = ?";
         Object[] args = {%s};
@@ -567,7 +567,7 @@ public class TableGenerator extends ProcessorBase {
         }
 
         out.printf(
-            """
+"""
     @Override
     public Optional<%s> %s(Object %s) {
         String sql = "SELECT * FROM %s WHERE %s = ? limit 1";
@@ -580,7 +580,7 @@ public class TableGenerator extends ProcessorBase {
 
       // common queries
       out.printf(
-          """
+"""
     @Override
     @MustBeClosed
     public Stream<%s> all() {
@@ -592,7 +592,7 @@ public class TableGenerator extends ProcessorBase {
       out.println();
 
       out.printf(
-          """
+"""
     @Override
     public Optional<%s> id(long id) {
         String sql = "SELECT * FROM %s WHERE %s = ? limit 1";
@@ -604,7 +604,7 @@ public class TableGenerator extends ProcessorBase {
       out.println();
 
       out.printf(
-          """
+"""
     @Override
     public Optional<%s> idAndVersion(long id, int version) {
         String sql = "SELECT * FROM %s WHERE %s = ? and %s = ? limit 1";
@@ -634,7 +634,7 @@ public class TableGenerator extends ProcessorBase {
               .collect(Collectors.joining(", "));
 
       out.printf(
-          """
+"""
     @Override
     public %s save(%s %s) {
         if (%s.isNew()) {
@@ -650,7 +650,7 @@ public class TableGenerator extends ProcessorBase {
       out.println();
 
       out.printf(
-          """
+"""
     @Override
     public Collection<%s> insertAll(Collection<%s> all) {
         if (all.isEmpty()) {
@@ -679,7 +679,7 @@ public class TableGenerator extends ProcessorBase {
               .count();
 
       out.printf(
-          """
+"""
     @Override
     public Collection<%s> updateAll(Collection<%s> all) {
         if (all.isEmpty()) {
@@ -703,7 +703,7 @@ public class TableGenerator extends ProcessorBase {
       out.println();
 
       out.printf(
-          """
+"""
   @Override
   public int delete(%s %s) {
     if (%s.isNew()) {
@@ -724,7 +724,7 @@ public class TableGenerator extends ProcessorBase {
       out.println();
 
       out.printf(
-          """
+"""
     @Override
     public int[] deleteAll(Collection<%s> all) {
         if (all.isEmpty()) {
@@ -756,7 +756,7 @@ public class TableGenerator extends ProcessorBase {
       out.println();
 
       out.printf(
-          """
+"""
     private StatementConfiguration.Builder getConfigBuilder() {
         return new StatementConfiguration.Builder().fetchSize(%d).queryTimeout(Duration.ofSeconds(5));
     }
@@ -764,7 +764,7 @@ public class TableGenerator extends ProcessorBase {
           Table.DEFAULT_FETCH_SIZE);
       out.println();
       out.printf(
-          """
+"""
     private %s mapSingle(ResultSet rs) throws SQLException {
         if (!rs.next()) {
           throw new SQLException("expecting at least one result");
@@ -775,7 +775,7 @@ public class TableGenerator extends ProcessorBase {
           ac.name());
       out.println();
       out.printf(
-          """
+"""
     private Optional<%s> mapOptional(ResultSet rs) throws SQLException {
         if (rs.next()) {
           return Optional.of(map(rs));
@@ -786,7 +786,7 @@ public class TableGenerator extends ProcessorBase {
           ac.name());
       out.println();
       out.printf(
-          """
+"""
     private List<%s> mapToList(ResultSet rs) throws SQLException {
         List<%s> objects = new LinkedList<>();
         while (rs.next()) {

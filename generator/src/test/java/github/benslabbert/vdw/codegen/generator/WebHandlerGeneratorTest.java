@@ -18,7 +18,7 @@ class WebHandlerGeneratorTest {
       useHeadersInDisplayName = true,
       delimiter = '|',
       textBlock =
-          """
+"""
 Source File                             | skipFmt
 
 ExampleHandler.java                     | true

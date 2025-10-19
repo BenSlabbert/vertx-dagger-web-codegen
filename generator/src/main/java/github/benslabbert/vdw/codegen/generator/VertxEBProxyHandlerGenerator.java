@@ -233,7 +233,7 @@ class VertxEBProxyHandlerGenerator {
       out.println("return switch (action) {");
       for (EBGeneratorUtil.ServiceMethod m : methods) {
         out.printf(
-            """
+"""
 case "%s" -> {
     io.vertx.json.schema.Validator validator = %s.getValidator();
     OutputUnit outputUnit = validator.validate(request);
@@ -245,7 +245,7 @@ case "%s" -> {
 
         if (m.validated()) {
           out.printf(
-              """
+"""
         %s r = %s.fromJson(request);
         Set<ConstraintViolation<%s>> violations = validatorProvider.getValidator().validate(r);
         if (!violations.isEmpty()) {
@@ -278,7 +278,7 @@ case "%s" -> {
       out.println();
 
       out.println(
-          """
+"""
     private static <T> JsonObject getErrorJson(Set<ConstraintViolation<T>> violations) {
         List<JsonObject> errors =
             violations.stream()
