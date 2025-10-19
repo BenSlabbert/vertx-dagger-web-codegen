@@ -12,6 +12,7 @@ import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcQuery
 import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcUtils;
 import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcUtilsFactory;
 import jakarta.annotation.Generated;
+import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.io.PrintWriter;
@@ -24,7 +25,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -39,7 +39,6 @@ import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.apache.commons.dbutils.StatementConfiguration;
 
@@ -49,6 +48,7 @@ public class TableGenerator extends ProcessorBase {
   private static final String STREAM_CANONICAL_NAME = "java.util.stream.Stream";
   private static final String ITERABLE_CANONICAL_NAME = "java.lang.Iterable";
   private static final String CONSUMER_CANONICAL_NAME = "java.util.function.Consumer";
+  private static final String REFERENCE_CANONICAL_NAME = Reference.class.getCanonicalName();
 
   public TableGenerator() {
     super(Set.of(Table.class.getCanonicalName()));
@@ -137,7 +137,6 @@ public class TableGenerator extends ProcessorBase {
       out.printf("import %s;%n", ResultSet.class.getCanonicalName());
       out.printf("import %s;%n", SQLException.class.getCanonicalName());
       out.printf("import %s;%n", Duration.class.getCanonicalName());
-      out.printf("import %s;%n", LinkedList.class.getCanonicalName());
       out.printf("import %s;%n", StatementConfiguration.class.getCanonicalName());
       out.printf("import %s;%n", Predicate.class.getCanonicalName());
       out.printf("import %s;%n", Optional.class.getCanonicalName());
@@ -147,6 +146,7 @@ public class TableGenerator extends ProcessorBase {
       out.printf("import %s;%n", ac.canonicalName());
       out.printf("import %s;%n", Reference.class.getCanonicalName());
       out.printf("import %s;%n", Consumer.class.getCanonicalName());
+      out.printf("import %s;%n", ArrayList.class.getCanonicalName());
       out.printf("import static %s.not;%n", Predicate.class.getCanonicalName());
       out.println();
 
@@ -391,7 +391,7 @@ public class TableGenerator extends ProcessorBase {
               out.printf(
 """
     @Override
-    public List<%s> %s(Object %s) {
+    public List<%s> %s(%s %s) {
         String sql = "SELECT * FROM %s WHERE %s = ?";
         Object[] args = {%s};
         return jdbcQueryRunner.query(sql, this::mapToList, args);
@@ -399,6 +399,7 @@ public class TableGenerator extends ProcessorBase {
 """,
                   ac.name(),
                   td.columnName(),
+                  td.columnTypeSimpleName(),
                   td.columnName(),
                   table.value(),
                   td.columnName(),
@@ -407,7 +408,7 @@ public class TableGenerator extends ProcessorBase {
               out.printf(
 """
     @Override
-    public List<%s> %s(Object %s) {
+    public List<%s> %s(%s %s) {
         String sql = "SELECT * FROM %s WHERE %s = ?";
         Object[] args = {%s};
         StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
@@ -416,6 +417,7 @@ public class TableGenerator extends ProcessorBase {
 """,
                   ac.name(),
                   td.columnName(),
+                  td.columnTypeSimpleName(),
                   td.columnName(),
                   table.value(),
                   td.columnName(),
@@ -429,7 +431,7 @@ public class TableGenerator extends ProcessorBase {
 """
     @Override
     @MustBeClosed
-    public Stream<%s> %s(Object %s) {
+    public Stream<%s> %s(%s %s) {
         String sql = "SELECT * FROM %s WHERE %s = ?";
         Object[] args = {%s};
         return jdbcUtils.stream(sql, this::map, args);
@@ -437,6 +439,7 @@ public class TableGenerator extends ProcessorBase {
 """,
                   ac.name(),
                   td.columnName(),
+                  td.columnTypeSimpleName(),
                   td.columnName(),
                   table.value(),
                   td.columnName(),
@@ -446,7 +449,7 @@ public class TableGenerator extends ProcessorBase {
 """
     @Override
     @MustBeClosed
-    public Stream<%s> %s(Object %s) {
+    public Stream<%s> %s(%s %s) {
         String sql = "SELECT * FROM %s WHERE %s = ?";
         Object[] args = {%s};
         StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
@@ -455,6 +458,7 @@ public class TableGenerator extends ProcessorBase {
 """,
                   ac.name(),
                   td.columnName(),
+                  td.columnTypeSimpleName(),
                   td.columnName(),
                   table.value(),
                   td.columnName(),
@@ -468,7 +472,7 @@ public class TableGenerator extends ProcessorBase {
               out.printf(
 """
     @Override
-    public Iterable<%s> %s(Object %s) {
+    public Iterable<%s> %s(%s %s) {
         String sql = "SELECT * FROM %s WHERE %s = ?";
         Object[] args = {%s};
         return jdbcQueryRunner.query(sql, this::mapToList, args);
@@ -476,6 +480,7 @@ public class TableGenerator extends ProcessorBase {
 """,
                   ac.name(),
                   td.columnName(),
+                  td.columnTypeSimpleName(),
                   td.columnName(),
                   table.value(),
                   td.columnName(),
@@ -484,7 +489,7 @@ public class TableGenerator extends ProcessorBase {
               out.printf(
 """
     @Override
-    public Iterable<%s> %s(Object %s) {
+    public Iterable<%s> %s(%s %s) {
         String sql = "SELECT * FROM %s WHERE %s = ?";
         Object[] args = {%s};
         StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
@@ -493,6 +498,7 @@ public class TableGenerator extends ProcessorBase {
 """,
                   ac.name(),
                   td.columnName(),
+                  td.columnTypeSimpleName(),
                   td.columnName(),
                   table.value(),
                   td.columnName(),
@@ -504,7 +510,7 @@ public class TableGenerator extends ProcessorBase {
             if (defaultFetchSize) {
               out.printf(
 """
-    public void %s(Object %s, Consumer<%s> consumer) {
+    public void %s(%s %s, Consumer<%s> consumer) {
         String sql = "SELECT * FROM %s WHERE %s = ?";
         Object[] args = {%s};
         jdbcQueryRunner.query(
@@ -518,6 +524,7 @@ public class TableGenerator extends ProcessorBase {
     }
 """,
                   td.columnName(),
+                  td.columnTypeSimpleName(),
                   td.columnName(),
                   ac.name(),
                   table.value(),
@@ -530,7 +537,7 @@ public class TableGenerator extends ProcessorBase {
             } else {
               out.printf(
 """
-    public void %s(Object %s, Consumer<%s> consumer) {
+    public void %s(%s %s, Consumer<%s> consumer) {
         String sql = "SELECT * FROM %s WHERE %s = ?";
         Object[] args = {%s};
         StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
@@ -545,6 +552,7 @@ public class TableGenerator extends ProcessorBase {
     }
 """,
                   td.columnName(),
+                  td.columnTypeSimpleName(),
                   td.columnName(),
                   ac.name(),
                   table.value(),
@@ -569,13 +577,19 @@ public class TableGenerator extends ProcessorBase {
         out.printf(
 """
     @Override
-    public Optional<%s> %s(Object %s) {
+    public Optional<%s> %s(%s %s) {
         String sql = "SELECT * FROM %s WHERE %s = ? limit 1";
         Object[] args = {%s};
         return jdbcQueryRunner.query(sql, this::mapOptional, args);
     }
 """,
-            ac.name(), td.columnName(), varName, table.value(), td.columnName(), varName);
+            ac.name(),
+            td.columnName(),
+            td.columnTypeSimpleName(),
+            varName,
+            table.value(),
+            td.columnName(),
+            varName);
       }
 
       // common queries
@@ -788,11 +802,11 @@ public class TableGenerator extends ProcessorBase {
       out.printf(
 """
     private List<%s> mapToList(ResultSet rs) throws SQLException {
-        List<%s> objects = new LinkedList<>();
+        List<%s> objects = new ArrayList<>(10);
         while (rs.next()) {
           objects.add(map(rs));
         }
-        return objects;
+        return List.copyOf(objects);
     }
 """,
           ac.name(), ac.name());
@@ -871,6 +885,15 @@ public class TableGenerator extends ProcessorBase {
       out.printf("import %s;%n", List.class.getCanonicalName());
       out.printf("import %s;%n", Consumer.class.getCanonicalName());
       out.printf("import %s;%n", ac.canonicalName());
+      for (TableDetails td : tableDetails) {
+        String columnType = td.columnType();
+        if (null == columnType
+            || !columnType.contains(".")
+            || columnType.startsWith("java.lang.")) {
+          continue;
+        }
+        out.printf("import %s;%n", columnType);
+      }
       out.println();
 
       out.printf(
@@ -913,22 +936,25 @@ public class TableGenerator extends ProcessorBase {
         switch (fbc.returnType()) {
           case LIST_CANONICAL_NAME ->
               out.printf(
-                  "\tList<%s> %s(Object %s);%n", ac.name(), td.columnName(), td.columnName());
+                  "\tList<%s> %s(%s %s);%n",
+                  ac.name(), td.columnName(), td.columnTypeSimpleName(), td.columnName());
           case STREAM_CANONICAL_NAME -> {
             out.println("\t@MustBeClosed");
             out.printf(
-                "\tStream<%s> %s(Object %s);%n", ac.name(), td.columnName(), td.columnName());
+                "\tStream<%s> %s(%s %s);%n",
+                ac.name(), td.columnName(), td.columnTypeSimpleName(), td.columnName());
           }
           case ITERABLE_CANONICAL_NAME ->
               out.printf(
-                  "\tIterable<%s> %s(Object %s);%n", ac.name(), td.columnName(), td.columnName());
+                  "\tIterable<%s> %s(%s %s);%n",
+                  ac.name(), td.columnName(), td.columnTypeSimpleName(), td.columnName());
           case CONSUMER_CANONICAL_NAME ->
               out.printf(
                   "\tvoid %s(%s);%n",
                   td.columnName(),
                   String.join(
                       ", ",
-                      "Object %s".formatted(td.columnName()),
+                      "%s %s".formatted(td.columnTypeSimpleName(), td.columnName()),
                       "Consumer<%s> consumer".formatted(ac.name())));
           default -> unsupportedReturnType(fbc.returnType());
         }
@@ -939,7 +965,9 @@ public class TableGenerator extends ProcessorBase {
           continue;
         }
 
-        out.printf("\tOptional<%s> %s(Object %s);%n", ac.name(), td.columnName(), td.columnName());
+        out.printf(
+            "\tOptional<%s> %s(%s %s);%n",
+            ac.name(), td.columnName(), td.columnTypeSimpleName(), td.columnName());
       }
 
       // common queries
@@ -1041,10 +1069,24 @@ public class TableGenerator extends ProcessorBase {
               TypeMirror type = ee.asType();
 
               boolean isReference = false;
+              String columnType = null;
+              String columnTypeSimpleName = null;
 
-              if (TypeKind.DECLARED == type.getKind()) {
-                String qualifiedName = getCanonicalName((DeclaredType) type);
-                isReference = qualifiedName.equals(Reference.class.getCanonicalName());
+              switch (type.getKind()) {
+                case INT -> columnType = columnTypeSimpleName = "int";
+                case LONG -> columnType = columnTypeSimpleName = "long";
+                case BOOLEAN -> columnType = columnTypeSimpleName = "boolean";
+                case BYTE -> columnType = columnTypeSimpleName = "byte";
+                case DOUBLE -> columnType = columnTypeSimpleName = "double";
+                case FLOAT -> columnType = columnTypeSimpleName = "float";
+                case SHORT -> columnType = columnTypeSimpleName = "short";
+                case CHAR -> columnType = columnTypeSimpleName = "char";
+                case DECLARED -> {
+                  String qualifiedName = getCanonicalName((DeclaredType) type);
+                  columnType = qualifiedName;
+                  columnTypeSimpleName = columnType.substring(columnType.lastIndexOf('.') + 1);
+                  isReference = qualifiedName.equals(REFERENCE_CANONICAL_NAME);
+                }
               }
 
               TableDetails.FindByColumn fbc = null;
@@ -1057,6 +1099,8 @@ public class TableGenerator extends ProcessorBase {
               return new TableDetails(
                   ee,
                   column.value(),
+                  columnType,
+                  null == columnTypeSimpleName ? "Object" : columnTypeSimpleName,
                   fieldName,
                   null == id ? null : id.value(),
                   id != null,
@@ -1088,6 +1132,8 @@ public class TableGenerator extends ProcessorBase {
   private record TableDetails(
       RecordComponentElement element,
       String columnName,
+      @Nullable String columnType,
+      String columnTypeSimpleName,
       String fieldName,
       String sequenceName,
       boolean id,

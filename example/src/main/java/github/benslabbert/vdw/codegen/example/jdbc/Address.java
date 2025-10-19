@@ -14,6 +14,7 @@ import github.benslabbert.vdw.codegen.commons.jdbc.Reference;
 public record Address(
     @Column("id") @Id("id_seq") long id,
     @Column("street") @FindOneByColumn @InsertOnly String street,
+    @Column("postal_code") @FindOneByColumn String postalCode,
     @Column("version") @Version int version)
     implements Reference<Address> {
 
@@ -30,6 +31,8 @@ public record Address(
     Builder id(long id);
 
     Builder street(String street);
+
+    Builder postalCode(String postalCode);
 
     Builder version(int version);
 
