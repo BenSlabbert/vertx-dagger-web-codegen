@@ -18,7 +18,7 @@ class ServiceTest {
       useHeadersInDisplayName = true,
       delimiter = '|',
       textBlock =
-          """
+"""
 Source File                             | skipFmt
 
 ExampleService.java                     | true
