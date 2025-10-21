@@ -15,8 +15,10 @@ import jakarta.annotation.Generated;
 import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -40,7 +42,10 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
+import javax.tools.FileObject;
+import javax.tools.StandardLocation;
 import org.apache.commons.dbutils.StatementConfiguration;
+import org.apache.commons.lang3.StringUtils;
 
 public class TableGenerator extends ProcessorBase {
 
@@ -199,7 +204,7 @@ public class TableGenerator extends ProcessorBase {
 """
     private static final String DELETE_SQL =
       \"""
-        DELETE FROM %s WHERE %s = ? and %s = ?
+        delete from %s where %s = ? and %s = ?
         \""";
 """,
           table.value(), idColumn.columnName(), versionColumn.columnName());
@@ -227,13 +232,23 @@ public class TableGenerator extends ProcessorBase {
       for (TableQuery tq : tableQueries) {
         boolean defaultFetchSize = Table.DEFAULT_FETCH_SIZE == tq.fetchSize();
         String methodName = tq.name();
-        List<String> paramNames = tq.paramNames();
-        String methodArgs =
-            tq.paramNames().stream().map(s -> "Object " + s).collect(Collectors.joining(", "));
-        String args = String.join(", ", paramNames);
+        String methodArgs;
+        String args;
+        String sanitizedSql;
 
-        // replace all :var_names with ?
-        String sanitizedSql = tq.sql().replaceAll(":\\w+", "?");
+        if (tq.usesSqlFile()) {
+          methodArgs = "Object[] varargs";
+          args = "varargs";
+          sanitizedSql = sqlFromFile(tq.sqlFile());
+        } else {
+          List<String> paramNames = tq.paramNames();
+          methodArgs =
+              tq.paramNames().stream().map(s -> "Object " + s).collect(Collectors.joining(", "));
+          args = "{" + String.join(", ", paramNames) + "}";
+
+          // replace all :var_names with ?
+          sanitizedSql = tq.sql().replaceAll(":\\w+", "?");
+        }
 
         switch (tq.returnType()) {
           case LIST_CANONICAL_NAME -> {
@@ -242,8 +257,11 @@ public class TableGenerator extends ProcessorBase {
 """
     @Override
     public List<%s> %s(%s) {
-        String sql = "%s";
-        Object[] args = {%s};
+        String sql =
+        \"""
+        %s
+        \""";
+        Object[] args = %s;
         return jdbcQueryRunner.query(sql, this::mapToList, args);
     }
 """,
@@ -254,8 +272,11 @@ public class TableGenerator extends ProcessorBase {
 """
     @Override
     public List<%s> %s(%s) {
-        String sql = "%s";
-        Object[] args = {%s};
+        String sql =
+        ""\"
+        %s
+        ""\";
+        Object[] args = %s;
         StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
         return jdbcQueryRunnerFactory.create(cfg).query(sql, this::mapToList, args);
     }
@@ -271,8 +292,11 @@ public class TableGenerator extends ProcessorBase {
     @Override
     @MustBeClosed
     public Stream<%s> %s(%s) {
-        String sql = "%s";
-        Object[] args = {%s};
+        String sql =
+        ""\"
+        %s
+        ""\";
+        Object[] args = %s;
         return jdbcUtils.stream(sql, this::map, args);
     }
 """,
@@ -283,8 +307,11 @@ public class TableGenerator extends ProcessorBase {
     @Override
     @MustBeClosed
     public Stream<%s> %s(%s) {
-        String sql = "%s";
-        Object[] args = {%s};
+        String sql =
+        ""\"
+        %s
+        ""\";
+        Object[] args = %s;
         StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
         return jdbcUtilsFactory.create(cfg).stream(sql, this::map, args);
     }
@@ -299,8 +326,11 @@ public class TableGenerator extends ProcessorBase {
 """
     @Override
     public Iterable<%s> %s(%s) {
-        String sql = "%s";
-        Object[] args = {%s};
+        String sql =
+        ""\"
+        %s
+        ""\";
+        Object[] args = %s;
         return jdbcQueryRunner.query(sql, this::mapToList, args);
     }
 """,
@@ -311,8 +341,11 @@ public class TableGenerator extends ProcessorBase {
 """
     @Override
     public Iterable<%s> %s(%s) {
-        String sql = "%s";
-        Object[] args = {%s};
+        String sql =
+        ""\"
+        %s
+        ""\";
+        Object[] args = %s;
         StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
         return jdbcQueryRunnerFactory.create(cfg).query(sql, this::mapToList, args);
     }
@@ -331,9 +364,13 @@ public class TableGenerator extends ProcessorBase {
             if (defaultFetchSize) {
               out.printf(
 """
+    @Override
     public void %s(%s) {
-        String sql = "%s";
-        Object[] args = {%s};
+        String sql =
+        ""\"
+        %s
+        ""\";
+        Object[] args = %s;
         jdbcQueryRunner.query(
             sql,
             rs -> {
@@ -344,14 +381,18 @@ public class TableGenerator extends ProcessorBase {
             args);
     }
 """,
-                  methodName, p, sanitizedSql, methodArgs, ac.name(), varName, varName);
+                  methodName, p, sanitizedSql, args, ac.name(), varName, varName);
               out.println();
             } else {
               out.printf(
 """
+    @Override
     public void %s(%s) {
-        String sql = "%s";
-        Object[] args = {%s};
+        String sql =
+        ""\"
+        %s
+        ""\";
+        Object[] args = %s;
         StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
         jdbcQueryRunnerFactory.create(cfg).query(
             sql,
@@ -363,14 +404,7 @@ public class TableGenerator extends ProcessorBase {
             args);
     }
 """,
-                  methodName,
-                  p,
-                  sanitizedSql,
-                  methodArgs,
-                  tq.fetchSize(),
-                  ac.name(),
-                  varName,
-                  varName);
+                  methodName, p, sanitizedSql, args, tq.fetchSize(), ac.name(), varName, varName);
               out.println();
             }
           }
@@ -392,7 +426,7 @@ public class TableGenerator extends ProcessorBase {
 """
     @Override
     public List<%s> %s(%s %s) {
-        String sql = "SELECT * FROM %s WHERE %s = ?";
+        String sql = "select * from %s where %s = ?";
         Object[] args = {%s};
         return jdbcQueryRunner.query(sql, this::mapToList, args);
     }
@@ -409,7 +443,7 @@ public class TableGenerator extends ProcessorBase {
 """
     @Override
     public List<%s> %s(%s %s) {
-        String sql = "SELECT * FROM %s WHERE %s = ?";
+        String sql = "select * from %s where %s = ?";
         Object[] args = {%s};
         StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
         return jdbcQueryRunnerFactory.create(cfg).query(sql, this::mapToList, args);
@@ -432,7 +466,7 @@ public class TableGenerator extends ProcessorBase {
     @Override
     @MustBeClosed
     public Stream<%s> %s(%s %s) {
-        String sql = "SELECT * FROM %s WHERE %s = ?";
+        String sql = "select * from %s where %s = ?";
         Object[] args = {%s};
         return jdbcUtils.stream(sql, this::map, args);
     }
@@ -450,7 +484,7 @@ public class TableGenerator extends ProcessorBase {
     @Override
     @MustBeClosed
     public Stream<%s> %s(%s %s) {
-        String sql = "SELECT * FROM %s WHERE %s = ?";
+        String sql = "select * from %s where %s = ?";
         Object[] args = {%s};
         StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
         return jdbcUtilsFactory.create(cfg).stream(sql, this::map, args);
@@ -473,7 +507,7 @@ public class TableGenerator extends ProcessorBase {
 """
     @Override
     public Iterable<%s> %s(%s %s) {
-        String sql = "SELECT * FROM %s WHERE %s = ?";
+        String sql = "select * from %s where %s = ?";
         Object[] args = {%s};
         return jdbcQueryRunner.query(sql, this::mapToList, args);
     }
@@ -490,7 +524,7 @@ public class TableGenerator extends ProcessorBase {
 """
     @Override
     public Iterable<%s> %s(%s %s) {
-        String sql = "SELECT * FROM %s WHERE %s = ?";
+        String sql = "select * from %s where %s = ?";
         Object[] args = {%s};
         StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
         return jdbcQueryRunnerFactory.create(cfg).query(sql, this::mapToList, args);
@@ -510,8 +544,9 @@ public class TableGenerator extends ProcessorBase {
             if (defaultFetchSize) {
               out.printf(
 """
+    @Override
     public void %s(%s %s, Consumer<%s> consumer) {
-        String sql = "SELECT * FROM %s WHERE %s = ?";
+        String sql = "select * from %s where %s = ?";
         Object[] args = {%s};
         jdbcQueryRunner.query(
             sql,
@@ -537,8 +572,9 @@ public class TableGenerator extends ProcessorBase {
             } else {
               out.printf(
 """
+    @Override
     public void %s(%s %s, Consumer<%s> consumer) {
-        String sql = "SELECT * FROM %s WHERE %s = ?";
+        String sql = "select * from %s where %s = ?";
         Object[] args = {%s};
         StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
         jdbcQueryRunnerFactory.create(cfg).query(
@@ -578,7 +614,7 @@ public class TableGenerator extends ProcessorBase {
 """
     @Override
     public Optional<%s> %s(%s %s) {
-        String sql = "SELECT * FROM %s WHERE %s = ? limit 1";
+        String sql = "select * from %s where %s = ? limit 1";
         Object[] args = {%s};
         return jdbcQueryRunner.query(sql, this::mapOptional, args);
     }
@@ -598,7 +634,7 @@ public class TableGenerator extends ProcessorBase {
     @Override
     @MustBeClosed
     public Stream<%s> all() {
-        String sql = "SELECT * FROM %s order by %s";
+        String sql = "select * from %s order by %s";
         return jdbcUtils.stream(sql, this::map);
     }
 """,
@@ -609,7 +645,7 @@ public class TableGenerator extends ProcessorBase {
 """
     @Override
     public Optional<%s> id(long id) {
-        String sql = "SELECT * FROM %s WHERE %s = ? limit 1";
+        String sql = "select * from %s where %s = ? limit 1";
         Object[] args = {id};
         return jdbcQueryRunner.query(sql, this::mapOptional, args);
     }
@@ -621,7 +657,7 @@ public class TableGenerator extends ProcessorBase {
 """
     @Override
     public Optional<%s> idAndVersion(long id, int version) {
-        String sql = "SELECT * FROM %s WHERE %s = ? and %s = ? limit 1";
+        String sql = "select * from %s where %s = ? and %s = ? limit 1";
         Object[] args = {id, version};
         return jdbcQueryRunner.query(sql, this::mapOptional, args);
     }
@@ -836,6 +872,22 @@ public class TableGenerator extends ProcessorBase {
     return new GeneratedFile(stringWriter, ac.classPackage() + "." + className);
   }
 
+  private String sqlFromFile(String sqlResource) {
+    try {
+      FileObject fileObject =
+          processingEnv.getFiler().getResource(StandardLocation.CLASS_PATH, "", sqlResource);
+      if (null == fileObject) {
+        throw new GenerationException("no resource found: " + sqlResource);
+      }
+      try (InputStream inputStream = fileObject.openInputStream()) {
+        byte[] fileBytes = inputStream.readAllBytes();
+        return new String(fileBytes, StandardCharsets.UTF_8);
+      }
+    } catch (Exception e) {
+      throw new GenerationException(e);
+    }
+  }
+
   private static String getResultSetGetter(TableDetails td) {
     if (td.isReference()) {
       return "getLong";
@@ -903,8 +955,13 @@ public class TableGenerator extends ProcessorBase {
       out.printf("public interface %s {%n", interfaceName);
 
       for (TableQuery tq : tableQueries) {
-        String params =
-            tq.paramNames().stream().map(s -> "Object " + s).collect(Collectors.joining(", "));
+        String params;
+        if (tq.usesSqlFile()) {
+          params = "Object[] args";
+        } else {
+          params =
+              tq.paramNames().stream().map(s -> "Object " + s).collect(Collectors.joining(", "));
+        }
         switch (tq.returnType()) {
           case LIST_CANONICAL_NAME ->
               out.printf("\tList<%s> %s(%s);%n", ac.name(), tq.name(), params);
@@ -1006,10 +1063,21 @@ public class TableGenerator extends ProcessorBase {
         .map(
             query -> {
               String sql = query.sql();
-              int paramIndex = sql.indexOf(':');
+              String sqlFile = query.sqlFile();
+
+              if (StringUtils.isEmpty(sql) && StringUtils.isEmpty(sqlFile)) {
+                throw new GenerationException("must specify sql or sqlFile");
+              }
+
+              if (StringUtils.isNotEmpty(sql) && StringUtils.isNotEmpty(sqlFile)) {
+                throw new GenerationException("must specify sql or sqlFile, not both");
+              }
+
+              int paramIndex = null == sql ? -1 : sql.indexOf(':');
               if (paramIndex == -1) {
                 return new TableQuery(
                     sql,
+                    sqlFile,
                     query.name(),
                     query.fetchSize(),
                     getReturnType(query::returnType),
@@ -1032,6 +1100,7 @@ public class TableGenerator extends ProcessorBase {
 
               return new TableQuery(
                   sql,
+                  sqlFile,
                   query.name(),
                   query.fetchSize(),
                   getReturnType(query::returnType),
@@ -1127,7 +1196,17 @@ public class TableGenerator extends ProcessorBase {
   }
 
   private record TableQuery(
-      String sql, String name, int fetchSize, String returnType, List<String> paramNames) {}
+      String sql,
+      String sqlFile,
+      String name,
+      int fetchSize,
+      String returnType,
+      List<String> paramNames) {
+
+    boolean usesSqlFile() {
+      return StringUtils.isNotEmpty(sqlFile);
+    }
+  }
 
   private record TableDetails(
       RecordComponentElement element,

@@ -35,12 +35,17 @@ public @interface Table {
     Query[] value();
   }
 
+  /** Provide either SQL or refer to a file that can be found in the program's resources. */
   @Repeatable(Table.Queries.class)
   @Target(ElementType.TYPE)
   @interface Query {
     String name();
 
-    String sql();
+    String sql() default "";
+
+    // TODO: implement
+    //  if a sqlFile is given, load the sql from the resource and provide Object[] params
+    String sqlFile() default "";
 
     int fetchSize() default DEFAULT_FETCH_SIZE;
 

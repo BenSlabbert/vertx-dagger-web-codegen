@@ -25,6 +25,10 @@ import java.util.function.Consumer;
     name = "women",
     sql = "SELECT * FROM person WHERE gender = 'female'",
     returnType = Consumer.class)
+@Query(name = "adultsSqlFile", sqlFile = "file.sql", fetchSize = 5, returnType = Iterable.class)
+@Query(name = "byAgeGroupSqlFile", sqlFile = "file.sql", fetchSize = 7, returnType = List.class)
+@Query(name = "menSqlFile", sqlFile = "file.sql", fetchSize = 100)
+@Query(name = "womenSqlFile", sqlFile = "file.sql", returnType = Consumer.class)
 public record Person(
     @Column("id") @Id("id_seq") long id,
     @Column("first_name") @FindByColumn(returnType = List.class) @InsertOnly String name,
