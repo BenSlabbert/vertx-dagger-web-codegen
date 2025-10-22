@@ -237,7 +237,7 @@ public class TableGenerator extends ProcessorBase {
         String sanitizedSql;
 
         if (tq.usesSqlFile()) {
-          methodArgs = "Object[] varargs";
+          methodArgs = "Object... varargs";
           args = "varargs";
           sanitizedSql = sqlFromFile(tq.sqlFile());
         } else {
@@ -359,7 +359,7 @@ public class TableGenerator extends ProcessorBase {
             if (methodArgs.isBlank()) {
               p = "Consumer<%s> consumer".formatted(ac.name);
             } else {
-              p = String.join(", ", methodArgs, "Consumer<%s> consumer".formatted(ac.name));
+              p = String.join(", ", "Consumer<%s> consumer".formatted(ac.name), methodArgs);
             }
             if (defaultFetchSize) {
               out.printf(
@@ -957,7 +957,7 @@ public class TableGenerator extends ProcessorBase {
       for (TableQuery tq : tableQueries) {
         String params;
         if (tq.usesSqlFile()) {
-          params = "Object[] args";
+          params = "Object... args";
         } else {
           params =
               tq.paramNames().stream().map(s -> "Object " + s).collect(Collectors.joining(", "));
@@ -976,7 +976,7 @@ public class TableGenerator extends ProcessorBase {
             if (params.isBlank()) {
               p = "Consumer<%s> consumer".formatted(ac.name);
             } else {
-              p = String.join(", ", params, "Consumer<%s> consumer".formatted(ac.name));
+              p = String.join(", ", "Consumer<%s> consumer".formatted(ac.name), params);
             }
             out.printf("\tvoid %s(%s);%n", tq.name(), p);
           }
