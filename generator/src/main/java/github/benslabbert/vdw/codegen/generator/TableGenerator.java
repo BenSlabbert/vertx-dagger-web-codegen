@@ -6,6 +6,7 @@ import static java.util.function.Predicate.not;
 import com.google.common.base.Strings;
 import com.google.errorprone.annotations.MustBeClosed;
 import github.benslabbert.vdw.codegen.annotation.Table;
+import github.benslabbert.vdw.codegen.commons.jdbc.EntityNotFoundException;
 import github.benslabbert.vdw.codegen.commons.jdbc.Reference;
 import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcQueryRunner;
 import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcQueryRunnerFactory;
@@ -936,6 +937,7 @@ public class TableGenerator extends ProcessorBase {
       out.printf("import %s;%n", Stream.class.getCanonicalName());
       out.printf("import %s;%n", List.class.getCanonicalName());
       out.printf("import %s;%n", Consumer.class.getCanonicalName());
+      out.printf("import %s;%n", EntityNotFoundException.class.getCanonicalName());
       out.printf("import %s;%n", ac.canonicalName());
       for (TableDetails td : tableDetails) {
         String columnType = td.columnType();
@@ -1028,26 +1030,35 @@ public class TableGenerator extends ProcessorBase {
       }
 
       // common queries
-      out.println("\t@MustBeClosed");
-      out.printf("\tStream<%s> all();%n", ac.name());
-      out.printf("\tOptional<%s> id(long id);%n", ac.name());
-      out.printf("\tdefault %s requireId(long id) {%n", ac.name());
-      out.println(
-          "\t\treturn id(id).orElseThrow(() -> new IllegalArgumentException(\"not found id"
-              + " %d\".formatted(id)));");
-      out.println("\t}");
-      out.printf("\tOptional<%s> idAndVersion(long id, int version);%n", ac.name());
-      out.printf("\tdefault %s requireIdAndVersion(long id, int version) {%n", ac.name());
-      out.println(
-          "\t\treturn idAndVersion(id, version).orElseThrow(() -> new"
-              + " IllegalArgumentException(\"not found id %d and version %d\".formatted(id,"
-              + " version)));");
-      out.println("\t}");
-      out.printf("\t%s save(%s %s);%n", ac.name(), ac.name(), varName);
-      out.printf("\tCollection<%s> insertAll(Collection<%s> all);%n", ac.name(), ac.name());
-      out.printf("\tCollection<%s> updateAll(Collection<%s> all);%n", ac.name(), ac.name());
-      out.printf("\tint delete(%s %s);%n", ac.name(), varName);
-      out.printf("\tint[] deleteAll(Collection<%s> all);%n", ac.name());
+      out.printf(
+"""
+  @MustBeClosed
+  Stream<%s> all();
+
+  Optional<%s> id(long id);
+
+  default %s requireId(long id) {
+      return id(id).orElseThrow(() -> new EntityNotFoundException("not found id %%d".formatted(id)));
+  }
+
+  Optional<%s> idAndVersion(long id, int version);
+
+  default %s requireIdAndVersion(long id, int version) {
+      return idAndVersion(id, version).orElseThrow(() -> new  EntityNotFoundException("not found id %%d and version %%d".formatted(id, version)));
+  }
+
+  %s save(%s %s);
+
+  Collection<%s> insertAll(Collection<%s> all);
+
+  Collection<%s> updateAll(Collection<%s> all);
+
+  int delete(%s %s);
+
+  int[] deleteAll(Collection<%s> all);
+""",
+          ac.name(), ac.name(), ac.name(), ac.name(), ac.name(), ac.name(), ac.name(), varName,
+          ac.name(), ac.name(), ac.name(), ac.name(), ac.name(), varName, ac.name());
       out.println("}");
     }
 
