@@ -18,7 +18,12 @@ public @interface Table {
 
   int DEFAULT_FETCH_SIZE = 10;
 
+  /// The name of the table in the database
   String value() default "";
+
+  /// The name of the CTE for the table
+  /// defaults to cte_Table#value()
+  String cte() default "";
 
   @Target(ElementType.RECORD_COMPONENT)
   @interface Id {
@@ -43,8 +48,6 @@ public @interface Table {
 
     String sql() default "";
 
-    // TODO: implement
-    //  if a sqlFile is given, load the sql from the resource and provide Object[] params
     String sqlFile() default "";
 
     int fetchSize() default DEFAULT_FETCH_SIZE;

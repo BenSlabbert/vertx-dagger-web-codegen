@@ -15,7 +15,7 @@ import jakarta.annotation.Nullable;
 import java.util.List;
 import java.util.function.Consumer;
 
-@Table("person")
+@Table(value = "person", cte = "c")
 @Query(
     name = "adults",
     sql = "SELECT * FROM person WHERE age > 21",

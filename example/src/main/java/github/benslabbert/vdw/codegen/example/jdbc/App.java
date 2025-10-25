@@ -8,7 +8,6 @@ import github.benslabbert.txmanager.PlatformTransactionManager;
 import github.benslabbert.txmanager.annotation.AfterCommit;
 import github.benslabbert.txmanager.annotation.BeforeCommit;
 import github.benslabbert.txmanager.annotation.Transactional;
-import github.benslabbert.vdw.codegen.commons.jdbc.Reference;
 import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcQueryRunner;
 import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcQueryRunnerFactory;
 import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcQueryRunnerFactory_Impl;
@@ -17,6 +16,7 @@ import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcTrans
 import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcUtilsFactory;
 import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcUtilsFactory_Impl;
 import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcUtils_Factory;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -37,6 +37,7 @@ public class App {
 
   private static final Logger log = LoggerFactory.getLogger(App.class);
 
+  private final AddressRepository addressRepository;
   private final PersonRepository personRepository;
   private final JdbcQueryRunner jdbcQueryRunner;
   private final HikariDataSource dataSource;
@@ -44,7 +45,7 @@ public class App {
 
   private App() {
     HikariConfig hikariConfig = new HikariConfig();
-    hikariConfig.setJdbcUrl("jdbc:postgresql://localhost:5432/jdbc");
+    hikariConfig.setJdbcUrl("jdbc:postgresql://localhost:5432/postgres");
     hikariConfig.setUsername("postgres");
     hikariConfig.setPassword("postgres");
     hikariConfig.setAutoCommit(false);
@@ -66,6 +67,9 @@ public class App {
 
     this.personRepository =
         new PersonRepositoryImpl(
+            jdbcQueryRunnerFactoryProvider.get(), jdbcUtilsFactoryProvider.get());
+    this.addressRepository =
+        new AddressRepositoryImpl(
             jdbcQueryRunnerFactoryProvider.get(), jdbcUtilsFactoryProvider.get());
     PlatformTransactionManager.setTransactionManager(transactionManager.get());
 
@@ -112,6 +116,9 @@ public class App {
             1L);
     log.info("execute {}", execute);
 
+    Address address =
+        addressRepository.save(Address.builder().postalCode("pc1").street("s1").build());
+
     Person save =
         personRepository.save(
             Person.builder()
@@ -120,7 +127,7 @@ public class App {
                 .age(21)
                 .gender("female")
                 .middleName("middle")
-                .address(Reference.of(1000003L))
+                .address(address)
                 .build());
 
     save = save.toBuilder().name("new_name").age(22).build();
@@ -160,8 +167,28 @@ public class App {
     int delete = personRepository.delete(save);
     log.info("delete {}", delete);
 
-    Person p1 = Person.builder().name("name1").lastName("other1").age(11).gender("male").build();
-    Person p2 = Person.builder().name("name2").lastName("other2").age(22).gender("female").build();
+    Address address2 =
+        addressRepository.save(Address.builder().postalCode("pc2").street("s2").build());
+    Address address3 =
+        addressRepository.save(Address.builder().postalCode("pc3").street("s3").build());
+
+    Person p1 =
+        Person.builder()
+            .name("name1")
+            .lastName("other1")
+            .age(11)
+            .address(address2)
+            .gender("male")
+            .build();
+    Person p2 =
+        Person.builder()
+            .name("name2")
+            .lastName("other2")
+            .age(22)
+            .address(address3)
+            .gender("female")
+            .build();
+
     Collection<Person> bulkSave = personRepository.insertAll(List.of(p1, p2));
     log.info("bulkSave {}", bulkSave);
     bulkSave = personRepository.updateAll(bulkSave);
@@ -170,10 +197,26 @@ public class App {
     int[] ints = personRepository.deleteAll(bulkSave);
     log.info("deleteAll {}", ints);
 
-    //    List<Person> name1 = personRepository.name("name1");
-    //    log.info("name1 {}", name1);
-    //    List<Person> name2 = personRepository.name("name2");
-    //    log.info("name2 {}", name2);
+    List<Person> name1 = personRepository.first_name("name1");
+    log.info("name1 {}", name1);
+    List<Person> name2 = personRepository.first_name("name2");
+    log.info("name2 {}", name2);
+
+    String emptyResultSet =
+        personRepository.saveWithCte(
+            p1,
+            "select cte_person.first_name from cte_person",
+            rs -> {
+              if (rs.next()) {
+                return rs.getString(1);
+              }
+              throw new SQLException("empty result set");
+            });
+    log.info("emptyResultSet {}", emptyResultSet);
+
+    try (var s = personRepository.all()) {
+      s.forEach(personRepository::delete);
+    }
 
     beforeCommit();
     afterCommit1();
