@@ -202,17 +202,24 @@ public class App {
     List<Person> name2 = personRepository.first_name("name2");
     log.info("name2 {}", name2);
 
-    String emptyResultSet =
+    Projection projection =
         personRepository.saveWithCte(
             p1,
-            "select cte_person.first_name from cte_person",
+            """
+            select cte_person.first_name, a.postal_code from cte_person
+            join address a on a.id = cte_person.address_id
+            where a.postal_code = ?
+            """,
             rs -> {
               if (rs.next()) {
-                return rs.getString(1);
+                String fname = rs.getString(1);
+                String postalCode = rs.getString(2);
+                return new Projection(fname, postalCode);
               }
               throw new SQLException("empty result set");
-            });
-    log.info("emptyResultSet {}", emptyResultSet);
+            },
+            "pc2");
+    log.info("projection {}", projection);
 
     try (var s = personRepository.all()) {
       s.forEach(personRepository::delete);
@@ -223,6 +230,8 @@ public class App {
     afterCommit2();
     afterCommit3();
   }
+
+  private record Projection(String name, String postalCode) {}
 
   @BeforeCommit
   private void beforeCommit() {
