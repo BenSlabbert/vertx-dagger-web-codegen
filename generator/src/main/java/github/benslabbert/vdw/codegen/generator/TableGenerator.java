@@ -6,6 +6,7 @@ import static java.util.function.Predicate.not;
 import com.google.common.base.Strings;
 import com.google.errorprone.annotations.MustBeClosed;
 import github.benslabbert.vdw.codegen.annotation.Table;
+import github.benslabbert.vdw.codegen.commons.array.ArraysUtils;
 import github.benslabbert.vdw.codegen.commons.jdbc.EntityNotFoundException;
 import github.benslabbert.vdw.codegen.commons.jdbc.Reference;
 import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcQueryRunner;
@@ -45,6 +46,7 @@ import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.StatementConfiguration;
 import org.apache.commons.lang3.StringUtils;
 
@@ -104,6 +106,11 @@ public class TableGenerator extends ProcessorBase {
       String interfaceName) {
     String varName = ac.name().substring(0, 1).toLowerCase();
 
+    String cte = table.cte();
+    if ("".equals(cte)) {
+      cte = "cte_" + table.value();
+    }
+
     TableDetails idColumn =
         tableDetails.stream().filter(TableDetails::id).findFirst().orElseThrow();
     TableDetails versionColumn =
@@ -153,6 +160,8 @@ public class TableGenerator extends ProcessorBase {
       out.printf("import %s;%n", Reference.class.getCanonicalName());
       out.printf("import %s;%n", Consumer.class.getCanonicalName());
       out.printf("import %s;%n", ArrayList.class.getCanonicalName());
+      out.printf("import %s;%n", ArraysUtils.class.getCanonicalName());
+      out.printf("import %s;%n", ResultSetHandler.class.getCanonicalName());
       out.printf("import static %s.not;%n", Predicate.class.getCanonicalName());
       out.println();
 
@@ -173,15 +182,27 @@ public class TableGenerator extends ProcessorBase {
       out.printf(
 """
     private static final String UPDATE_SQL =
-      \"""
-        update %s
-        set %s
-        where %s = ? and %s = ?
-        returning *
-        \""";
+    \"""
+    update %s
+    set %s
+    where %s = ? and %s = ?
+    returning *
+    \""";
 """,
           table.value(), setClause, idColumn.columnName(), versionColumn.columnName());
       out.println();
+
+      out.println(
+"""
+  private static final String CTE_UPDATE_SQL =
+      \"""
+      with cte_person as (
+          %s
+      )
+
+      \"""
+          .formatted(UPDATE_SQL);
+""");
 
       List<String> insertColumns = new ArrayList<>();
       insertColumns.add(idColumn.columnName());
@@ -192,24 +213,48 @@ public class TableGenerator extends ProcessorBase {
       out.printf(
 """
     private static final String INSERT_SQL =
-      \"""
-        insert into %s (%s)
-        values (nextval('%s')%s, 0)
-        returning *
-        \""";
+    \"""
+    insert into %s (%s)
+    values (nextval('%s')%s, 0)
+    returning *
+    \""";
 """,
           table.value(), String.join(", ", insertColumns), idColumn.sequenceName(), repeat);
       out.println();
 
+      out.println(
+"""
+  private static final String CTE_INSERT_SQL =
+      \"""
+      with cte_person as (
+          %s
+      )
+
+      \"""
+          .formatted(INSERT_SQL);
+""");
+
       out.printf(
 """
     private static final String DELETE_SQL =
-      \"""
-        delete from %s where %s = ? and %s = ?
-        \""";
+    \"""
+    delete from %s where %s = ? and %s = ?
+    \""";
 """,
           table.value(), idColumn.columnName(), versionColumn.columnName());
       out.println();
+
+      out.println(
+"""
+  private static final String CTE_DELETE_SQL =
+      \"""
+      with cte_person as (
+          %s
+      )
+
+      \"""
+          .formatted(DELETE_SQL);
+""");
 
       out.printf(
 """
@@ -375,9 +420,11 @@ public class TableGenerator extends ProcessorBase {
         jdbcQueryRunner.query(
             sql,
             rs -> {
-            %s %s = map(rs);
-            consumer.accept(%s);
-            return null;
+                while (rs.next()) {
+                    %s %s = map(rs);
+                    consumer.accept(%s);
+                }
+                return null;
             },
             args);
     }
@@ -398,9 +445,11 @@ public class TableGenerator extends ProcessorBase {
         jdbcQueryRunnerFactory.create(cfg).query(
             sql,
             rs -> {
-            %s %s = map(rs);
-            consumer.accept(%s);
-            return null;
+                while (rs.next()) {
+                    %s %s = map(rs);
+                    consumer.accept(%s);
+                }
+                return null;
             },
             args);
     }
@@ -552,9 +601,11 @@ public class TableGenerator extends ProcessorBase {
         jdbcQueryRunner.query(
             sql,
             rs -> {
-            %s %s = map(rs);
-            consumer.accept(%s);
-            return null;
+                while (rs.next()) {
+                    %s %s = map(rs);
+                    consumer.accept(%s);
+                }
+                return null;
             },
             args);
     }
@@ -581,9 +632,11 @@ public class TableGenerator extends ProcessorBase {
         jdbcQueryRunnerFactory.create(cfg).query(
             sql,
             rs -> {
-            %s %s = map(rs);
-            consumer.accept(%s);
-            return null;
+                while (rs.next()) {
+                    %s %s = map(rs);
+                    consumer.accept(%s);
+                }
+                return null;
             },
             args);
     }
@@ -698,6 +751,24 @@ public class TableGenerator extends ProcessorBase {
     }
 """,
           ac.name(), ac.name(), varName, varName, insertArgs, updateArgs);
+      out.println();
+
+      out.printf(
+"""
+    @Override
+    public <T> T saveWithCte(%s %s, String cte, ResultSetHandler<T> rsh, Object... cteArgs) {
+        if (%s.isNew()) {
+          Object[] args = {%s};
+          String query = CTE_INSERT_SQL + cte;
+          return jdbcQueryRunner.query(query, rsh, ArraysUtils.merge(args, cteArgs));
+        }
+
+        Object[] args = {%s};
+        String query = CTE_UPDATE_SQL + cte;
+        return jdbcQueryRunner.query(query, rsh, ArraysUtils.merge(args, cteArgs));
+    }
+""",
+          ac.name(), varName, varName, insertArgs, updateArgs);
       out.println();
 
       out.printf(
@@ -938,6 +1009,7 @@ public class TableGenerator extends ProcessorBase {
       out.printf("import %s;%n", List.class.getCanonicalName());
       out.printf("import %s;%n", Consumer.class.getCanonicalName());
       out.printf("import %s;%n", EntityNotFoundException.class.getCanonicalName());
+      out.printf("import %s;%n", ResultSetHandler.class.getCanonicalName());
       out.printf("import %s;%n", ac.canonicalName());
       for (TableDetails td : tableDetails) {
         String columnType = td.columnType();
@@ -1049,6 +1121,8 @@ public class TableGenerator extends ProcessorBase {
 
   %s save(%s %s);
 
+  <T> T saveWithCte(%s %s, String cte, ResultSetHandler<T> rsh, Object... cteArgs);
+
   Collection<%s> insertAll(Collection<%s> all);
 
   Collection<%s> updateAll(Collection<%s> all);
@@ -1058,7 +1132,8 @@ public class TableGenerator extends ProcessorBase {
   int[] deleteAll(Collection<%s> all);
 """,
           ac.name(), ac.name(), ac.name(), ac.name(), ac.name(), ac.name(), ac.name(), varName,
-          ac.name(), ac.name(), ac.name(), ac.name(), ac.name(), varName, ac.name());
+          ac.name(), varName, ac.name(), ac.name(), ac.name(), ac.name(), ac.name(), varName,
+          ac.name());
       out.println("}");
     }
 
