@@ -3,19 +3,11 @@ package github.benslabbert.vdw.codegen.example.jdbc;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import dagger.internal.Provider;
 import github.benslabbert.txmanager.PlatformTransactionManager;
 import github.benslabbert.txmanager.annotation.AfterCommit;
 import github.benslabbert.txmanager.annotation.BeforeCommit;
 import github.benslabbert.txmanager.annotation.Transactional;
 import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcQueryRunner;
-import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcQueryRunnerFactory;
-import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcQueryRunnerFactory_Impl;
-import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcQueryRunner_Factory;
-import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcTransactionManager_Factory;
-import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcUtilsFactory;
-import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcUtilsFactory_Impl;
-import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcUtils_Factory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,7 +15,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
-import org.apache.commons.dbutils.StatementConfiguration;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.conf.ParamType;
@@ -37,11 +28,11 @@ public class App {
 
   private static final Logger log = LoggerFactory.getLogger(App.class);
 
-  private final AddressRepository addressRepository;
-  private final PersonRepository personRepository;
   private final JdbcQueryRunner jdbcQueryRunner;
-  private final HikariDataSource dataSource;
+  private final PersonRepository personRepository;
+  private final AddressRepository addressRepository;
   private final JooqRepo jooqRepo;
+  private final Provider provider;
 
   private App() {
     HikariConfig hikariConfig = new HikariConfig();
@@ -51,27 +42,12 @@ public class App {
     hikariConfig.setAutoCommit(false);
     hikariConfig.setMaximumPoolSize(1);
     hikariConfig.setPoolName("jdbc");
+
     hikariConfig.setThreadFactory(Thread.ofVirtual().name("v-", 0L).factory());
 
-    this.dataSource = new HikariDataSource(hikariConfig);
-    JdbcTransactionManager_Factory transactionManager =
-        JdbcTransactionManager_Factory.create(() -> dataSource);
+    this.provider = DaggerProvider.builder().dataSource(new HikariDataSource(hikariConfig)).build();
 
-    Provider<JdbcQueryRunnerFactory> jdbcQueryRunnerFactoryProvider =
-        JdbcQueryRunnerFactory_Impl.createFactoryProvider(
-            JdbcQueryRunner_Factory.create(transactionManager));
-
-    Provider<JdbcUtilsFactory> jdbcUtilsFactoryProvider =
-        JdbcUtilsFactory_Impl.createFactoryProvider(
-            JdbcUtils_Factory.create(() -> JdbcTransactionManager_Factory.newInstance(dataSource)));
-
-    this.personRepository =
-        new PersonRepositoryImpl(
-            jdbcQueryRunnerFactoryProvider.get(), jdbcUtilsFactoryProvider.get());
-    this.addressRepository =
-        new AddressRepositoryImpl(
-            jdbcQueryRunnerFactoryProvider.get(), jdbcUtilsFactoryProvider.get());
-    PlatformTransactionManager.setTransactionManager(transactionManager.get());
+    PlatformTransactionManager.setTransactionManager(provider.jdbcTransactionManager());
 
     Settings settings =
         new Settings()
@@ -79,14 +55,38 @@ public class App {
             .withStatementType(StatementType.PREPARED_STATEMENT);
     DSLContext dslContext = DSL.using((DataSource) null, SQLDialect.POSTGRES, settings);
     this.jooqRepo = JooqRepo.builder().dslContext(dslContext).build();
-
-    this.jdbcQueryRunner =
-        jdbcQueryRunnerFactoryProvider.get().create(new StatementConfiguration.Builder().build());
+    this.jdbcQueryRunner = provider.jdbcQueryRunnerFactory().create();
+    this.addressRepository = provider.addressRepository();
+    this.personRepository = provider.personRepository();
   }
 
   public static void main(String[] args) {
     // docker container run --rm -it  -e POSTGRES_PASSWORD=postgres  -e POSTGRES_USER=postgres  -e
     // POSTGRES_DB=jdbc  -p 5432:5432  postgres:17
+
+    // create sequence id_seq
+    //    start 1
+    //    increment 1
+    //    cache 1;
+    //
+    // create table address (
+    //    id bigint primary key,
+    //    version int4 not null,
+    //    street text,
+    //    postal_code text
+    // );
+    //
+    // create table person (
+    //    id bigint primary key,
+    //    version int4,
+    //    first_name text,
+    //    middle_name text,
+    //    last_name text,
+    //    age int4,
+    //    gender text,
+    //    address_id bigint not null unique,
+    //    constraint person_address_fk foreign key (address_id) references address(id)
+    // );
 
     App app = new App();
     app.run();
@@ -221,6 +221,21 @@ public class App {
             "pc2");
     log.info("projection {}", projection);
 
+    List<Person> people = personRepository.first_name(projection.name());
+
+    List<Long> deletedIds =
+        personRepository.deleteWithCte(
+            people.getFirst(),
+            "select cte_person.id from cte_person",
+            rs -> {
+              List<Long> ids = new ArrayList<>();
+              while (rs.next()) {
+                ids.add(rs.getLong(1));
+              }
+              return ids;
+            });
+    log.info("deletedIds {}", deletedIds);
+
     try (var s = personRepository.all()) {
       s.forEach(personRepository::delete);
     }
@@ -241,7 +256,13 @@ public class App {
   @AfterCommit
   private void afterCommit1() {
     log.info("afterCommit1");
-    dataSource.close();
+    HikariDataSource ds = (HikariDataSource) provider.dataSource();
+    ds.close();
+    try {
+      PlatformTransactionManager.close();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @AfterCommit

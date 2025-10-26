@@ -165,6 +165,7 @@ public class TableGenerator extends ProcessorBase {
       out.printf("import static %s.not;%n", Predicate.class.getCanonicalName());
       out.println();
 
+      out.println("@Singleton");
       out.printf(
           "@Generated(value = \"%s\", date = \"%s\")%n",
           getClass().getCanonicalName(),
@@ -250,6 +251,7 @@ public class TableGenerator extends ProcessorBase {
       \"""
       with cte_person as (
           %s
+          returning *
       )
 
       \"""
@@ -826,15 +828,37 @@ public class TableGenerator extends ProcessorBase {
 
       out.printf(
 """
-  @Override
-  public int delete(%s %s) {
-    if (%s.isNew()) {
-      throw new IllegalArgumentException("cannot delete new object");
-    }
+    @Override
+    public int delete(%s %s) {
+        if (%s.isNew()) {
+            throw new IllegalArgumentException("cannot delete new object");
+        }
 
-    Object[] args = {%s.%s(), %s.%s()};
-    return jdbcQueryRunner.update(DELETE_SQL, args);
-  }
+        Object[] args = {%s.%s(), %s.%s()};
+        return jdbcQueryRunner.update(DELETE_SQL, args);
+    }
+""",
+          ac.name(),
+          varName,
+          varName,
+          varName,
+          idColumn.fieldName(),
+          varName,
+          versionColumn.fieldName());
+      out.println();
+
+      out.printf(
+"""
+    @Override
+    public <T> T deleteWithCte(%s %s, String cte, ResultSetHandler<T> rsh, Object... cteArgs) {
+        if (%s.isNew()) {
+            throw new IllegalArgumentException("cannot delete new object");
+        }
+
+        Object[] args = {%s.%s(), %s.%s()};
+        String query = CTE_DELETE_SQL + cte;
+        return jdbcQueryRunner.query(query, rsh, ArraysUtils.merge(args, cteArgs));
+    }
 """,
           ac.name(),
           varName,
@@ -1104,36 +1128,38 @@ public class TableGenerator extends ProcessorBase {
       // common queries
       out.printf(
 """
-  @MustBeClosed
-  Stream<%s> all();
+    @MustBeClosed
+    Stream<%s> all();
 
-  Optional<%s> id(long id);
+    Optional<%s> id(long id);
 
-  default %s requireId(long id) {
-      return id(id).orElseThrow(() -> new EntityNotFoundException("not found id %%d".formatted(id)));
-  }
+    default %s requireId(long id) {
+        return id(id).orElseThrow(() -> new EntityNotFoundException("not found id %%d".formatted(id)));
+    }
 
-  Optional<%s> idAndVersion(long id, int version);
+    Optional<%s> idAndVersion(long id, int version);
 
-  default %s requireIdAndVersion(long id, int version) {
-      return idAndVersion(id, version).orElseThrow(() -> new  EntityNotFoundException("not found id %%d and version %%d".formatted(id, version)));
-  }
+    default %s requireIdAndVersion(long id, int version) {
+        return idAndVersion(id, version).orElseThrow(() -> new  EntityNotFoundException("not found id %%d and version %%d".formatted(id, version)));
+    }
 
-  %s save(%s %s);
+    %s save(%s %s);
 
-  <T> T saveWithCte(%s %s, String cte, ResultSetHandler<T> rsh, Object... cteArgs);
+    <T> T saveWithCte(%s %s, String cte, ResultSetHandler<T> rsh, Object... cteArgs);
 
-  Collection<%s> insertAll(Collection<%s> all);
+    Collection<%s> insertAll(Collection<%s> all);
 
-  Collection<%s> updateAll(Collection<%s> all);
+    Collection<%s> updateAll(Collection<%s> all);
 
-  int delete(%s %s);
+    int delete(%s %s);
 
-  int[] deleteAll(Collection<%s> all);
+    <T> T deleteWithCte(%s %s, String cte, ResultSetHandler<T> rsh, Object... cteArgs);
+
+    int[] deleteAll(Collection<%s> all);
 """,
           ac.name(), ac.name(), ac.name(), ac.name(), ac.name(), ac.name(), ac.name(), varName,
           ac.name(), varName, ac.name(), ac.name(), ac.name(), ac.name(), ac.name(), varName,
-          ac.name());
+          ac.name(), varName, ac.name());
       out.println("}");
     }
 
