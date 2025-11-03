@@ -13,12 +13,7 @@ import io.vertx.serviceproxy.AuthorizationInterceptor;
 import jakarta.inject.Singleton;
 import java.util.Set;
 
-@Module(
-    includes = {
-      DataService_EB_Module_Bindings.class,
-      ExampleService_EB_Module_Bindings.class,
-      ModuleBindings.class
-    })
+@Module(includes = {GeneratedModuleBindings.class, ModuleBindings.class})
 public interface EBModule {
 
   @Provides

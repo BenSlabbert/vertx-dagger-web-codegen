@@ -1,6 +1,7 @@
 /* Licensed under Apache-2.0 2024. */
 package github.benslabbert.vdw.codegen.generator;
 
+import github.benslabbert.vdw.codegen.annotation.GenerateModuleBindings;
 import github.benslabbert.vdw.codegen.annotation.RequiresModuleGeneration;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -42,7 +43,9 @@ public class ModuleGeneration extends ProcessorBase {
       out.println("import dagger.Module;");
       out.println("import dagger.multibindings.IntoSet;");
       out.println("import github.benslabbert.vdw.codegen.commons.RouterConfigurer;");
+      out.printf("import %s;%n", GenerateModuleBindings.class.getCanonicalName());
       out.println();
+      out.println("@GenerateModuleBindings");
       out.println("@Module");
       out.printf(
           "@Generated(value = \"%s\", date = \"%s\")%n",
