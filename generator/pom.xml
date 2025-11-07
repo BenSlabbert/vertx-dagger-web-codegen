@@ -9,6 +9,7 @@
   </parent>
 
   <artifactId>generator</artifactId>
+  <version>${revision}</version>
 
   <dependencies>
     <dependency>

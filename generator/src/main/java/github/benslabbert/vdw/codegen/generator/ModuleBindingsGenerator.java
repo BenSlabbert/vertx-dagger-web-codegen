@@ -44,7 +44,6 @@ public class ModuleBindingsGenerator extends AbstractProcessor {
         String canonicalName = element.asType().toString();
         String classPackage = canonicalName.substring(0, canonicalName.lastIndexOf('.'));
         Name simpleName = element.getSimpleName();
-        processingEnv.getMessager().printNote("element: " + simpleName);
         moduleBindings.compute(
             classPackage,
             (key, oldValue) -> {
@@ -58,13 +57,9 @@ public class ModuleBindingsGenerator extends AbstractProcessor {
             });
       }
 
-      processingEnv.getMessager().printNote("generateAllModuleBindings");
       generateAllModuleBindings(moduleBindings);
-      return true;
+      return !moduleBindings.isEmpty();
     }
-
-    boolean processingOver = roundEnv.processingOver();
-    processingEnv.getMessager().printNote("processingOver ? " + processingOver);
 
     return false;
   }

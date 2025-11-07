@@ -9,6 +9,7 @@
   </parent>
 
   <artifactId>bom</artifactId>
+  <version>${revision}</version>
   <packaging>pom</packaging>
 
   <dependencyManagement>
@@ -16,6 +17,11 @@
       <dependency>
         <groupId>github.benslabbert.vdw.codegen</groupId>
         <artifactId>annotation</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>github.benslabbert.vdw.codegen</groupId>
+        <artifactId>aop</artifactId>
         <version>${revision}</version>
       </dependency>
       <dependency>
