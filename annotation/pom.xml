@@ -9,5 +9,6 @@
   </parent>
 
   <artifactId>annotation</artifactId>
+  <version>${revision}</version>
 
 </project>

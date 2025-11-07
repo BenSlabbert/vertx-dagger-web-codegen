@@ -9,6 +9,7 @@
   </parent>
 
   <artifactId>commons</artifactId>
+  <version>${revision}</version>
 
   <dependencies>
     <dependency>

@@ -9,6 +9,7 @@
   </parent>
 
   <artifactId>example</artifactId>
+  <version>${revision}</version>
 
   <properties>
     <finalName>example</finalName>
@@ -42,7 +43,17 @@
     </dependency>
     <dependency>
       <groupId>github.benslabbert.vdw.codegen</groupId>
+      <artifactId>advice-transformer</artifactId>
+      <version>${revision}</version>
+    </dependency>
+    <dependency>
+      <groupId>github.benslabbert.vdw.codegen</groupId>
       <artifactId>annotation</artifactId>
+      <version>${revision}</version>
+    </dependency>
+    <dependency>
+      <groupId>github.benslabbert.vdw.codegen</groupId>
+      <artifactId>aop</artifactId>
       <version>${revision}</version>
     </dependency>
     <dependency>
@@ -101,6 +112,12 @@
     </dependency>
     <dependency>
       <groupId>github.benslabbert.vdw.codegen</groupId>
+      <artifactId>advice-extractor-plugin</artifactId>
+      <version>${revision}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>github.benslabbert.vdw.codegen</groupId>
       <artifactId>generator</artifactId>
       <version>${revision}</version>
       <scope>provided</scope>
@@ -155,6 +172,20 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>github.benslabbert.vdw.codegen</groupId>
+        <artifactId>advice-extractor-plugin</artifactId>
+        <version>${revision}</version>
+        <executions>
+          <execution>
+            <id>merge-advices</id>
+            <goals>
+              <goal>merge-advices</goal>
+            </goals>
+            <phase>process-classes</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>net.bytebuddy</groupId>
         <artifactId>byte-buddy-maven-plugin</artifactId>
         <dependencies>
@@ -162,6 +193,11 @@
             <groupId>github.benslabbert.txmanager</groupId>
             <artifactId>plugin</artifactId>
             <version>${tx-manager.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>github.benslabbert.vdw.codegen</groupId>
+            <artifactId>advice-transformer</artifactId>
+            <version>${revision}</version>
           </dependency>
         </dependencies>
         <executions>
@@ -255,6 +291,7 @@
         <artifactId>maven-shade-plugin</artifactId>
         <executions>
           <execution>
+            <id>shade</id>
             <goals>
               <goal>shade</goal>
             </goals>
