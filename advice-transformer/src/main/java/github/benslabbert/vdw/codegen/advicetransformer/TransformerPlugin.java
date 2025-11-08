@@ -66,10 +66,6 @@ public class TransformerPlugin implements Plugin {
             .toList();
 
     for (MatchedShape ma : matchedAdvices) {
-      MethodDescription.InDefinedShape shape = ma.shape;
-      Set<AdvicePair> advices = ma.advices;
-      log.info("shape %s advices size=%d %s: ".formatted(shape, advices.size(), advices));
-
       boolean even = System.currentTimeMillis() % 2 == 0;
       String impl = even ? "intercept" : "bind";
 
@@ -82,7 +78,15 @@ public class TransformerPlugin implements Plugin {
               .withoutCode()
               .annotateMethod(alreadyTransformed(impl));
 
-      for (AdvicePair advice : advices) {
+      for (AdvicePair advice : ma.advices) {
+        // todo we can add an priority to our advice annotations
+        //  then we can ensure that we apply the before advices in their specific priority
+        //  if the priority value does not exist, catch the IllegalArgumentException and assign the
+        //  default value
+        //  AnnotationDescription annotationDescription = ma.shape.getDeclaredAnnotations().get(0);
+        //  AnnotationValue<?, ?> priority = annotationDescription.getValue("priority");
+        //  Integer priorityValue = priority.resolve(int.class);
+
         if (even) {
           builder =
               builder
