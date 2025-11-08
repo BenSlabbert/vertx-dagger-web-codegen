@@ -42,6 +42,9 @@ public class BeforeAdviceResourceGenerator extends AbstractProcessor {
           roundEnv.getElementsAnnotatedWith(annotation).stream()
               .map(
                   e -> {
+                    // todo: ensure the implementation implements
+                    //
+                    // github.benslabbert.vdw.codegen.annotation.BeforeAdvice.BeforeAdviceInvocation
                     BeforeAdvice beforeAdvice = e.getAnnotation(BeforeAdvice.class);
                     String adviceImplementation = getReturnType(beforeAdvice);
                     String adviceAnnotation = e.asType().toString();
