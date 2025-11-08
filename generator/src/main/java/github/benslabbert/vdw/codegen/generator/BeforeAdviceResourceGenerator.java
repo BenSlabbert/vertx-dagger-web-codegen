@@ -56,21 +56,7 @@ public class BeforeAdviceResourceGenerator extends AbstractProcessor {
                 .createResource(StandardLocation.CLASS_OUTPUT, "", "META-INF/advice_annotations");
 
         try (var w = new PrintWriter(adviceResource.openWriter())) {
-          advices.forEach(a -> w.println(a.adviceAnnotation));
-        }
-      } catch (IOException e) {
-        throw new GenerationException(e);
-      }
-
-      try {
-        FileObject adviceImplementationResource =
-            processingEnv
-                .getFiler()
-                .createResource(
-                    StandardLocation.CLASS_OUTPUT, "", "META-INF/advice_implementations");
-
-        try (var w = new PrintWriter(adviceImplementationResource.openWriter())) {
-          advices.forEach(a -> w.println(a.adviceImplementation));
+          advices.forEach(a -> w.println(a.adviceAnnotation + "=" + a.adviceImplementation));
         }
       } catch (IOException e) {
         throw new GenerationException(e);

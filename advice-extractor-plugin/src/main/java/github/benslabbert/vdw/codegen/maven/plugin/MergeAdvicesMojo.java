@@ -41,16 +41,12 @@ public class MergeAdvicesMojo extends AbstractMojo {
   @Parameter(property = "mergedAdviceAnnotations", defaultValue = "advice_annotations")
   private String adviceAnnotations;
 
-  @Parameter(property = "mergedAdviceImplementation", defaultValue = "advice_implementations")
-  private String adviceImplementations;
-
   public void execute() throws MojoExecutionException {
     getLog().info("==========================================");
     getLog().info("Starting advice file extraction and merge");
     getLog().info("==========================================");
 
     extracted(adviceAnnotations);
-    extracted(adviceImplementations);
 
     getLog().info("==========================================");
     getLog().info("Advice merge completed successfully");

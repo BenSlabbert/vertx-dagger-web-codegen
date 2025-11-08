@@ -4,43 +4,111 @@ package github.benslabbert.vdw.codegen.advicetransformer;
 import static net.bytebuddy.matcher.ElementMatchers.isAnnotatedWith;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 
+import github.benslabbert.vdw.codegen.annotation.AlreadyTransformed;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import net.bytebuddy.asm.Advice;
 import net.bytebuddy.build.BuildLogger;
 import net.bytebuddy.build.Plugin;
+import net.bytebuddy.description.annotation.AnnotationDescription;
 import net.bytebuddy.description.annotation.AnnotationSource;
+import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.ClassFileLocator;
 import net.bytebuddy.dynamic.DynamicType.Builder;
+import net.bytebuddy.implementation.SuperMethodCall;
+import net.bytebuddy.matcher.ElementMatchers;
 
 public class TransformerPlugin implements Plugin {
 
   private static final String ADVICE_ANNOTATION_FILE = "META-INF/advice_annotations";
 
   private final BuildLogger log;
-  private final List<Junction<AnnotationSource>> matchers;
+  private final Map<AdvicePair, Junction<AnnotationSource>> matchersMap;
+
+  private record AdvicePair(String annotation, String implementation) {}
 
   public TransformerPlugin(File file, BuildLogger logger) {
     this.log = logger;
     log.info("init transformer: " + file);
-    List<String> advices = loadAdvices(file);
-    for (String advice : advices) {
+    Set<AdvicePair> advices = loadAdvices(file);
+    for (AdvicePair advice : advices) {
       log.info("advices loaded: " + advice);
     }
-    this.matchers = advices.stream().map(s -> isAnnotatedWith(named(s))).toList();
+    this.matchersMap =
+        advices.stream()
+            .collect(Collectors.toMap(s -> s, s -> isAnnotatedWith(named(s.annotation))));
   }
+
+  record MatchedShape(MethodDescription.InDefinedShape shape, Set<AdvicePair> advices) {}
 
   @Override
   public Builder<?> apply(Builder<?> builder, TypeDescription target, ClassFileLocator clf) {
-    //      for (InDefinedShape tm : target.getDeclaredMethods()) {
-    //      builder = builder.method(md -> md.equals(tm)).intercept(Advice.to(String.class));
-    //    }
     log.info("transform advices: " + target.getName());
 
+    List<MatchedShape> matchedAdvices =
+        target.getDeclaredMethods().stream()
+            .filter(this::shapeMatches)
+            .map(
+                shape ->
+                    new MatchedShape(
+                        shape,
+                        matchersMap.entrySet().stream()
+                            .filter(m -> m.getValue().matches(shape))
+                            .map(Map.Entry::getKey)
+                            .collect(Collectors.toSet())))
+            .toList();
+
+    for (MatchedShape ma : matchedAdvices) {
+      MethodDescription.InDefinedShape shape = ma.shape;
+      Set<AdvicePair> advices = ma.advices;
+      log.info("shape %s advices size=%d %s: ".formatted(shape, advices.size(), advices));
+
+      boolean even = System.currentTimeMillis() % 2 == 0;
+      String impl = even ? "intercept" : "bind";
+
+      builder =
+          builder
+              .method(md -> md.equals(ma.shape))
+              .intercept(SuperMethodCall.INSTANCE)
+              .annotateMethod(alreadyTransformed(impl))
+              .method(ElementMatchers.isAbstract().and(ElementMatchers.isDeclaredBy(target)))
+              .withoutCode()
+              .annotateMethod(alreadyTransformed(impl));
+
+      for (AdvicePair advice : advices) {
+        if (even) {
+          builder =
+              builder
+                  .method(md -> md.equals(ma.shape))
+                  .intercept(
+                      Advice.withCustomMapping()
+                          .bind(AdviceName.class, advice.annotation)
+                          .to(ApplyBeforeAdvice.class));
+        } else {
+          builder =
+              builder.visit(
+                  Advice.withCustomMapping()
+                      .bind(AdviceName.class, advice.annotation)
+                      .to(ApplyBeforeAdvice.class)
+                      .on(md -> md.equals(ma.shape)));
+        }
+      }
+    }
+
     return builder;
+  }
+
+  private static AnnotationDescription alreadyTransformed(String impl) {
+    return AnnotationDescription.Builder.ofType(AlreadyTransformed.class)
+        .define("value", impl)
+        .build();
   }
 
   @Override
@@ -50,22 +118,29 @@ public class TransformerPlugin implements Plugin {
   }
 
   @Override
-  public boolean matches(TypeDescription typeDefinitions) {
-    if (matchers.isEmpty()) {
+  public boolean matches(TypeDescription target) {
+    if (matchersMap.isEmpty()) {
       return false;
     }
 
-    return typeDefinitions.getDeclaredMethods().stream()
-        .anyMatch(shape -> matchers.stream().anyMatch(m -> m.matches(shape)));
+    return target.getDeclaredMethods().stream().anyMatch(this::shapeMatches);
   }
 
-  private List<String> loadAdvices(File file) {
+  private boolean shapeMatches(MethodDescription.InDefinedShape shape) {
+    if (shape.getDeclaredAnnotations().isAnnotationPresent(AlreadyTransformed.class)) {
+      return false;
+    }
+
+    return matchersMap.values().stream().anyMatch(m -> m.matches(shape));
+  }
+
+  private Set<AdvicePair> loadAdvices(File file) {
     log.info("Loading advices");
 
     Path annotationFile = file.toPath().resolve(ADVICE_ANNOTATION_FILE);
     if (!annotationFile.toFile().exists()) {
       log.info("annotation file does not exist");
-      return List.of();
+      return Set.of();
     }
 
     try {
@@ -74,7 +149,12 @@ public class TransformerPlugin implements Plugin {
           .map(String::trim)
           .filter(line -> !line.startsWith("#"))
           .map(String::trim)
-          .toList();
+          .map(
+              s -> {
+                String[] split = s.split("=");
+                return new AdvicePair(split[0], split[1]);
+              })
+          .collect(Collectors.toSet());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

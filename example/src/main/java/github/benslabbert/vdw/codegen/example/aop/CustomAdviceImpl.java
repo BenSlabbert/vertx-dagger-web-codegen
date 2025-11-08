@@ -13,6 +13,6 @@ public class CustomAdviceImpl implements BeforeAdvice.BeforeAdviceInvocation {
 
   @Override
   public void before(String className, String methodName, Object... args) {
-    log.info("CustomAdviceImpl.before({}, {})", className, methodName);
+    log.info("CustomAdviceImpl.before({}, {}, {})", className, methodName, args);
   }
 }

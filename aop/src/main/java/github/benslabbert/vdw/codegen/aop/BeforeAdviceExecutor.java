@@ -3,35 +3,35 @@ package github.benslabbert.vdw.codegen.aop;
 
 import github.benslabbert.vdw.codegen.annotation.BeforeAdvice.BeforeAdviceInvocation;
 import jakarta.inject.Provider;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class BeforeAdviceExecutor {
 
-  private static final Logger log = LoggerFactory.getLogger(BeforeAdviceExecutor.class);
-  private static final Map<String, Provider<BeforeAdviceInvocation>> ADVICE_MAP = new HashMap<>();
+  private static final Map<String, List<Provider<BeforeAdviceInvocation>>> MAP = new HashMap<>();
 
-  public static void addBeforeAdvice(
-      String adviceCanonicalName, Provider<BeforeAdviceInvocation> beforeAdviceInvocationProvider) {
-    Provider<BeforeAdviceInvocation> put =
-        ADVICE_MAP.put(adviceCanonicalName, beforeAdviceInvocationProvider);
-    if (put != null) {
-      throw new IllegalStateException("Duplicate before advice");
-    }
+  public static void clear() {
+    MAP.clear();
   }
 
-  public static void before(
-      String adviceCanonicalName, String className, String methodName, Object... args) {
-    Provider<BeforeAdviceInvocation> invocationProvider = ADVICE_MAP.get(adviceCanonicalName);
+  public static void addBeforeAdvice(String adviceName, Provider<BeforeAdviceInvocation> provider) {
+    MAP.compute(
+        adviceName,
+        (key, oldValue) -> {
+          if (null == oldValue) {
+            return new ArrayList<>(2);
+          }
 
-    if (null == invocationProvider) {
-      log.warn("No before advice found for {}", className);
-      return;
-    }
+          oldValue.add(provider);
+          return oldValue;
+        });
+  }
 
-    BeforeAdviceInvocation beforeAdviceInvocation = invocationProvider.get();
-    beforeAdviceInvocation.before(className, methodName, args);
+  public static void before(String adviceName, String clazz, String method, Object... args) {
+    MAP.getOrDefault(adviceName, List.of()).stream()
+        .map(Provider::get)
+        .forEach(i -> i.before(clazz, method, args));
   }
 }

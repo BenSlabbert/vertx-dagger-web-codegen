@@ -13,6 +13,6 @@ public class LogEntryAdvice implements BeforeAdvice.BeforeAdviceInvocation {
 
   @Override
   public void before(String className, String methodName, Object... args) {
-    log.info("LogEntryAdvice.before({}, {})", className, methodName);
+    log.info("LogEntryAdvice.before({}, {}, {})", className, methodName, args);
   }
 }

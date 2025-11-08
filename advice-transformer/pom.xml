@@ -12,6 +12,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>github.benslabbert.vdw.codegen</groupId>
+      <artifactId>aop</artifactId>
+      <version>${revision}</version>
+    </dependency>
+    <dependency>
       <groupId>net.bytebuddy</groupId>
       <artifactId>byte-buddy</artifactId>
     </dependency>
