@@ -1,6 +1,8 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.advicetransformer;
 
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 import static net.bytebuddy.matcher.ElementMatchers.isAnnotatedWith;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 
@@ -23,16 +25,33 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.ClassFileLocator;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.SuperMethodCall;
-import net.bytebuddy.matcher.ElementMatchers;
 
 public class TransformerPlugin implements Plugin {
 
   private static final String ADVICE_ANNOTATION_FILE = "META-INF/advice_annotations";
 
-  private final BuildLogger log;
   private final Map<AdvicePair, Junction<AnnotationSource>> matchersMap;
+  private final BuildLogger log;
 
-  private record AdvicePair(String annotation, String implementation) {}
+  private record AdvicePair(String annotation, String implementation, Type type) {
+
+    Junction<TypeDescription> matcher() {
+      return named(annotation);
+    }
+
+    enum Type {
+      BEFORE,
+      AROUND
+    }
+
+    static Type fromString(String type) {
+      return switch (type.toUpperCase()) {
+        case "BEFORE" -> Type.BEFORE;
+        case "AROUND" -> Type.AROUND;
+        default -> throw new IllegalArgumentException("unknown type " + type);
+      };
+    }
+  }
 
   public TransformerPlugin(File file, BuildLogger logger) {
     this.log = logger;
@@ -42,8 +61,7 @@ public class TransformerPlugin implements Plugin {
       log.info("advices loaded: " + advice);
     }
     this.matchersMap =
-        advices.stream()
-            .collect(Collectors.toMap(s -> s, s -> isAnnotatedWith(named(s.annotation))));
+        advices.stream().collect(toMap(identity(), a -> isAnnotatedWith(a.matcher())));
   }
 
   record MatchedShape(MethodDescription.InDefinedShape shape, Set<AdvicePair> advices) {}
@@ -69,40 +87,37 @@ public class TransformerPlugin implements Plugin {
       boolean even = System.currentTimeMillis() % 2 == 0;
       String impl = even ? "intercept" : "bind";
 
-      builder =
-          builder
-              .method(md -> md.equals(ma.shape))
-              .intercept(SuperMethodCall.INSTANCE)
-              .annotateMethod(alreadyTransformed(impl))
-              .method(ElementMatchers.isAbstract().and(ElementMatchers.isDeclaredBy(target)))
-              .withoutCode()
-              .annotateMethod(alreadyTransformed(impl));
+      String advices =
+          ma.advices.stream().map(AdvicePair::annotation).collect(Collectors.joining(","));
 
-      for (AdvicePair advice : ma.advices) {
-        // todo we can add an priority to our advice annotations
-        //  then we can ensure that we apply the before advices in their specific priority
-        //  if the priority value does not exist, catch the IllegalArgumentException and assign the
-        //  default value
-        //  AnnotationDescription annotationDescription = ma.shape.getDeclaredAnnotations().get(0);
-        //  AnnotationValue<?, ?> priority = annotationDescription.getValue("priority");
-        //  Integer priorityValue = priority.resolve(int.class);
+      // todo we can add an priority to our advice annotations
+      //  then we can ensure that we apply the before advices in their specific priority
+      //  if the priority value does not exist, catch the IllegalArgumentException and assign the
+      //  default value
+      //  AnnotationDescription annotationDescription = ma.shape.getDeclaredAnnotations().get(0);
+      //  AnnotationValue<?, ?> priority = annotationDescription.getValue("priority");
+      //  Integer priorityValue = priority.resolve(int.class);
 
-        if (even) {
-          builder =
-              builder
-                  .method(md -> md.equals(ma.shape))
-                  .intercept(
-                      Advice.withCustomMapping()
-                          .bind(AdviceName.class, advice.annotation)
-                          .to(ApplyBeforeAdvice.class));
-        } else {
-          builder =
-              builder.visit(
-                  Advice.withCustomMapping()
-                      .bind(AdviceName.class, advice.annotation)
-                      .to(ApplyBeforeAdvice.class)
-                      .on(md -> md.equals(ma.shape)));
-        }
+      if (even) {
+        builder =
+            builder
+                .method(md -> md.equals(ma.shape))
+                .intercept(
+                    Advice.withCustomMapping()
+                        .bind(AdviceName.class, advices)
+                        .to(ApplyAdvice.class))
+                .annotateMethod(alreadyTransformed(impl));
+      } else {
+        builder =
+            builder
+                .method(md -> md.equals(ma.shape))
+                .intercept(SuperMethodCall.INSTANCE)
+                .annotateMethod(alreadyTransformed(impl))
+                .visit(
+                    Advice.withCustomMapping()
+                        .bind(AdviceName.class, advices)
+                        .to(ApplyAdvice.class)
+                        .on(md -> md.equals(ma.shape)));
       }
     }
 
@@ -155,8 +170,11 @@ public class TransformerPlugin implements Plugin {
           .map(String::trim)
           .map(
               s -> {
-                String[] split = s.split("=");
-                return new AdvicePair(split[0], split[1]);
+                String[] split = s.split(",");
+                if (split.length != 3) {
+                  throw new IllegalArgumentException("advice_annotation entry must have 3 columns");
+                }
+                return new AdvicePair(split[0], split[1], AdvicePair.fromString(split[2]));
               })
           .collect(Collectors.toSet());
     } catch (IOException e) {

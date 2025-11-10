@@ -4,4 +4,4 @@ github.benslabbert.vdw.codegen.generator.WebRequestGenerator
 github.benslabbert.vdw.codegen.generator.VertxEBProxyGenerators
 github.benslabbert.vdw.codegen.generator.TableGenerator
 github.benslabbert.vdw.codegen.generator.ModuleBindingsGenerator
-github.benslabbert.vdw.codegen.generator.BeforeAdviceResourceGenerator
+github.benslabbert.vdw.codegen.generator.AdviceResourceGenerator
