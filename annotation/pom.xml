@@ -11,4 +11,11 @@
   <artifactId>annotation</artifactId>
   <version>${revision}</version>
 
+  <dependencies>
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+    </dependency>
+  </dependencies>
+
 </project>
