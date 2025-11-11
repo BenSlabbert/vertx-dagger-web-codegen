@@ -11,12 +11,12 @@ import net.bytebuddy.asm.Advice.Origin;
 import net.bytebuddy.asm.Advice.Return;
 import net.bytebuddy.asm.Advice.Thrown;
 
-final class ApplyAdvice {
+public final class ApplyAdvice {
 
   private ApplyAdvice() {}
 
-  @OnMethodEnter
-  static void onEnter(
+  @OnMethodEnter(inline = false)
+  public static void onEnter(
       @Origin("#t") String className,
       @Origin("#m") String methodName,
       @AdviceName String adviceNames,
@@ -24,17 +24,16 @@ final class ApplyAdvice {
     AdviceExecutor.before(adviceNames, className, methodName, args);
   }
 
-  @OnMethodExit(onThrowable = Exception.class)
-  static void exit(
+  @OnMethodExit(onThrowable = Throwable.class)
+  public static void exit(
       @Origin("#t") String className,
       @Origin("#m") String methodName,
       @AdviceName String adviceNames,
       @Return(typing = DYNAMIC) Object returnValue,
-      @Thrown(readOnly = false) Throwable throwable) {
-
-    if (null != throwable) {
+      @Thrown(readOnly = false) Throwable thrown) {
+    if (null != thrown) {
       // if throwable is not null, it will be thrown later
-      throwable = AdviceExecutor.exceptionally(adviceNames, className, methodName, throwable);
+      thrown = AdviceExecutor.exceptionally(adviceNames, className, methodName, thrown);
       return;
     }
 

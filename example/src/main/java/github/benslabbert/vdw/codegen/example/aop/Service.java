@@ -25,7 +25,7 @@ public class Service {
   public static void main(String[] args) {
     Service service = new Service();
     service.doWork();
-    service.doWork("param");
+    String param = service.doWork("param");
     Example example = new Example();
     example.example();
   }
@@ -40,9 +40,10 @@ public class Service {
 
   @LogEntry
   @Observed
-  public void doWork(String arg) {
+  public String doWork(String arg) {
     // original method
     log.info("do work {}", arg);
+    return arg;
     // original method
   }
 }
