@@ -84,9 +84,6 @@ public class TransformerPlugin implements Plugin {
             .toList();
 
     for (MatchedShape ma : matchedAdvices) {
-      boolean even = System.currentTimeMillis() % 2 == 0;
-      String impl = even ? "intercept" : "bind";
-
       String advices =
           ma.advices.stream().map(AdvicePair::annotation).collect(Collectors.joining(","));
 
@@ -97,37 +94,23 @@ public class TransformerPlugin implements Plugin {
       //  AnnotationDescription annotationDescription = ma.shape.getDeclaredAnnotations().get(0);
       //  AnnotationValue<?, ?> priority = annotationDescription.getValue("priority");
       //  Integer priorityValue = priority.resolve(int.class);
-
-      if (even) {
-        builder =
-            builder
-                .method(md -> md.equals(ma.shape))
-                .intercept(
-                    Advice.withCustomMapping()
-                        .bind(AdviceName.class, advices)
-                        .to(ApplyAdvice.class))
-                .annotateMethod(alreadyTransformed(impl));
-      } else {
-        builder =
-            builder
-                .method(md -> md.equals(ma.shape))
-                .intercept(SuperMethodCall.INSTANCE)
-                .annotateMethod(alreadyTransformed(impl))
-                .visit(
-                    Advice.withCustomMapping()
-                        .bind(AdviceName.class, advices)
-                        .to(ApplyAdvice.class)
-                        .on(md -> md.equals(ma.shape)));
-      }
+      builder =
+          builder
+              .method(md -> md.equals(ma.shape))
+              .intercept(SuperMethodCall.INSTANCE)
+              .annotateMethod(alreadyTransformed())
+              .visit(
+                  Advice.withCustomMapping()
+                      .bind(AdviceName.class, advices)
+                      .to(ApplyAdvice.class)
+                      .on(md -> md.equals(ma.shape)));
     }
 
     return builder;
   }
 
-  private static AnnotationDescription alreadyTransformed(String impl) {
-    return AnnotationDescription.Builder.ofType(AlreadyTransformed.class)
-        .define("value", impl)
-        .build();
+  private static AnnotationDescription alreadyTransformed() {
+    return AnnotationDescription.Builder.ofType(AlreadyTransformed.class).build();
   }
 
   @Override
