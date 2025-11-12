@@ -87,13 +87,6 @@ public class TransformerPlugin implements Plugin {
       String advices =
           ma.advices.stream().map(AdvicePair::annotation).collect(Collectors.joining(","));
 
-      // todo we can add an priority to our advice annotations
-      //  then we can ensure that we apply the before advices in their specific priority
-      //  if the priority value does not exist, catch the IllegalArgumentException and assign the
-      //  default value
-      //  AnnotationDescription annotationDescription = ma.shape.getDeclaredAnnotations().get(0);
-      //  AnnotationValue<?, ?> priority = annotationDescription.getValue("priority");
-      //  Integer priorityValue = priority.resolve(int.class);
       builder =
           builder
               .method(md -> md.equals(ma.shape))

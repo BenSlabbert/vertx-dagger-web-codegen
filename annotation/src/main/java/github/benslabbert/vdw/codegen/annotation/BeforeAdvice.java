@@ -29,5 +29,9 @@ public @interface BeforeAdvice {
   interface BeforeAdviceInvocation {
 
     void before(String className, String methodName, Object... args);
+
+    default int priority() {
+      return 0;
+    }
   }
 }
