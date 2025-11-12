@@ -5,9 +5,12 @@ import github.benslabbert.vdw.codegen.annotation.AroundAdvice.AroundAdviceInvoca
 import github.benslabbert.vdw.codegen.annotation.BeforeAdvice.BeforeAdviceInvocation;
 import jakarta.inject.Provider;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public final class AdviceExecutor {
 
@@ -20,76 +23,64 @@ public final class AdviceExecutor {
 
   private AdviceExecutor() {}
 
-  public static void addBeforeAdvice(String adviceName, Provider<BeforeAdviceInvocation> provider) {
+  public static <T extends BeforeAdviceInvocation> void addAdvice(
+      String adviceName, Provider<T> provider) {
     MAP.compute(
         adviceName,
         (key, oldValue) -> {
-          if (null == oldValue) {
+          if (oldValue == null) {
             var providers = new ArrayList<Provider<? extends BeforeAdviceInvocation>>(2);
             providers.add(provider);
             return providers;
           }
-
-          oldValue.add(provider);
-          return oldValue;
-        });
-  }
-
-  public static void addAroundAdvice(String adviceName, Provider<AroundAdviceInvocation> provider) {
-    MAP.compute(
-        adviceName,
-        (key, oldValue) -> {
-          if (null == oldValue) {
-            var providers = new ArrayList<Provider<? extends BeforeAdviceInvocation>>(2);
-            providers.add(provider);
-            return providers;
-          }
-
           oldValue.add(provider);
           return oldValue;
         });
   }
 
   public static void before(String advices, String clazz, String method, Object... args) {
-    for (String s : advices.split(",")) {
-      for (Provider<? extends BeforeAdviceInvocation> p : MAP.getOrDefault(s, List.of())) {
-        BeforeAdviceInvocation bi = p.get();
-        bi.before(clazz, method, args);
-      }
+    for (BeforeAdviceInvocation bi : getAdvices(advices)) {
+      bi.before(clazz, method, args);
     }
   }
 
   public static void after(String advices, String clazz, String method, Object returnValue) {
-    for (String s : advices.split(",")) {
-      for (Provider<? extends BeforeAdviceInvocation> p : MAP.getOrDefault(s, List.of())) {
-        BeforeAdviceInvocation bi = p.get();
-        if (bi instanceof AroundAdviceInvocation ai) {
-          ai.after(clazz, method, returnValue);
-        }
+    for (BeforeAdviceInvocation bi : getAdvices(advices)) {
+      if (bi instanceof AroundAdviceInvocation ai) {
+        ai.after(clazz, method, returnValue);
       }
     }
   }
 
   public static void after(String advices, String clazz, String method) {
-    for (String s : advices.split(",")) {
-      for (Provider<? extends BeforeAdviceInvocation> p : MAP.getOrDefault(s, List.of())) {
-        BeforeAdviceInvocation bi = p.get();
-        if (bi instanceof AroundAdviceInvocation ai) {
-          ai.after(clazz, method);
-        }
+    for (BeforeAdviceInvocation bi : getAdvices(advices)) {
+      if (bi instanceof AroundAdviceInvocation ai) {
+        ai.after(clazz, method);
       }
     }
   }
 
   public static Throwable exceptionally(String advices, String clazz, String method, Throwable t) {
-    for (String s : advices.split(",")) {
-      for (Provider<? extends BeforeAdviceInvocation> p : MAP.getOrDefault(s, List.of())) {
-        BeforeAdviceInvocation bi = p.get();
+    try {
+      for (BeforeAdviceInvocation bi : getAdvices(advices)) {
         if (bi instanceof AroundAdviceInvocation ai) {
           t = ai.exceptionally(clazz, method, t);
         }
       }
+      return t;
+    } catch (Throwable newT) {
+      newT.addSuppressed(t);
+      return newT;
     }
-    return t;
+  }
+
+  private static Iterable<BeforeAdviceInvocation> getAdvices(String advices) {
+    Stream<BeforeAdviceInvocation> stream =
+        Arrays.stream(advices.split(","))
+            .map(s -> MAP.getOrDefault(s, List.of()))
+            .flatMap(Collection::stream)
+            .map(Provider::get);
+
+    return stream::iterator;
   }
 }

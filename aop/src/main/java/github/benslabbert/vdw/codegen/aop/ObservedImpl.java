@@ -12,27 +12,29 @@ public class ObservedImpl implements AroundAdvice.AroundAdviceInvocation {
 
   @Override
   public void before(String className, String methodName, Object... args) {
-    log.info("Before {} {}", className, methodName);
+    log.info("ObservedImpl.before {} {}", className, methodName);
   }
 
   @Override
   public void after(String className, String methodName, Object returnValue) {
-    log.info("After {} {} {}", className, methodName, returnValue);
+    log.info("ObservedImpl.before {} {} {}", className, methodName, returnValue);
   }
 
   @Override
   public void after(String className, String methodName) {
-    log.info("After {} {}", className, methodName);
+    log.info("ObservedImpl.after {} {}", className, methodName);
   }
 
   @Override
   public Throwable exceptionally(String className, String methodName, @Nullable Throwable t) {
     if (null == t) {
       log.error(
-          "Exception in {} {}, but original exception has been handled", className, methodName);
+          "ObservedImpl.exceptionally in {} {}, but original exception has been handled",
+          className,
+          methodName);
       return null;
     }
-    log.error("Exception in {} {}", className, methodName, t);
+    log.error("ObservedImpl.exceptionally in {} {}", className, methodName, t);
     return t;
   }
 }
