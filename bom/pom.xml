@@ -16,6 +16,16 @@
     <dependencies>
       <dependency>
         <groupId>github.benslabbert.vdw.codegen</groupId>
+        <artifactId>advice-extractor-plugin</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>github.benslabbert.vdw.codegen</groupId>
+        <artifactId>advice-transformer</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>github.benslabbert.vdw.codegen</groupId>
         <artifactId>annotation</artifactId>
         <version>${revision}</version>
       </dependency>
