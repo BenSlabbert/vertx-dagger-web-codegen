@@ -37,4 +37,9 @@ public class ObservedImpl implements AroundAdvice.AroundAdviceInvocation {
     log.error("ObservedImpl.exceptionally in {} {}", className, methodName, t);
     return t;
   }
+
+  @Override
+  public int priority() {
+    return 100;
+  }
 }

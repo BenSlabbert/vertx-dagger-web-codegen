@@ -8,6 +8,16 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/// When AroundAdvice is executed the highest priority advices will be executed first
+/// however, on the after and exception calls, this is reversed.
+///
+/// Given advices A1, A2 and A3 where A1.priority > A2.priority > A3.priority
+///
+/// The advices will be executed as follows:
+///
+/// before: A1 -> A2 -> A3
+/// after: A3 -> A2 -> A1
+/// exceptionally: A3 -> A2 -> A1
 @Documented
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)

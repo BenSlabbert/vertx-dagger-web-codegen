@@ -46,6 +46,7 @@ public class Service {
 
   @Observed
   public void throwsException() {
+    log.info("throwsException");
     throw new RuntimeException();
   }
 }
