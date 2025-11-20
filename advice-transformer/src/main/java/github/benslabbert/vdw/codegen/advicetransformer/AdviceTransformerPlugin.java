@@ -6,7 +6,6 @@ import static java.util.stream.Collectors.toMap;
 import static net.bytebuddy.matcher.ElementMatchers.isAnnotatedWith;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 
-import github.benslabbert.vdw.codegen.annotation.AlreadyTransformed;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,15 +17,14 @@ import java.util.stream.Collectors;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.build.BuildLogger;
 import net.bytebuddy.build.Plugin;
-import net.bytebuddy.description.annotation.AnnotationDescription;
 import net.bytebuddy.description.annotation.AnnotationSource;
-import net.bytebuddy.description.method.MethodDescription;
+import net.bytebuddy.description.method.MethodDescription.InDefinedShape;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.ClassFileLocator;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.SuperMethodCall;
 
-public class TransformerPlugin implements Plugin {
+public class AdviceTransformerPlugin implements Plugin {
 
   private static final String ADVICE_ANNOTATION_FILE = "META-INF/advice_annotations";
 
@@ -53,7 +51,7 @@ public class TransformerPlugin implements Plugin {
     }
   }
 
-  public TransformerPlugin(File file, BuildLogger logger) {
+  public AdviceTransformerPlugin(File file, BuildLogger logger) {
     this.log = logger;
     log.info("init transformer: " + file);
     Set<AdvicePair> advices = loadAdvices(file);
@@ -64,7 +62,7 @@ public class TransformerPlugin implements Plugin {
         advices.stream().collect(toMap(identity(), a -> isAnnotatedWith(a.matcher())));
   }
 
-  record MatchedShape(MethodDescription.InDefinedShape shape, Set<AdvicePair> advices) {}
+  record MatchedShape(InDefinedShape shape, Set<AdvicePair> advices) {}
 
   @Override
   public Builder<?> apply(Builder<?> builder, TypeDescription target, ClassFileLocator clf) {
@@ -91,7 +89,7 @@ public class TransformerPlugin implements Plugin {
           builder
               .method(md -> md.equals(ma.shape))
               .intercept(SuperMethodCall.INSTANCE)
-              .annotateMethod(alreadyTransformed())
+              .annotateMethod(AlreadyTransformedUtil.alreadyTransformed())
               .visit(
                   Advice.withCustomMapping()
                       .bind(AdviceName.class, advices)
@@ -100,10 +98,6 @@ public class TransformerPlugin implements Plugin {
     }
 
     return builder;
-  }
-
-  private static AnnotationDescription alreadyTransformed() {
-    return AnnotationDescription.Builder.ofType(AlreadyTransformed.class).build();
   }
 
   @Override
@@ -121,8 +115,8 @@ public class TransformerPlugin implements Plugin {
     return target.getDeclaredMethods().stream().anyMatch(this::shapeMatches);
   }
 
-  private boolean shapeMatches(MethodDescription.InDefinedShape shape) {
-    if (shape.getDeclaredAnnotations().isAnnotationPresent(AlreadyTransformed.class)) {
+  private boolean shapeMatches(InDefinedShape shape) {
+    if (AlreadyTransformedUtil.alreadyTransformedPresent(shape)) {
       return false;
     }
 

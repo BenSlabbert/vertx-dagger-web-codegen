@@ -1,1 +1,2 @@
-github.benslabbert.vdw.codegen.advicetransformer.TransformerPlugin
+github.benslabbert.vdw.codegen.advicetransformer.AdviceTransformerPlugin
+github.benslabbert.vdw.codegen.advicetransformer.CacheTransformerPlugin
