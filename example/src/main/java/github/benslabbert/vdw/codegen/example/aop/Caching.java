@@ -2,6 +2,11 @@
 package github.benslabbert.vdw.codegen.example.aop;
 
 import github.benslabbert.vdw.codegen.annotation.Cache;
+import github.benslabbert.vdw.codegen.aop.cache.CacheAdviceExecutor;
+import github.benslabbert.vdw.codegen.aop.cache.CacheManager;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,15 +14,52 @@ public class Caching {
 
   private static final Logger log = LoggerFactory.getLogger(Caching.class);
 
+  private static final github.benslabbert.vdw.codegen.aop.cache.Cache C =
+      new github.benslabbert.vdw.codegen.aop.cache.Cache() {
+        private final Map<String, Object> cache = new ConcurrentHashMap<>();
+
+        @Override
+        public Object get(String key) {
+          log.debug("Getting cache entry for key {}", key);
+          return cache.get(key);
+        }
+
+        @Override
+        public void put(String key, Object value) {
+          log.debug("Putting cache entry for key {}", key);
+          cache.put(key, value);
+        }
+
+        @Override
+        public void evict(String key) {
+          log.debug("Evicting cache entry for key {}", key);
+          cache.remove(key);
+        }
+      };
+
   static void main() {
+    CacheAdviceExecutor.setCacheManager(
+        new CacheManager() {
+          private final Map<String, github.benslabbert.vdw.codegen.aop.cache.Cache> cache =
+              new ConcurrentHashMap<>(Map.of("cache", C));
+
+          @Override
+          public Optional<github.benslabbert.vdw.codegen.aop.cache.Cache> getCache(
+              String cacheName) {
+            return Optional.ofNullable(cache.get(cacheName));
+          }
+        });
+
     Caching caching = new Caching();
     log.info("before");
-    String cached = caching.cached("data");
+    String cached1 = caching.cached("data");
+    log.info("before");
+    String cached2 = caching.cached("data");
     log.info("before");
     caching.revoke();
   }
 
-  @Cache.Put(value = "cache", key = "k-#0", async = true)
+  @Cache.Put(value = "cache", key = "k-#0")
   public String cached(String in) {
     log.info("cached");
     return in;
