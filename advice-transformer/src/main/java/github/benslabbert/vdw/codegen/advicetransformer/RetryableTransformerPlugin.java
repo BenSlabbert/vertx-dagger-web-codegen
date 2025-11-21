@@ -1,7 +1,8 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.advicetransformer;
 
-import github.benslabbert.vdw.codegen.annotation.Retryable;
+import github.benslabbert.vdw.codegen.annotation.Retryable.ExponentialBackoff;
+import github.benslabbert.vdw.codegen.annotation.Retryable.FixedDelay;
 import java.util.ArrayList;
 import java.util.List;
 import net.bytebuddy.build.BuildLogger;
@@ -31,9 +32,7 @@ public class RetryableTransformerPlugin implements Plugin {
         .filter(this::shapeMatches)
         .forEach(
             shape -> {
-              if (shape
-                  .getDeclaredAnnotations()
-                  .isAnnotationPresent(Retryable.ExponentialBackoff.class)) {
+              if (shape.getDeclaredAnnotations().isAnnotationPresent(ExponentialBackoff.class)) {
                 exponential.add(shape);
               } else {
                 fixed.add(shape);
@@ -77,7 +76,7 @@ public class RetryableTransformerPlugin implements Plugin {
     }
 
     AnnotationList annotations = shape.getDeclaredAnnotations();
-    return annotations.isAnnotationPresent(Retryable.ExponentialBackoff.class)
-        || annotations.isAnnotationPresent(Retryable.FixedDelay.class);
+    return annotations.isAnnotationPresent(ExponentialBackoff.class)
+        || annotations.isAnnotationPresent(FixedDelay.class);
   }
 }

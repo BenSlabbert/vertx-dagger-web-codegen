@@ -21,7 +21,7 @@ public class Service {
     AdviceExecutor.addAdvice("github.benslabbert.vdw.codegen.aop.Observed", ObservedImpl::new);
   }
 
-  public static void main(String[] args) {
+  static void main() {
     Service service = new Service();
     service.doWork();
     String param = service.doWork("param");

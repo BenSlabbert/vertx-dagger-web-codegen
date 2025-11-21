@@ -26,6 +26,10 @@ public final class CacheAdviceExecutor {
     }
   }
 
+  public static Object get(String cacheName, String key) {
+    return cacheManager.get().getCache(cacheName).orElse(noOpCache).get(key);
+  }
+
   public static void put(String cacheName, String key, boolean async, Object value) {
     if (async) {
       THREAD_FACTORY.newThread(() -> putInternal(cacheName, key, value)).start();
@@ -53,6 +57,12 @@ public final class CacheAdviceExecutor {
   private static final class NoOpCache implements Cache {
 
     private static final Logger log = LoggerFactory.getLogger(NoOpCache.class);
+
+    @Override
+    public Object get(String key) {
+      log.info("no-op get key {} return null", key);
+      return null;
+    }
 
     @Override
     public void put(String key, Object value) {
