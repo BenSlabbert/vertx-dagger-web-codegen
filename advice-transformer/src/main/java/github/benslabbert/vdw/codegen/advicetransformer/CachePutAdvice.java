@@ -20,10 +20,10 @@ public final class CachePutAdvice {
       @Return Object returnValue,
       @Thrown Throwable thrown,
       @AllArguments Object[] args) {
-    String key = CacheKeyBuilder.buildKey("keyPattern", args);
+    String key = CacheKeyBuilder.buildKey(keyPattern, args);
 
     if (null == thrown) {
-      CacheAdviceExecutor.put(name, key, false, returnValue);
+      CacheAdviceExecutor.put(name, key, async, returnValue);
     }
   }
 }

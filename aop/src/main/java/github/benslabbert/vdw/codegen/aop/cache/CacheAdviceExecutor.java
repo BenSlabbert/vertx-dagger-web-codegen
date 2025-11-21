@@ -1,6 +1,7 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.aop.cache;
 
+import java.util.Optional;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
@@ -9,16 +10,18 @@ import org.slf4j.LoggerFactory;
 public final class CacheAdviceExecutor {
 
   private static final NoOpCache noOpCache = new NoOpCache();
+  private static final CacheManager defaultCacheManager = _ -> Optional.empty();
 
   private static final ThreadFactory THREAD_FACTORY =
       Thread.ofVirtual().name("cache-vthread-", 1L).factory();
 
-  private static final AtomicReference<CacheManager> cacheManager = new AtomicReference<>();
+  private static final AtomicReference<CacheManager> cacheManager =
+      new AtomicReference<>(defaultCacheManager);
 
   private CacheAdviceExecutor() {}
 
   public static void setCacheManager(CacheManager cm) {
-    if (!cacheManager.compareAndSet(null, cm)) {
+    if (!cacheManager.compareAndSet(defaultCacheManager, cm)) {
       throw new IllegalStateException("Cache manager already set");
     }
   }

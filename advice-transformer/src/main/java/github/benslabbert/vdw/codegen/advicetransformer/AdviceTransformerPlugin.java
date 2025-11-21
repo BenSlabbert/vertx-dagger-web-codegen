@@ -117,6 +117,7 @@ public class AdviceTransformerPlugin implements Plugin {
 
   private boolean shapeMatches(InDefinedShape shape) {
     if (AlreadyTransformedUtil.alreadyTransformedPresent(shape)) {
+      log.error("cannot transform methods that have been already transformed");
       return false;
     }
 
