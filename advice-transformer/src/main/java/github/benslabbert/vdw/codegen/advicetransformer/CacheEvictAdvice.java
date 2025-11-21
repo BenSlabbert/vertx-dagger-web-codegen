@@ -20,15 +20,15 @@ public final class CacheEvictAdvice {
       @CacheData.Async boolean async,
       @Thrown Throwable thrown,
       @AllArguments Object[] args) {
-    String key = CacheKeyBuilder.buildKey("keyPattern", args);
+    String key = CacheKeyBuilder.buildKey(keyPattern, args);
 
     if (null == thrown) {
-      CacheAdviceExecutor.evict(name, key, false);
+      CacheAdviceExecutor.evict(name, key, async);
       return;
     }
 
-    if (Cache.Policy.ALWAYS == Cache.Policy.ON_SUCCESS) {
-      CacheAdviceExecutor.evict(name, key, false);
+    if (Cache.Policy.ALWAYS == policy) {
+      CacheAdviceExecutor.evict(name, key, async);
     }
   }
 }

@@ -40,6 +40,7 @@
   <properties>
     <!--config-->
     <shade.skip>false</shade.skip>
+    <java.version>25</java.version>
 
     <!--deps-->
     <tx-manager.version>1.207.0</tx-manager.version>
