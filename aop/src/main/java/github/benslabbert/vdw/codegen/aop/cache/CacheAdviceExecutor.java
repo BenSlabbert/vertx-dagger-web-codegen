@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 public final class CacheAdviceExecutor {
 
   private static final NoOpCache noOpCache = new NoOpCache();
-  private static final CacheManager defaultCacheManager = _ -> Optional.empty();
+  private static final CacheManager defaultCacheManager = ignore -> Optional.empty();
 
   private static final ThreadFactory THREAD_FACTORY =
       Thread.ofVirtual().name("cache-vthread-", 1L).factory();
