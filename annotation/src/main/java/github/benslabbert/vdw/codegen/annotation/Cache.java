@@ -1,16 +1,12 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.annotation;
 
-import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Documented
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.CLASS)
-public @interface Cache {
+public interface Cache {
 
   enum Policy {
     /// Update the cache value only on a normal return.
@@ -19,6 +15,8 @@ public @interface Cache {
     ALWAYS
   }
 
+  @Target(ElementType.METHOD)
+  @Retention(RetentionPolicy.CLASS)
   @interface Put {
     /// The name of the cache
     String value();
@@ -47,6 +45,8 @@ public @interface Cache {
     boolean async() default false;
   }
 
+  @Target(ElementType.METHOD)
+  @Retention(RetentionPolicy.CLASS)
   @interface Evict {
     /// The name of the cache
     String value();
