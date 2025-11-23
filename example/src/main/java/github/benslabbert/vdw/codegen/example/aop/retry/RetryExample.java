@@ -1,19 +1,20 @@
 /* Licensed under Apache-2.0 2025. */
-package github.benslabbert.vdw.codegen.example.aop;
+package github.benslabbert.vdw.codegen.example.aop.retry;
 
 import github.benslabbert.vdw.codegen.annotation.Retryable.ExponentialBackoff;
 import github.benslabbert.vdw.codegen.annotation.Retryable.FixedDelay;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Retry {
+public class RetryExample {
 
-  private static final Logger log = LoggerFactory.getLogger(Retry.class);
+  private static final Logger log = LoggerFactory.getLogger(RetryExample.class);
 
-  static void main() {
-    Retry retry = new Retry();
+  public static void main(String[] args) {
+    RetryExample retry = new RetryExample();
     log.info("before");
-    retry.tryMe();
+    var s = retry.tryMe();
+    log.info("after tryMe={}", s);
     log.info("before");
     retry.tryMeNow();
   }

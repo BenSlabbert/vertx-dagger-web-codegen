@@ -1,5 +1,5 @@
 /* Licensed under Apache-2.0 2025. */
-package github.benslabbert.vdw.codegen.example.aop;
+package github.benslabbert.vdw.codegen.example.aop.advice;
 
 import github.benslabbert.vdw.codegen.aop.AdviceExecutor;
 import github.benslabbert.vdw.codegen.aop.LogEntry;
@@ -9,9 +9,9 @@ import github.benslabbert.vdw.codegen.aop.ObservedImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Service {
+public class AdviceExample {
 
-  private static final Logger log = LoggerFactory.getLogger(Service.class);
+  private static final Logger log = LoggerFactory.getLogger(AdviceExample.class);
 
   static {
     // this initialization should be in the applications mains Provider
@@ -21,11 +21,11 @@ public class Service {
     AdviceExecutor.addAdvice("github.benslabbert.vdw.codegen.aop.Observed", ObservedImpl::new);
   }
 
-  static void main() {
-    Service service = new Service();
+  public static void main(String[] args) {
+    AdviceExample service = new AdviceExample();
     service.doWork();
     String param = service.doWork("param");
-    Example example = new Example();
+    CustomAdviceExample example = new CustomAdviceExample();
     example.example();
 
     service.throwsException();

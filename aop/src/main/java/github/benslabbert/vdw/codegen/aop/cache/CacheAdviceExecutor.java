@@ -9,25 +9,25 @@ import org.slf4j.LoggerFactory;
 
 public final class CacheAdviceExecutor {
 
-  private static final NoOpCache noOpCache = new NoOpCache();
-  private static final CacheManager defaultCacheManager = ignore -> Optional.empty();
+  private static final NoOpCache NO_OP_CACHE = new NoOpCache();
+  private static final CacheManager DEFAULT_CACHE_MANAGER = ignore -> Optional.empty();
 
   private static final ThreadFactory THREAD_FACTORY =
       Thread.ofVirtual().name("cache-vthread-", 1L).factory();
 
-  private static final AtomicReference<CacheManager> cacheManager =
-      new AtomicReference<>(defaultCacheManager);
+  private static final AtomicReference<CacheManager> CACHE_MANAGER =
+      new AtomicReference<>(DEFAULT_CACHE_MANAGER);
 
   private CacheAdviceExecutor() {}
 
   public static void setCacheManager(CacheManager cm) {
-    if (!cacheManager.compareAndSet(defaultCacheManager, cm)) {
+    if (!CACHE_MANAGER.compareAndSet(DEFAULT_CACHE_MANAGER, cm)) {
       throw new IllegalStateException("Cache manager already set");
     }
   }
 
   public static Object get(String cacheName, String key) {
-    return cacheManager.get().getCache(cacheName).orElse(noOpCache).get(key);
+    return CACHE_MANAGER.get().getCache(cacheName).orElse(NO_OP_CACHE).get(key);
   }
 
   public static void put(String cacheName, String key, boolean async, Object value) {
@@ -39,7 +39,7 @@ public final class CacheAdviceExecutor {
   }
 
   private static void putInternal(String cacheName, String key, Object value) {
-    cacheManager.get().getCache(cacheName).orElse(noOpCache).put(key, value);
+    CACHE_MANAGER.get().getCache(cacheName).orElse(NO_OP_CACHE).put(key, value);
   }
 
   public static void evict(String cacheName, String key, boolean async) {
@@ -51,7 +51,7 @@ public final class CacheAdviceExecutor {
   }
 
   private static void evictInternal(String cacheName, String key) {
-    cacheManager.get().getCache(cacheName).orElse(noOpCache).evict(key);
+    CACHE_MANAGER.get().getCache(cacheName).orElse(NO_OP_CACHE).evict(key);
   }
 
   private static final class NoOpCache implements Cache {
