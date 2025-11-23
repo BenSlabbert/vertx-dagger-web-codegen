@@ -6,8 +6,12 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class CacheKeyBuilder {
+
+  private static final Logger log = LoggerFactory.getLogger(CacheKeyBuilder.class);
 
   private static final Pattern PLACEHOLDER = Pattern.compile("#(\\d+)");
   private static final ConcurrentHashMap<String, ParsedTemplate> TEMPLATE_CACHE =
@@ -20,9 +24,9 @@ public final class CacheKeyBuilder {
    * of the template is cached to avoid repeated regex processing.
    */
   public static String buildKey(String template, Object... values) {
-    ParsedTemplate parsed =
-        TEMPLATE_CACHE.computeIfAbsent(template, CacheKeyBuilder::parseTemplate);
-    return parsed.build(values);
+    log.debug("Building key for template '{}'", template);
+    ParsedTemplate pt = TEMPLATE_CACHE.computeIfAbsent(template, CacheKeyBuilder::parseTemplate);
+    return pt.build(values);
   }
 
   private static ParsedTemplate parseTemplate(String template) {
@@ -47,12 +51,7 @@ public final class CacheKeyBuilder {
     void append(StringBuilder sb, Object[] values);
   }
 
-  private static final class LiteralSegment implements Segment {
-    private final String literal;
-
-    private LiteralSegment(String literal) {
-      this.literal = literal;
-    }
+  private record LiteralSegment(String literal) implements Segment {
 
     @Override
     public void append(StringBuilder sb, Object[] values) {
@@ -60,12 +59,7 @@ public final class CacheKeyBuilder {
     }
   }
 
-  private static final class IndexSegment implements Segment {
-    private final int index;
-
-    private IndexSegment(int index) {
-      this.index = index;
-    }
+  private record IndexSegment(int index) implements Segment {
 
     @Override
     public void append(StringBuilder sb, Object[] values) {
@@ -77,12 +71,7 @@ public final class CacheKeyBuilder {
     }
   }
 
-  private static final class ParsedTemplate {
-    private final List<Segment> segments;
-
-    private ParsedTemplate(List<Segment> segments) {
-      this.segments = segments;
-    }
+  private record ParsedTemplate(List<Segment> segments) {
 
     String build(Object[] values) {
       StringBuilder sb = new StringBuilder();

@@ -275,6 +275,23 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-deps</id>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <outputDirectory>${project.build.directory}/lib</outputDirectory>
+              <includeScope>runtime</includeScope>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
         <executions>
           <execution>
@@ -288,6 +305,85 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default-jar</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <archive>
+                <manifest>
+                  <mainClass>github.benslabbert.vdw.codegen.example.Main</mainClass>
+                </manifest>
+              </archive>
+              <excludes>
+                <exclude>github/benslabbert/vdw/codegen/example/aop/**</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+          <execution>
+            <id>advice-example</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <classifier>advice-example</classifier>
+              <archive>
+                <manifest>
+                  <mainClass>github.benslabbert.vdw.codegen.example.aop.advice.AdviceExample</mainClass>
+                  <addClasspath>true</addClasspath>
+                  <classpathPrefix>lib/</classpathPrefix>
+                </manifest>
+              </archive>
+              <includes>
+                <include>github/benslabbert/vdw/codegen/example/aop/advice/**</include>
+              </includes>
+            </configuration>
+          </execution>
+          <execution>
+            <id>caching-example</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <classifier>caching-example</classifier>
+              <archive>
+                <manifest>
+                  <mainClass>github.benslabbert.vdw.codegen.example.aop.caching.CachingExample</mainClass>
+                  <addClasspath>true</addClasspath>
+                  <classpathPrefix>lib/</classpathPrefix>
+                </manifest>
+              </archive>
+              <includes>
+                <include>github/benslabbert/vdw/codegen/example/aop/caching/**</include>
+              </includes>
+            </configuration>
+          </execution>
+          <execution>
+            <id>retry-example</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <classifier>retry-example</classifier>
+              <archive>
+                <manifest>
+                  <mainClass>github.benslabbert.vdw.codegen.example.aop.retry.RetryExample</mainClass>
+                  <addClasspath>true</addClasspath>
+                  <classpathPrefix>lib/</classpathPrefix>
+                </manifest>
+              </archive>
+              <includes>
+                <include>github/benslabbert/vdw/codegen/example/aop/retry/**</include>
+              </includes>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

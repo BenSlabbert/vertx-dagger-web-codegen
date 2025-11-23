@@ -1,5 +1,5 @@
 /* Licensed under Apache-2.0 2025. */
-package github.benslabbert.vdw.codegen.example.aop;
+package github.benslabbert.vdw.codegen.example.aop.advice;
 
 import github.benslabbert.vdw.codegen.annotation.BeforeAdvice;
 import org.slf4j.Logger;

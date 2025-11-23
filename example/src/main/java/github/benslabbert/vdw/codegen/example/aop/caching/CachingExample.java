@@ -1,5 +1,5 @@
 /* Licensed under Apache-2.0 2025. */
-package github.benslabbert.vdw.codegen.example.aop;
+package github.benslabbert.vdw.codegen.example.aop.caching;
 
 import github.benslabbert.vdw.codegen.annotation.Cache;
 import github.benslabbert.vdw.codegen.aop.cache.CacheAdviceExecutor;
@@ -10,9 +10,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Caching {
+public class CachingExample {
 
-  private static final Logger log = LoggerFactory.getLogger(Caching.class);
+  private static final Logger log = LoggerFactory.getLogger(CachingExample.class);
 
   private static final github.benslabbert.vdw.codegen.aop.cache.Cache C =
       new github.benslabbert.vdw.codegen.aop.cache.Cache() {
@@ -37,7 +37,7 @@ public class Caching {
         }
       };
 
-  static void main() {
+  public static void main(String[] args) throws Exception {
     CacheAdviceExecutor.setCacheManager(
         new CacheManager() {
           private final Map<String, github.benslabbert.vdw.codegen.aop.cache.Cache> cache =
@@ -50,13 +50,32 @@ public class Caching {
           }
         });
 
-    Caching caching = new Caching();
+    CachingExample caching = new CachingExample();
+    log.info("before");
+    String async1 = caching.cachedAsync("async1");
     log.info("before");
     String cached1 = caching.cached("data");
     log.info("before");
     String cached2 = caching.cached("data");
     log.info("before");
     caching.revoke();
+    log.info("before");
+    String async2 = caching.cachedAsync("async2");
+    String async3 = caching.cachedAsync("async1");
+
+    log.info("wait 1 sec for all threads");
+    try {
+      Thread.sleep(1000L);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw e;
+    }
+  }
+
+  @Cache.Put(value = "cache", key = "k-#0", async = true)
+  public String cachedAsync(String in) {
+    log.info("cached async : {}", in);
+    return in;
   }
 
   @Cache.Put(value = "cache", key = "k-#0")
