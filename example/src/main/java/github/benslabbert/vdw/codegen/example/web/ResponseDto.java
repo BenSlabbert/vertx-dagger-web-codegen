@@ -1,7 +1,7 @@
 /* Licensed under Apache-2.0 2024. */
 package github.benslabbert.vdw.codegen.example.web;
 
-import com.google.auto.value.AutoBuilder;
+import github.benslabbert.vdw.codegen.annotation.GenerateBuilder;
 import github.benslabbert.vertxjsonwriter.annotation.JsonWriter;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.Validator;
@@ -10,10 +10,11 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 @JsonWriter
+@GenerateBuilder
 public record ResponseDto(@Nullable String data) {
 
-  public static Builder builder() {
-    return new AutoBuilder_ResponseDto_Builder();
+  public static ResponseDtoBuilder.Builder builder() {
+    return ResponseDtoBuilder.builder();
   }
 
   @Nullable public static ResponseDto fromJson(JsonObject json) {
@@ -33,12 +34,5 @@ public record ResponseDto(@Nullable String data) {
   @Nonnull
   static ObjectSchemaBuilder schemaBuilder() {
     return ResponseDto_JsonWriter.schemaBuilder();
-  }
-
-  @AutoBuilder
-  public interface Builder {
-    Builder data(@Nullable String data);
-
-    ResponseDto build();
   }
 }
