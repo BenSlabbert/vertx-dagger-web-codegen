@@ -236,6 +236,11 @@
           </compilerArgs>
           <annotationProcessorPaths>
             <path>
+              <groupId>github.benslabbert.vdw.codegen</groupId>
+              <artifactId>generator</artifactId>
+              <version>${revision}</version>
+            </path>
+            <path>
               <groupId>com.google.auto.value</groupId>
               <artifactId>auto-value</artifactId>
               <version>${google-auto-value.version}</version>
@@ -254,11 +259,6 @@
               <groupId>github.benslabbert.vertx-json-writer</groupId>
               <artifactId>processor</artifactId>
               <version>${vertx-json-writer.version}</version>
-            </path>
-            <path>
-              <groupId>github.benslabbert.vdw.codegen</groupId>
-              <artifactId>generator</artifactId>
-              <version>${revision}</version>
             </path>
             <path>
               <groupId>com.google.errorprone</groupId>

@@ -1,7 +1,7 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.example.jdbc;
 
-import com.google.auto.value.AutoBuilder;
+import github.benslabbert.vdw.codegen.annotation.GenerateBuilder;
 import github.benslabbert.vdw.codegen.annotation.Table;
 import github.benslabbert.vdw.codegen.annotation.Table.Column;
 import github.benslabbert.vdw.codegen.annotation.Table.FindByColumn;
@@ -15,6 +15,7 @@ import jakarta.annotation.Nullable;
 import java.util.List;
 import java.util.function.Consumer;
 
+@GenerateBuilder
 @Table(value = "person", cte = "c")
 @Query(
     name = "adults",
@@ -48,12 +49,12 @@ public record Person(
     @Column("version") @Version int version)
     implements Reference<Person> {
 
-  public static Builder builder() {
-    return new AutoBuilder_Person_Builder().id(0).version(0).address(Reference.create());
+  public static PersonBuilder.Builder builder() {
+    return PersonBuilder.builder().id(0).version(0).address(Reference.create());
   }
 
-  public Builder toBuilder() {
-    return new AutoBuilder_Person_Builder(this);
+  public PersonBuilder.Builder toBuilder() {
+    return PersonBuilder.toBuilder(this);
   }
 
   @Nonnull
@@ -61,26 +62,5 @@ public record Person(
   public String toString() {
     return "Person{id=%d, name='%s', lastName='%s', age=%d, gender='%s', address=%d, version=%d}"
         .formatted(id, name, lastName, age, gender, address.id(), version);
-  }
-
-  @AutoBuilder
-  public interface Builder {
-    Builder id(long id);
-
-    Builder name(String name);
-
-    Builder middleName(String middleName);
-
-    Builder lastName(String lastName);
-
-    Builder age(int age);
-
-    Builder gender(String gender);
-
-    Builder address(Reference<Address> address);
-
-    Builder version(int version);
-
-    Person build();
   }
 }

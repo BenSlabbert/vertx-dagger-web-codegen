@@ -5,3 +5,4 @@ github.benslabbert.vdw.codegen.generator.VertxEBProxyGenerators
 github.benslabbert.vdw.codegen.generator.TableGenerator
 github.benslabbert.vdw.codegen.generator.ModuleBindingsGenerator
 github.benslabbert.vdw.codegen.generator.AdviceResourceGenerator
+github.benslabbert.vdw.codegen.generator.GenerateBuilderGenerator
