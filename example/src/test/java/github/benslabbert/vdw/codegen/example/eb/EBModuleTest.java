@@ -6,8 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import github.benslabbert.vdw.codegen.commons.eb.EventBusServiceConfigurer;
 import github.benslabbert.vdw.codegen.example.di.DaggerProvider;
 import github.benslabbert.vdw.codegen.example.di.Provider;
-import github.benslabbert.vdw.codegen.example.eb.DataService.DataRequest;
-import github.benslabbert.vdw.codegen.example.eb.ExampleService.ExampleRequest;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.ReplyException;

@@ -2,15 +2,12 @@
 package github.benslabbert.vdw.codegen.generator;
 
 import com.google.common.io.CharSink;
-import com.google.common.io.CharSource;
 import com.google.googlejavaformat.java.Formatter;
 import com.google.googlejavaformat.java.FormatterException;
 import com.google.googlejavaformat.java.JavaFormatterOptions;
 import jakarta.annotation.Nonnull;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.time.Duration;
@@ -49,21 +46,6 @@ abstract class ProcessorBase extends AbstractProcessor {
   @Override
   public Set<String> getSupportedAnnotationTypes() {
     return supportedAnnotationTypes;
-  }
-
-  private static class StringSource extends CharSource {
-
-    private final StringWriter writer;
-
-    private StringSource(StringWriter writer) {
-      this.writer = writer;
-    }
-
-    @Nonnull
-    @Override
-    public Reader openStream() {
-      return new StringReader(writer.toString());
-    }
   }
 
   private static class FileSink extends CharSink {
@@ -125,7 +107,6 @@ abstract class ProcessorBase extends AbstractProcessor {
 
   private void formatFile(GeneratedFile generatedFile) {
     try {
-      CharSource source = new StringSource(generatedFile.stringWriter());
       JavaFileObject builderFile =
           processingEnv.getFiler().createSourceFile(generatedFile.realFileName());
       CharSink output = new FileSink(builderFile);
@@ -138,7 +119,9 @@ abstract class ProcessorBase extends AbstractProcessor {
               .build();
 
       Instant start = Instant.now();
-      new Formatter(options).formatSource(source, output);
+      var formatted =
+          new Formatter(options).formatSourceAndFixImports(generatedFile.stringWriter.toString());
+      output.write(formatted);
       processingEnv
           .getMessager()
           .printMessage(

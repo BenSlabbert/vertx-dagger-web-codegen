@@ -1,5 +1,5 @@
 /* Licensed under Apache-2.0 2024. */
-package test;
+package github.benslabbert.vdw.codegen.generator;
 
 import github.benslabbert.vdw.codegen.annotation.HasRole;
 import github.benslabbert.vdw.codegen.annotation.WebHandler;
@@ -18,7 +18,6 @@ import github.benslabbert.vdw.codegen.annotation.WebRequest.QueryParams;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.Request;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.Response;
 import github.benslabbert.vdw.codegen.annotation.WebRequest.Trace;
-import github.benslabbert.vdw.codegen.generator.Dto;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;

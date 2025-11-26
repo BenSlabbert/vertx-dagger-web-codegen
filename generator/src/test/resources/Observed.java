@@ -1,5 +1,5 @@
 /* Licensed under Apache-2.0 2025. */
-package test;
+package github.benslabbert.vdw.codegen.generator;
 
 import github.benslabbert.vdw.codegen.annotation.AroundAdvice;
 import java.lang.annotation.Documented;

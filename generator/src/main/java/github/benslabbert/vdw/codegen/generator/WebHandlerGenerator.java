@@ -283,7 +283,8 @@ public class WebHandlerGenerator extends ProcessorBase {
         if (null != bodyParam) {
           out.printf("\t\t\t.handler((RoutingContext %s) -> {%n", ctxVariable);
           out.printf(
-              "\t\t\t\tRequireRequestBodyHandler.requireJsonBody(%s, %s.getValidator(), \"%s\");%n",
+              "\t\t\t\tRequireRequestBodyHandler.requireJsonBody(%s, %sJson.getValidator(),"
+                  + " \"%s\");%n",
               ctxVariable, bodyParam.type().simpleName(), am.path());
           out.printf("\t\t\t})%n");
 
@@ -291,14 +292,14 @@ public class WebHandlerGenerator extends ProcessorBase {
             out.printf("\t\t\t.handler((RoutingContext %s) -> {%n", ctxVariable);
             out.printf(
                 "\t\t\t\tValidateRequestBodyHandler.validateRequestBody(%s, %s.getValidator(),"
-                    + " %s::fromJson);%n",
+                    + " %sJson::fromJson);%n",
                 ctxVariable, validationProviderVariable, bodyParam.type().simpleName());
             out.printf("\t\t\t})%n");
           } else {
             out.printf("\t\t\t.handler((RoutingContext %s) -> {%n", ctxVariable);
             out.printf(
                 "\t\t\t\t%s.put(ContextDataKey.REQUEST_DATA,"
-                    + " %s.fromJson(%s.get(ContextDataKey.REQUEST_JSON)));%n",
+                    + " %sJson.fromJson(%s.get(ContextDataKey.REQUEST_JSON)));%n",
                 ctxVariable, bodyParam.type().simpleName(), ctxVariable);
             out.printf("\t\t\t\t%s.next();%n", ctxVariable);
             out.printf("\t\t\t})%n");
@@ -380,21 +381,25 @@ public class WebHandlerGenerator extends ProcessorBase {
           ctxVariable, request.responseCode(), respVariable);
     } else if (isFutureReturn) {
       out.printf(
-          "\t\t\t\t\tResponseWriterUtil.sendFuture(%s, %d, %s.map(f -> f.toJson()));%n",
-          ctxVariable, request.responseCode(), respVariable);
+          "\t\t\t\t\tResponseWriterUtil.sendFuture(%s, %d, %s.map(f -> %sJson.toJson(f)));%n",
+          ctxVariable, request.responseCode(), respVariable, futureType(request));
     } else {
       out.printf(
-          "\t\t\t\t\tResponseWriterUtil.sendJson(%s, %d, %s.toJson());%n",
-          ctxVariable, request.responseCode(), respVariable);
+          "\t\t\t\t\tResponseWriterUtil.sendJson(%s, %d, %sJson.toJson(%s));%n",
+          ctxVariable, request.responseCode(), request.returnType().simpleName(), respVariable);
     }
   }
 
   private static String futureVariable(MethodRequest methodRequest) {
+    String ft = futureType(methodRequest);
+    return "Future<%s>".formatted(ft);
+  }
+
+  private static String futureType(MethodRequest methodRequest) {
     TypeMirror typeMirror = methodRequest.executableElement().getReturnType();
     ParameterizedTypeName pt = (ParameterizedTypeName) TypeName.get(typeMirror);
     String futureType = pt.typeArguments().getFirst().toString();
-    String substring = futureType.substring(futureType.lastIndexOf('.') + 1);
-    return "Future<%s>".formatted(substring);
+    return futureType.substring(futureType.lastIndexOf('.') + 1);
   }
 
   private static MethodParameter requestBodyType(List<MethodParameter> parameters) {

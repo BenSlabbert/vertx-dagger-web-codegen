@@ -1,0 +1,14 @@
+/* Licensed under Apache-2.0 2025. */
+package github.benslabbert.vdw.codegen.example.eb;
+
+import github.benslabbert.vdw.codegen.annotation.GenerateBuilder;
+import github.benslabbert.vertxjsonwriter.annotation.JsonWriter;
+
+@JsonWriter
+@GenerateBuilder
+public record ExampleResponse(String data) {
+
+  public static ExampleResponseBuilder.Builder builder() {
+    return ExampleResponseBuilder.builder();
+  }
+}
