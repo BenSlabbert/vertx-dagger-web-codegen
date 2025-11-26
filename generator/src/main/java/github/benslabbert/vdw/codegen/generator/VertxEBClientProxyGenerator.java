@@ -83,9 +83,9 @@ class VertxEBClientProxyGenerator {
             "\tpublic Future<%s> %s(%s req) {%n",
             sm.returnTypeName(), sm.methodName(), sm.paramTypeName());
         out.printf(
-            "\t\treturn ClientProxyUtils.getResponseFuture(vertx, \"%s\", opts, req.toJson(),"
-                + " \"%s\", %s::fromJson);%n",
-            address, sm.methodName(), sm.returnTypeName());
+            "\t\treturn ClientProxyUtils.getResponseFuture(vertx, \"%s\", opts, %sJson.toJson(req),"
+                + " \"%s\", %sJson::fromJson);%n",
+            address, sm.paramTypeName(), sm.methodName(), sm.returnTypeName());
         out.println("\t}");
         out.println();
       }

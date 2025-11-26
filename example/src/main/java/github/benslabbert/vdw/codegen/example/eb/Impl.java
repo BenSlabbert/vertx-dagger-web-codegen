@@ -12,36 +12,12 @@ class Impl implements DataServiceNoAuthNoValidation, DataServiceNoRoles, DataSer
   Impl() {}
 
   @Override
-  public Future<DataServiceNoAuthNoValidation.DataResponse> getData(
-      DataServiceNoAuthNoValidation.DataRequest request) {
+  public Future<DataResponse> getData(DataRequest request) {
     return null;
   }
 
   @Override
-  public Future<DataServiceNoAuthNoValidation.MetaResponse> getMeta(
-      DataServiceNoAuthNoValidation.DataRequest request) {
-    return null;
-  }
-
-  @Override
-  public Future<DataServiceNoRoles.DataResponse> getData(DataServiceNoRoles.DataRequest request) {
-    return null;
-  }
-
-  @Override
-  public Future<DataServiceNoRoles.MetaResponse> getMeta(DataServiceNoRoles.DataRequest request) {
-    return null;
-  }
-
-  @Override
-  public Future<DataServiceNoValidation.DataResponse> getData(
-      DataServiceNoValidation.DataRequest request) {
-    return null;
-  }
-
-  @Override
-  public Future<DataServiceNoValidation.MetaResponse> getMeta(
-      DataServiceNoValidation.DataRequest request) {
+  public Future<MetaResponse> getMeta(DataRequest request) {
     return null;
   }
 }

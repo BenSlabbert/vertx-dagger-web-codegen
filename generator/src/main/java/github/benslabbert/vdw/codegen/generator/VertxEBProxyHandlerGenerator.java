@@ -235,7 +235,7 @@ class VertxEBProxyHandlerGenerator {
         out.printf(
 """
 case "%s" -> {
-    io.vertx.json.schema.Validator validator = %s.getValidator();
+    io.vertx.json.schema.Validator validator = %sJson.getValidator();
     OutputUnit outputUnit = validator.validate(request);
     if (!outputUnit.getValid()) {
         yield Future.failedFuture(new ServiceException(400, outputUnit.toString(), outputUnit.toJson()));
@@ -246,14 +246,14 @@ case "%s" -> {
         if (m.validated()) {
           out.printf(
 """
-        %s r = %s.fromJson(request);
+        %s r = %sJson.fromJson(request);
         Set<ConstraintViolation<%s>> violations = validatorProvider.getValidator().validate(r);
         if (!violations.isEmpty()) {
             JsonObject json = getErrorJson(violations);
             yield Future.failedFuture(new ServiceException(400, json.encode(), json));
         }
 
-        yield service.%s(r).map(%s::toJson);
+        yield service.%s(r).map(%sJson::toJson);
 """,
               m.paramTypeName(),
               m.paramTypeName(),
@@ -262,7 +262,7 @@ case "%s" -> {
               m.returnTypeName());
         } else {
           out.printf(
-              "yield service.%s(%s.fromJson(request)).map(%s::toJson);%n",
+              "yield service.%s(%sJson.fromJson(request)).map(%sJson::toJson);%n",
               m.methodName(), m.paramTypeName(), m.returnTypeName());
         }
         out.println("}");
@@ -277,7 +277,8 @@ case "%s" -> {
       out.println("}");
       out.println();
 
-      out.println(
+      if (useValidator) {
+        out.println(
 """
     private static <T> JsonObject getErrorJson(Set<ConstraintViolation<T>> violations) {
         List<JsonObject> errors =
@@ -287,6 +288,8 @@ case "%s" -> {
         return new JsonObject().put("errors", errors);
     }
 """);
+      }
+
       out.println("}");
     }
 
