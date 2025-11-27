@@ -1,7 +1,7 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.generator;
 
-import github.benslabbert.vdw.codegen.annotation.BeforeAdvice;
+import github.benslabbert.vdw.codegen.annotation.advice.BeforeAdvice;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

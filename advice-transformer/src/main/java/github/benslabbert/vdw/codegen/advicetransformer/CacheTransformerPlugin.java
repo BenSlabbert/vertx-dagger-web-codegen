@@ -1,7 +1,7 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.advicetransformer;
 
-import github.benslabbert.vdw.codegen.annotation.Cache;
+import github.benslabbert.vdw.codegen.annotation.advice.Cache;
 import java.util.HashMap;
 import java.util.Map;
 import net.bytebuddy.asm.Advice;

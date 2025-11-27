@@ -1,8 +1,8 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.aop;
 
-import github.benslabbert.vdw.codegen.annotation.AroundAdvice.AroundAdviceInvocation;
-import github.benslabbert.vdw.codegen.annotation.BeforeAdvice.BeforeAdviceInvocation;
+import github.benslabbert.vdw.codegen.annotation.advice.AroundAdvice.AroundAdviceInvocation;
+import github.benslabbert.vdw.codegen.annotation.advice.BeforeAdvice.BeforeAdviceInvocation;
 import jakarta.inject.Provider;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,7 +33,7 @@ public final class AdviceExecutor {
         adviceName,
         (key, oldValue) -> {
           if (oldValue == null) {
-            var providers = new ArrayList<Provider<? extends BeforeAdviceInvocation>>(2);
+            List<Provider<? extends BeforeAdviceInvocation>> providers = new ArrayList<>(2);
             providers.add(provider);
             return providers;
           }

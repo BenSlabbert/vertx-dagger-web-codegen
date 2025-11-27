@@ -23,13 +23,13 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
-abstract class ProcessorBase extends AbstractProcessor {
+public abstract class ProcessorBase extends AbstractProcessor {
 
   private static final String SKIP_FMT = "skipFmt";
 
   private final Set<String> supportedAnnotationTypes;
 
-  ProcessorBase(Set<String> supportedAnnotationTypes) {
+  protected ProcessorBase(Set<String> supportedAnnotationTypes) {
     this.supportedAnnotationTypes = supportedAnnotationTypes;
   }
 
@@ -132,23 +132,23 @@ abstract class ProcessorBase extends AbstractProcessor {
     }
   }
 
-  void printNote(CharSequence cs) {
+  protected void printNote(CharSequence cs) {
     processingEnv.getMessager().printNote(cs);
   }
 
-  void printError(CharSequence cs) {
+  protected void printError(CharSequence cs) {
     processingEnv.getMessager().printError(cs);
   }
 
-  void printError(CharSequence cs, Element e) {
+  protected void printError(CharSequence cs, Element e) {
     processingEnv.getMessager().printError(cs, e);
   }
 
-  void printNote(CharSequence cs, Element element) {
+  protected void printNote(CharSequence cs, Element element) {
     processingEnv.getMessager().printNote(cs, element);
   }
 
-  abstract List<GeneratedFile> generateTempFile(Element element);
+  protected abstract List<GeneratedFile> generateTempFile(Element element);
 
-  record GeneratedFile(StringWriter stringWriter, String realFileName) {}
+  public record GeneratedFile(StringWriter stringWriter, String realFileName) {}
 }

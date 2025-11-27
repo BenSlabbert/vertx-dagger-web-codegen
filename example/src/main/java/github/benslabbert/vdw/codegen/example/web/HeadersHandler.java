@@ -1,9 +1,9 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.example.web;
 
-import github.benslabbert.vdw.codegen.annotation.WebHandler;
-import github.benslabbert.vdw.codegen.annotation.WebRequest.Get;
-import github.benslabbert.vdw.codegen.annotation.WebRequest.Headers;
+import github.benslabbert.vdw.codegen.annotation.web.WebHandler;
+import github.benslabbert.vdw.codegen.annotation.web.WebRequest.Get;
+import github.benslabbert.vdw.codegen.annotation.web.WebRequest.Headers;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import jakarta.inject.Inject;

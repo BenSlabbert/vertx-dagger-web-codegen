@@ -1,9 +1,9 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.example.web;
 
-import github.benslabbert.vdw.codegen.annotation.WebHandler;
-import github.benslabbert.vdw.codegen.annotation.WebRequest.Get;
-import github.benslabbert.vdw.codegen.annotation.WebRequest.Response;
+import github.benslabbert.vdw.codegen.annotation.web.WebHandler;
+import github.benslabbert.vdw.codegen.annotation.web.WebRequest.Get;
+import github.benslabbert.vdw.codegen.annotation.web.WebRequest.Response;
 import io.vertx.core.http.HttpServerResponse;
 import jakarta.inject.Inject;
 import org.slf4j.Logger;
