@@ -6,3 +6,4 @@ github.benslabbert.vdw.codegen.generator.jdbc.TableGenerator
 github.benslabbert.vdw.codegen.generator.ioc.ModuleBindingsGenerator
 github.benslabbert.vdw.codegen.generator.advice.AdviceResourceGenerator
 github.benslabbert.vdw.codegen.generator.builder.GenerateBuilderGenerator
+github.benslabbert.vdw.codegen.generator.json.JsonWriterProcessor

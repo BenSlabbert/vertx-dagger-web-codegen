@@ -42,8 +42,8 @@
     <shade.skip>false</shade.skip>
 
     <!--deps-->
-    <tx-manager.version>1.211.0</tx-manager.version>
-    <vertx-json-writer.version>2.4.0</vertx-json-writer.version>
+    <tx-manager.version>1.210.0</tx-manager.version>
+    <vertx-json-writer.version>2.3.0</vertx-json-writer.version>
     <vertx-dagger-commons.version>1.223.0</vertx-dagger-commons.version>
     <compile-testing.version>1.2.0</compile-testing.version>
     <byte-buddy.version>1.18.2</byte-buddy.version>
@@ -71,13 +71,6 @@
         <groupId>github.benslabbert.vertx-dagger-commons</groupId>
         <artifactId>bom</artifactId>
         <version>${vertx-dagger-commons.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>github.benslabbert.vertx-json-writer</groupId>
-        <artifactId>bom</artifactId>
-        <version>${vertx-json-writer.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
