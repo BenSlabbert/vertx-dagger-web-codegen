@@ -1,9 +1,9 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.example.web;
 
-import github.benslabbert.vdw.codegen.annotation.NoAuthCheck;
-import github.benslabbert.vdw.codegen.annotation.WebHandler;
-import github.benslabbert.vdw.codegen.annotation.WebRequest;
+import github.benslabbert.vdw.codegen.annotation.auth.NoAuthCheck;
+import github.benslabbert.vdw.codegen.annotation.web.WebHandler;
+import github.benslabbert.vdw.codegen.annotation.web.WebRequest;
 import io.vertx.core.buffer.Buffer;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;

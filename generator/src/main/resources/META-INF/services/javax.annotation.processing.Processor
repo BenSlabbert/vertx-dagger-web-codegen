@@ -1,8 +1,8 @@
-github.benslabbert.vdw.codegen.generator.WebHandlerGenerator
-github.benslabbert.vdw.codegen.generator.ModuleGeneration
-github.benslabbert.vdw.codegen.generator.WebRequestGenerator
-github.benslabbert.vdw.codegen.generator.VertxEBProxyGenerators
-github.benslabbert.vdw.codegen.generator.TableGenerator
-github.benslabbert.vdw.codegen.generator.ModuleBindingsGenerator
-github.benslabbert.vdw.codegen.generator.AdviceResourceGenerator
-github.benslabbert.vdw.codegen.generator.GenerateBuilderGenerator
+github.benslabbert.vdw.codegen.generator.web.WebHandlerGenerator
+github.benslabbert.vdw.codegen.generator.ioc.ModuleGeneration
+github.benslabbert.vdw.codegen.generator.web.WebRequestGenerator
+github.benslabbert.vdw.codegen.generator.eb.VertxEBProxyGenerators
+github.benslabbert.vdw.codegen.generator.jdbc.TableGenerator
+github.benslabbert.vdw.codegen.generator.ioc.ModuleBindingsGenerator
+github.benslabbert.vdw.codegen.generator.advice.AdviceResourceGenerator
+github.benslabbert.vdw.codegen.generator.builder.GenerateBuilderGenerator

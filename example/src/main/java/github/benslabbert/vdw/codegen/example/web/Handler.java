@@ -1,13 +1,13 @@
 /* Licensed under Apache-2.0 2024. */
 package github.benslabbert.vdw.codegen.example.web;
 
-import github.benslabbert.vdw.codegen.annotation.HasRole;
-import github.benslabbert.vdw.codegen.annotation.WebHandler;
-import github.benslabbert.vdw.codegen.annotation.WebRequest.Consumes;
-import github.benslabbert.vdw.codegen.annotation.WebRequest.Get;
-import github.benslabbert.vdw.codegen.annotation.WebRequest.PathParams;
-import github.benslabbert.vdw.codegen.annotation.WebRequest.Produces;
-import github.benslabbert.vdw.codegen.annotation.WebRequest.QueryParams;
+import github.benslabbert.vdw.codegen.annotation.auth.HasRole;
+import github.benslabbert.vdw.codegen.annotation.web.WebHandler;
+import github.benslabbert.vdw.codegen.annotation.web.WebRequest.Consumes;
+import github.benslabbert.vdw.codegen.annotation.web.WebRequest.Get;
+import github.benslabbert.vdw.codegen.annotation.web.WebRequest.PathParams;
+import github.benslabbert.vdw.codegen.annotation.web.WebRequest.Produces;
+import github.benslabbert.vdw.codegen.annotation.web.WebRequest.QueryParams;
 import github.benslabbert.vdw.codegen.example.service.HandlerService;
 import github.benslabbert.vdw.codegen.example.web.Handler_Both_ParamParser.Handler_Both_Params;
 import github.benslabbert.vdw.codegen.example.web.Handler_Path_ParamParser.Handler_Path_Params;

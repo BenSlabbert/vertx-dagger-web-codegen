@@ -1,7 +1,7 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.example.builder;
 
-import github.benslabbert.vdw.codegen.annotation.GenerateBuilder;
+import github.benslabbert.vdw.codegen.annotation.builder.GenerateBuilder;
 import java.util.List;
 
 @GenerateBuilder

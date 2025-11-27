@@ -5,7 +5,7 @@ import github.benslabbert.vdw.codegen.advicetransformer.CacheData.Async;
 import github.benslabbert.vdw.codegen.advicetransformer.CacheData.Key;
 import github.benslabbert.vdw.codegen.advicetransformer.CacheData.Name;
 import github.benslabbert.vdw.codegen.advicetransformer.CacheData.Policy;
-import github.benslabbert.vdw.codegen.annotation.Cache;
+import github.benslabbert.vdw.codegen.annotation.advice.Cache;
 import github.benslabbert.vdw.codegen.aop.cache.CacheAdviceExecutor;
 import github.benslabbert.vdw.codegen.aop.cache.CacheKeyBuilder;
 import net.bytebuddy.asm.Advice.AllArguments;

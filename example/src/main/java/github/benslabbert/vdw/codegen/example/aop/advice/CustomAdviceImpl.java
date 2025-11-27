@@ -1,7 +1,7 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.example.aop.advice;
 
-import github.benslabbert.vdw.codegen.annotation.BeforeAdvice;
+import github.benslabbert.vdw.codegen.annotation.advice.BeforeAdvice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

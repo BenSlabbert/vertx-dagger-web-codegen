@@ -1,9 +1,9 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.example.web;
 
-import github.benslabbert.vdw.codegen.annotation.WebHandler;
-import github.benslabbert.vdw.codegen.annotation.WebRequest.Body;
-import github.benslabbert.vdw.codegen.annotation.WebRequest.Post;
+import github.benslabbert.vdw.codegen.annotation.web.WebHandler;
+import github.benslabbert.vdw.codegen.annotation.web.WebRequest.Body;
+import github.benslabbert.vdw.codegen.annotation.web.WebRequest.Post;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 

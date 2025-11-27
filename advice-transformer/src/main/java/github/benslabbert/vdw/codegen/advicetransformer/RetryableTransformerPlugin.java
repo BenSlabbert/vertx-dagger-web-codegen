@@ -1,8 +1,8 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.advicetransformer;
 
-import github.benslabbert.vdw.codegen.annotation.Retryable.ExponentialBackoff;
-import github.benslabbert.vdw.codegen.annotation.Retryable.FixedDelay;
+import github.benslabbert.vdw.codegen.annotation.advice.Retryable.ExponentialBackoff;
+import github.benslabbert.vdw.codegen.annotation.advice.Retryable.FixedDelay;
 import java.util.ArrayList;
 import java.util.List;
 import net.bytebuddy.build.BuildLogger;

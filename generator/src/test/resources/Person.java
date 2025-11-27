@@ -1,14 +1,14 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.example.jdbc;
 
-import github.benslabbert.vdw.codegen.annotation.Table;
-import github.benslabbert.vdw.codegen.annotation.Table.Column;
-import github.benslabbert.vdw.codegen.annotation.Table.FindByColumn;
-import github.benslabbert.vdw.codegen.annotation.Table.FindOneByColumn;
-import github.benslabbert.vdw.codegen.annotation.Table.Id;
-import github.benslabbert.vdw.codegen.annotation.Table.InsertOnly;
-import github.benslabbert.vdw.codegen.annotation.Table.Query;
-import github.benslabbert.vdw.codegen.annotation.Table.Version;
+import github.benslabbert.vdw.codegen.annotation.jdbc.Table;
+import github.benslabbert.vdw.codegen.annotation.jdbc.Table.Column;
+import github.benslabbert.vdw.codegen.annotation.jdbc.Table.FindByColumn;
+import github.benslabbert.vdw.codegen.annotation.jdbc.Table.FindOneByColumn;
+import github.benslabbert.vdw.codegen.annotation.jdbc.Table.Id;
+import github.benslabbert.vdw.codegen.annotation.jdbc.Table.InsertOnly;
+import github.benslabbert.vdw.codegen.annotation.jdbc.Table.Query;
+import github.benslabbert.vdw.codegen.annotation.jdbc.Table.Version;
 import github.benslabbert.vdw.codegen.commons.jdbc.Reference;
 import jakarta.annotation.Nonnull;
 import java.util.List;

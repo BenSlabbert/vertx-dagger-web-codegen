@@ -3,13 +3,13 @@ package github.benslabbert.vdw.codegen.generator;
 
 import java.io.StringWriter;
 
-final class StringWriterFactory {
+public final class StringWriterFactory {
 
   private StringWriterFactory() {
     /* */
   }
 
-  static StringWriter create() {
+  public static StringWriter create() {
     // 8k should be big enough for most files without needing a resize
     return new StringWriter(8 * 1024);
   }

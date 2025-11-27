@@ -1,8 +1,8 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.example.aop.retry;
 
-import github.benslabbert.vdw.codegen.annotation.Retryable.ExponentialBackoff;
-import github.benslabbert.vdw.codegen.annotation.Retryable.FixedDelay;
+import github.benslabbert.vdw.codegen.annotation.advice.Retryable.ExponentialBackoff;
+import github.benslabbert.vdw.codegen.annotation.advice.Retryable.FixedDelay;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
