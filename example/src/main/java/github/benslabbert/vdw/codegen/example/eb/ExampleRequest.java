@@ -2,7 +2,7 @@
 package github.benslabbert.vdw.codegen.example.eb;
 
 import github.benslabbert.vdw.codegen.annotation.builder.GenerateBuilder;
-import github.benslabbert.vertxjsonwriter.annotation.JsonWriter;
+import github.benslabbert.vdw.codegen.annotation.json.JsonWriter;
 
 @JsonWriter
 @GenerateBuilder
