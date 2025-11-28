@@ -26,24 +26,13 @@
       <artifactId>dagger</artifactId>
     </dependency>
     <dependency>
-      <groupId>github.benslabbert.txmanager</groupId>
-      <artifactId>agent</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>github.benslabbert.txmanager</groupId>
-      <artifactId>annotation</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>github.benslabbert.txmanager</groupId>
-      <artifactId>plugin</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>github.benslabbert.txmanager</groupId>
-      <artifactId>txmanager</artifactId>
+      <groupId>github.benslabbert.vdw.codegen</groupId>
+      <artifactId>advice-transformer</artifactId>
+      <version>${revision}</version>
     </dependency>
     <dependency>
       <groupId>github.benslabbert.vdw.codegen</groupId>
-      <artifactId>advice-transformer</artifactId>
+      <artifactId>agent</artifactId>
       <version>${revision}</version>
     </dependency>
     <dependency>
@@ -62,8 +51,9 @@
       <version>${revision}</version>
     </dependency>
     <dependency>
-      <groupId>github.benslabbert.vertx-dagger-commons</groupId>
-      <artifactId>transaction</artifactId>
+      <groupId>github.benslabbert.vdw.codegen</groupId>
+      <artifactId>logging</artifactId>
+      <version>${revision}</version>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
@@ -185,11 +175,6 @@
         <groupId>net.bytebuddy</groupId>
         <artifactId>byte-buddy-maven-plugin</artifactId>
         <dependencies>
-          <dependency>
-            <groupId>github.benslabbert.txmanager</groupId>
-            <artifactId>plugin</artifactId>
-            <version>${tx-manager.version}</version>
-          </dependency>
           <dependency>
             <groupId>github.benslabbert.vdw.codegen</groupId>
             <artifactId>advice-transformer</artifactId>

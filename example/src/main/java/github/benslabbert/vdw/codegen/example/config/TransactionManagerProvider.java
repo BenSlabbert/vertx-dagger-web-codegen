@@ -3,7 +3,7 @@ package github.benslabbert.vdw.codegen.example.config;
 
 import dagger.Module;
 import dagger.Provides;
-import github.benslabbert.txmanager.TransactionManager;
+import github.benslabbert.vdw.codegen.txmanager.TransactionManager;
 import jakarta.inject.Singleton;
 import java.sql.Connection;
 

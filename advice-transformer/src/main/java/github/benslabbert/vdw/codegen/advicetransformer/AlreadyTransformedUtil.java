@@ -1,7 +1,7 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.advicetransformer;
 
-import github.benslabbert.vdw.codegen.annotation.AlreadyTransformed;
+import github.benslabbert.vdw.codegen.annotation.aop.AlreadyTransformed;
 import net.bytebuddy.description.annotation.AnnotationDescription;
 import net.bytebuddy.description.method.MethodDescription;
 

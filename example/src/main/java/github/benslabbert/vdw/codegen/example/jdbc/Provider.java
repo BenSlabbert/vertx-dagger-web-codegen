@@ -3,8 +3,8 @@ package github.benslabbert.vdw.codegen.example.jdbc;
 
 import dagger.BindsInstance;
 import dagger.Component;
-import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcQueryRunnerFactory;
-import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcTransactionManager;
+import github.benslabbert.vdw.codegen.commons.jdbc.JdbcQueryRunnerFactory;
+import github.benslabbert.vdw.codegen.commons.jdbc.JdbcTransactionManager;
 import jakarta.inject.Singleton;
 import javax.sql.DataSource;
 
