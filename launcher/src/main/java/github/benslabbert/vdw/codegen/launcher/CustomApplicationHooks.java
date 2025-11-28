@@ -55,12 +55,18 @@ public class CustomApplicationHooks implements VertxApplicationHooks {
 
   @Override
   public JsonObject afterConfigParsed(JsonObject config) {
+    log.info("afterConfigParsed");
     if (null == config) {
+      log.info("config is null, create empty configuration");
       config = new JsonObject();
     }
 
-    if (!config.isEmpty()) return config;
+    if (!config.isEmpty()) {
+      log.info("config is not empty, return");
+      return config;
+    }
 
+    log.info("loading application.json");
     try (var input = getClass().getClassLoader().getResourceAsStream("application.json")) {
       if (null == input) {
         throw VertxException.noStackTrace("application.json not found");
@@ -72,6 +78,7 @@ public class CustomApplicationHooks implements VertxApplicationHooks {
       JsonObject entries = new JsonObject(new String(bytes, StandardCharsets.UTF_8));
       return config.mergeIn(entries, true);
     } catch (IOException e) {
+      log.error("failed to read application.json", e);
       throw VertxException.noStackTrace(e);
     }
   }
