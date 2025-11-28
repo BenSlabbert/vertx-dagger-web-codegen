@@ -1,3 +1,4 @@
 github.benslabbert.vdw.codegen.advicetransformer.AdviceTransformerPlugin
 github.benslabbert.vdw.codegen.advicetransformer.CacheTransformerPlugin
 github.benslabbert.vdw.codegen.advicetransformer.RetryableTransformerPlugin
+github.benslabbert.vdw.codegen.advicetransformer.TransactionalAdvicePlugin

@@ -1,5 +1,5 @@
 /* Licensed under Apache-2.0 2025. */
-package github.benslabbert.vdw.codegen.annotation;
+package github.benslabbert.vdw.codegen.annotation.transaction;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -13,4 +13,12 @@ import java.lang.annotation.Target;
  */
 @Target(value = {ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface AlreadyTransformed {}
+public @interface AlreadyTransformed {
+
+  Transformer transformedBy();
+
+  enum Transformer {
+    PLUGIN,
+    AGENT
+  }
+}

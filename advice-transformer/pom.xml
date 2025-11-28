@@ -13,6 +13,11 @@
   <dependencies>
     <dependency>
       <groupId>github.benslabbert.vdw.codegen</groupId>
+      <artifactId>agent</artifactId>
+      <version>${revision}</version>
+    </dependency>
+    <dependency>
+      <groupId>github.benslabbert.vdw.codegen</groupId>
       <artifactId>aop</artifactId>
       <version>${revision}</version>
     </dependency>

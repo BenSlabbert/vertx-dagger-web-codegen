@@ -3,11 +3,11 @@ package github.benslabbert.vdw.codegen.example.jdbc;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import github.benslabbert.txmanager.PlatformTransactionManager;
-import github.benslabbert.txmanager.annotation.AfterCommit;
-import github.benslabbert.txmanager.annotation.BeforeCommit;
-import github.benslabbert.txmanager.annotation.Transactional;
-import github.benslabbert.vertxdaggercommons.transaction.blocking.jdbc.JdbcQueryRunner;
+import github.benslabbert.vdw.codegen.annotation.transaction.AfterCommit;
+import github.benslabbert.vdw.codegen.annotation.transaction.BeforeCommit;
+import github.benslabbert.vdw.codegen.annotation.transaction.Transactional;
+import github.benslabbert.vdw.codegen.commons.jdbc.JdbcQueryRunner;
+import github.benslabbert.vdw.codegen.txmanager.PlatformTransactionManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;

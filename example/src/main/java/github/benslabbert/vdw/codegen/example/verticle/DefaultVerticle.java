@@ -1,12 +1,12 @@
 /* Licensed under Apache-2.0 2024. */
 package github.benslabbert.vdw.codegen.example.verticle;
 
-import github.benslabbert.txmanager.PlatformTransactionManager;
 import github.benslabbert.vdw.codegen.commons.eb.EventBusServiceConfigurer;
 import github.benslabbert.vdw.codegen.example.di.DaggerProvider;
 import github.benslabbert.vdw.codegen.example.di.Provider;
 import github.benslabbert.vdw.codegen.example.web.RouterFactory;
 import github.benslabbert.vdw.codegen.example.web.ServerFactory;
+import github.benslabbert.vdw.codegen.txmanager.PlatformTransactionManager;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
