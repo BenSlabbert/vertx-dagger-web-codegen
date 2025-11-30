@@ -14,7 +14,9 @@
 
   <modules>
     <module>agent</module>
+    <module>agent-example</module>
     <module>platform</module>
+    <module>plugin-example</module>
   </modules>
 
 </project>

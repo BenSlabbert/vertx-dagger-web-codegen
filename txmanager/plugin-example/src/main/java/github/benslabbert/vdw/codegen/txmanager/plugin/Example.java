@@ -1,0 +1,135 @@
+/* Licensed under Apache-2.0 2024. */
+package github.benslabbert.vdw.codegen.txmanager.plugin;
+
+import static github.benslabbert.vdw.codegen.annotation.transaction.Transactional.Propagation.REQUIRES_EXISTING;
+import static github.benslabbert.vdw.codegen.annotation.transaction.Transactional.Propagation.REQUIRES_NEW;
+
+import github.benslabbert.vdw.codegen.annotation.transaction.AfterCommit;
+import github.benslabbert.vdw.codegen.annotation.transaction.BeforeCommit;
+import github.benslabbert.vdw.codegen.annotation.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+class Example {
+
+  private static final Logger log = LoggerFactory.getLogger(Example.class);
+
+  public void notAnnotated() {}
+
+  @Transactional
+  void simple() {
+    log.info("simple");
+  }
+
+  @Transactional(ignore = IllegalStateException.class)
+  void ignoreNoCommit() {
+    log.info("ignoreNoCommit");
+    throw new IllegalStateException("exceptedException");
+  }
+
+  @Transactional(
+      ignore = IllegalStateException.class,
+      doNotRollBackFor = IllegalStateException.class)
+  void ignoreWithCommit() {
+    log.info("ignoreWithCommit");
+    throw new IllegalStateException("exceptedException");
+  }
+
+  @Transactional(
+      ignore = IllegalStateException.class,
+      doNotRollBackFor = IllegalStateException.class)
+  void ignoreThrows() {
+    log.info("ignoreThrows");
+    throw new IllegalArgumentException("exceptedException");
+  }
+
+  @Transactional(propagation = REQUIRES_NEW)
+  void requiresNew1() {
+    log.info("requiresNew1");
+    privateRequiresNew();
+  }
+
+  @Transactional
+  void requiresNew2() {
+    log.info("requiresNew2");
+    privateRequiresExisting();
+  }
+
+  @Transactional(propagation = REQUIRES_NEW)
+  private void privateRequiresNew() {
+    log.info("privateRequiresNew");
+  }
+
+  @Transactional(propagation = REQUIRES_EXISTING)
+  private void privateRequiresExisting() {
+    log.info("privateRequiresExisting");
+  }
+
+  @Transactional(doNotRollBackFor = {RuntimeException.class, IllegalArgumentException.class})
+  void commitWithExpectedException() {
+    log.info("commitWithExpectedException");
+    throw new IllegalArgumentException("exceptedException");
+  }
+
+  @Transactional(doNotRollBackFor = {RuntimeException.class, IllegalArgumentException.class})
+  void rollBackForUnplannedException() {
+    log.info("rollBackForUnplannedException");
+    throw new IllegalStateException("exceptedException");
+  }
+
+  @Transactional(propagation = REQUIRES_EXISTING)
+  void requiresExisting() {
+    log.info("requiresExisting");
+  }
+
+  @Transactional
+  void nestingWithException() {
+    log.info("nestingWithException");
+    privateRequiresNewThrows();
+  }
+
+  @Transactional(propagation = REQUIRES_NEW)
+  private void privateRequiresNewThrows() {
+    log.info("privateRequiresNewThrows");
+    throw new IllegalStateException("planned");
+  }
+
+  @BeforeCommit
+  public Runnable beforeCommit() {
+    log.info("beforeCommit");
+    return () -> {};
+  }
+
+  @BeforeCommit
+  private Runnable beforeCommitPrivate() {
+    log.info("beforeCommitPrivate");
+    return () -> {};
+  }
+
+  @BeforeCommit
+  public void beforeCommitVoid() {
+    log.info("beforeCommitVoid");
+  }
+
+  @BeforeCommit
+  private void beforeCommitVoidPrivate() {
+    log.info("beforeCommitVoidPrivate");
+  }
+
+  @AfterCommit
+  Runnable afterCommit() {
+    log.info("afterCommit");
+    return () -> {};
+  }
+
+  @AfterCommit
+  private Runnable afterCommitPrivate() {
+    log.info("afterCommitPrivate");
+    return () -> {};
+  }
+
+  @AfterCommit
+  public void afterCommitVoid() {
+    log.info("afterCommitVoid");
+  }
+}
