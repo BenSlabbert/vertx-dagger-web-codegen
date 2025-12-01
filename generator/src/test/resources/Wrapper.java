@@ -5,7 +5,9 @@ import github.benslabbert.vdw.codegen.annotation.json.JsonWriter;
 
 @JsonWriter
 public record Wrapper(
-    Integer number, Boolean bool, Float fl, Double dub, Short sh, Character ch, Byte b, Long l) {
+    Integer number, Boolean bool, Float fl, Double dub, Short sh, Character ch, Byte b, Long l) {}
+
+class WrapperBuilder {
 
   public static Builder builder() {
     return null;
