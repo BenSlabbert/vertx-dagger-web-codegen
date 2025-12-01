@@ -6,9 +6,4 @@ import github.benslabbert.vdw.codegen.annotation.json.JsonWriter;
 
 @JsonWriter
 @GenerateBuilder
-public record MetaResponse(String data) {
-
-  public static MetaResponseBuilder.Builder builder() {
-    return MetaResponseBuilder.builder();
-  }
-}
+public record MetaResponse(String data) {}

@@ -49,14 +49,6 @@ public record Person(
     @Column("version") @Version int version)
     implements Reference<Person> {
 
-  public static PersonBuilder.Builder builder() {
-    return PersonBuilder.builder().id(0).version(0).address(Reference.create());
-  }
-
-  public PersonBuilder.Builder toBuilder() {
-    return PersonBuilder.toBuilder(this);
-  }
-
   @Nonnull
   @Override
   public String toString() {

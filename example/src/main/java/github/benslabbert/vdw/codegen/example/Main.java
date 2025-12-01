@@ -2,6 +2,7 @@
 package github.benslabbert.vdw.codegen.example;
 
 import github.benslabbert.vdw.codegen.example.jdbc.Person;
+import github.benslabbert.vdw.codegen.example.jdbc.PersonBuilder;
 import github.benslabbert.vdw.codegen.launcher.CustomApplicationHooks;
 import io.vertx.launcher.application.VertxApplication;
 import org.slf4j.Logger;
@@ -17,9 +18,9 @@ public class Main extends VertxApplication {
     log.info("launch successful ? {}", 0 == code);
 
     Person person =
-        Person.builder().id(1L).name("name").lastName("lname").age(1).gender("M").build();
+        PersonBuilder.builder().id(1L).name("name").lastName("lname").age(1).gender("M").build();
     log.info("person {}", person);
-    Person newPerson = person.toBuilder().build();
+    Person newPerson = PersonBuilder.toBuilder(person).build();
     log.info("newPerson {}", newPerson);
   }
 

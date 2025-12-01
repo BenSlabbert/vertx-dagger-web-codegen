@@ -117,11 +117,11 @@ public class App {
     log.info("execute {}", execute);
 
     Address address =
-        addressRepository.save(Address.builder().postalCode("pc1").street("s1").build());
+        addressRepository.save(AddressBuilder.builder().postalCode("pc1").street("s1").build());
 
     Person save =
         personRepository.save(
-            Person.builder()
+            PersonBuilder.builder()
                 .name("name")
                 .lastName("other")
                 .age(21)
@@ -130,7 +130,7 @@ public class App {
                 .address(address)
                 .build());
 
-    save = save.toBuilder().name("new_name").age(22).build();
+    save = PersonBuilder.toBuilder(save).name("new_name").age(22).build();
     save = personRepository.save(save);
 
     try (Stream<Person> all = personRepository.all()) {
@@ -168,12 +168,12 @@ public class App {
     log.info("delete {}", delete);
 
     Address address2 =
-        addressRepository.save(Address.builder().postalCode("pc2").street("s2").build());
+        addressRepository.save(AddressBuilder.builder().postalCode("pc2").street("s2").build());
     Address address3 =
-        addressRepository.save(Address.builder().postalCode("pc3").street("s3").build());
+        addressRepository.save(AddressBuilder.builder().postalCode("pc3").street("s3").build());
 
     Person p1 =
-        Person.builder()
+        PersonBuilder.builder()
             .name("name1")
             .lastName("other1")
             .age(11)
@@ -181,7 +181,7 @@ public class App {
             .gender("male")
             .build();
     Person p2 =
-        Person.builder()
+        PersonBuilder.builder()
             .name("name2")
             .lastName("other2")
             .age(22)

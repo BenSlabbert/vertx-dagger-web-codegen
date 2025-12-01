@@ -17,13 +17,4 @@ public record Address(
     @Column("street") @FindOneByColumn @InsertOnly String street,
     @Column("postal_code") @FindOneByColumn String postalCode,
     @Column("version") @Version int version)
-    implements Reference<Address> {
-
-  public static AddressBuilder.Builder builder() {
-    return AddressBuilder.builder().id(0).version(0);
-  }
-
-  public AddressBuilder.Builder toBuilder() {
-    return AddressBuilder.toBuilder(this);
-  }
-}
+    implements Reference<Address> {}

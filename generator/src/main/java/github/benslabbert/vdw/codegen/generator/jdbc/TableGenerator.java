@@ -948,7 +948,7 @@ public class TableGenerator extends ProcessorBase {
       out.println();
 
       out.printf("\tprivate %s map(ResultSet rs) throws SQLException {%n", ac.name());
-      out.printf("\t\treturn %s.builder()%n", ac.name());
+      out.printf("\t\treturn %sBuilder.builder()%n", ac.name());
       for (TableDetails td : tableDetails) {
         if (td.isReference()) {
           out.printf(
