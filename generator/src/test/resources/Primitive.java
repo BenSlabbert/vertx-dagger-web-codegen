@@ -5,7 +5,9 @@ import github.benslabbert.vdw.codegen.annotation.json.JsonWriter;
 
 @JsonWriter
 public record Primitive(
-    int number, boolean bool, float fl, double dub, short sh, char ch, byte b, long l) {
+    int number, boolean bool, float fl, double dub, short sh, char ch, byte b, long l) {}
+
+class PrimitiveBuilder {
 
   public static Builder builder() {
     return null;

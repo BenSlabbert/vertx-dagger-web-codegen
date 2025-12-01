@@ -19,7 +19,7 @@ class FromJsonGenerator {
     out.println("if (null == json) {");
     out.println("return null;");
     out.println("}");
-    out.printf("return %s.builder()%n", simpleClassName);
+    out.printf("return %sBuilder.builder()%n", simpleClassName);
 
     for (Property property : properties) {
       String jsonGetter =

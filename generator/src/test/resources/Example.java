@@ -19,7 +19,9 @@ public record Example(
     LocalDate date,
     LocalDateTime time,
     OffsetDateTime offsetDateTime,
-    Set<@NotNull @NotBlank @Size(min = 2) String> tags) {
+    Set<@NotNull @NotBlank @Size(min = 2) String> tags) {}
+
+class ExampleBuilder {
 
   public static Builder builder() {
     return null;
