@@ -42,19 +42,22 @@ public record Person(
 
   public record Address(long id) implements Reference<Address> {}
 
+  @Nonnull
+  @Override
+  public String toString() {
+    return "Person{id=%d, name='%s', lastName='%s', unique='%s', age=%d, gender='%s', address=%d, version=%d}"
+        .formatted(id, name, lastName, unique, age, gender, address.id(), version);
+  }
+}
+
+class PersonBuilder {
+
   public static Builder builder() {
     return null;
   }
 
   public Builder toBuilder() {
     return null;
-  }
-
-  @Nonnull
-  @Override
-  public String toString() {
-    return "Person{id=%d, name='%s', lastName='%s', unique='%s', age=%d, gender='%s', address=%d, version=%d}"
-        .formatted(id, name, lastName, unique, age, gender, address.id(), version);
   }
 
   public interface Builder {
@@ -70,7 +73,7 @@ public record Person(
 
     Builder gender(String gender);
 
-    Builder address(Reference<Address> address);
+    Builder address(Reference<Person.Address> address);
 
     Builder version(int version);
 
