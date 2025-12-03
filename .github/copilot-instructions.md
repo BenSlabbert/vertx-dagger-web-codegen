@@ -45,14 +45,9 @@ mvn -s settings.xml verify
 
 ## Coding Conventions
 
-### License Header
-All Java source files must include the Apache 2.0 license header:
-```java
-/* Licensed under Apache-2.0 2024. */
-```
-
 ### Code Style
 - **Formatter**: Google Java Format (enforced via Spotless)
+- **License headers**: Run `mvn spotless:apply` to automatically add/fix license headers
 - **Import organization**: Automatic via google-java-format
 - **Modifier ordering**: Reorder modifiers automatically
 - **Javadoc formatting**: Enabled
