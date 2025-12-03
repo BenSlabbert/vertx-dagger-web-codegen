@@ -40,8 +40,7 @@ mvn -s settings.xml verify
 ## Java Version Requirements
 
 - The project supports Java versions: 21, 23, 24, and 25
-- Use the latest supported Java language features
-- Default target is Java 21 for compatibility
+- Use sdkman and the provided `.sdkmanrc` to install project build dependencies
 
 ## Coding Conventions
 
