@@ -14,12 +14,15 @@ class FromJsonGenerator {
   private FromJsonGenerator() {}
 
   static void fromJson(PrintWriter out, List<Property> properties, String simpleClassName) {
-    simpleClassName = simpleClassName.replace('_', '.');
-    out.printf("public static %s fromJson(JsonObject json) {%n", simpleClassName);
+    // For nested classes, the builder class uses underscores (e.g., Nested_InnerBuilder)
+    // but the return type uses dots (e.g., Nested.Inner)
+    String builderClassName = simpleClassName;
+    String returnTypeName = simpleClassName.replace('_', '.');
+    out.printf("public static %s fromJson(JsonObject json) {%n", returnTypeName);
     out.println("if (null == json) {");
     out.println("return null;");
     out.println("}");
-    out.printf("return %sBuilder.builder()%n", simpleClassName);
+    out.printf("return %sBuilder.builder()%n", builderClassName);
 
     for (Property property : properties) {
       String jsonGetter =

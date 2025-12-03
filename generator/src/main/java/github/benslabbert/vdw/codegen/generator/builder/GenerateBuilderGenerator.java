@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
@@ -56,19 +57,34 @@ public class GenerateBuilderGenerator extends ProcessorBase {
     if (isProtected) {
       modifier = "protected";
     }
-    String recordSimpleName = recordType.getSimpleName().toString();
-    String builderClassName = recordSimpleName + "Builder";
+
+    boolean isMember = NestingKind.MEMBER == recordType.getNestingKind();
 
     PackageElement pkg = processingEnv.getElementUtils().getPackageOf(recordType);
     String packageName = pkg.getQualifiedName().toString();
+
+    // For nested classes, we need to use the full class hierarchy with underscores
+    String qualifiedName = recordType.getQualifiedName().toString();
+    String builderSimpleName;
+    String recordTypeReference; // Used in toBuilder param and build() return type
+
+    if (isMember) {
+      // For nested classes like my.test.Outer.Inner, we want:
+      // - builderSimpleName = Outer_InnerBuilder
+      // - recordTypeReference = Outer.Inner (for method signatures)
+      String classHierarchy = qualifiedName.substring(packageName.length() + 1);
+      builderSimpleName = classHierarchy.replace('.', '_') + "Builder";
+      recordTypeReference = classHierarchy;
+    } else {
+      builderSimpleName = recordType.getSimpleName().toString() + "Builder";
+      recordTypeReference = recordType.getSimpleName().toString();
+    }
 
     List<RecordComponentElement> components =
         recordType.getEnclosedElements().stream()
             .filter(e -> e.getKind() == ElementKind.RECORD_COMPONENT)
             .map(e -> (RecordComponentElement) e)
             .toList();
-
-    String recordName = recordType.getSimpleName().toString();
 
     List<Result> results = components.stream().map(GenerateBuilderGenerator::map).toList();
     String componentsMethods =
@@ -82,7 +98,7 @@ public class GenerateBuilderGenerator extends ProcessorBase {
             .collect(Collectors.joining("\n"));
 
     // Name of the AutoBuilder implementation expected to be generated elsewhere
-    String autoImplName = "AutoBuilder_" + builderClassName + "_Builder";
+    String autoImplName = "AutoBuilder_" + builderSimpleName + "_Builder";
 
     // Text-block template for the generated source
     String template =
@@ -120,21 +136,21 @@ public class GenerateBuilderGenerator extends ProcessorBase {
             packageLine,
             imports,
             modifier,
-            builderClassName,
+            builderSimpleName,
             modifier,
             autoImplName,
             modifier,
-            recordName,
+            recordTypeReference,
             autoImplName,
-            recordName,
+            recordTypeReference,
             // insert component methods (already indented)
             componentsMethods.isEmpty() ? "" : componentsMethods + "\n",
             // build return type
-            recordName);
+            recordTypeReference);
 
     // Write file
     String fullClassName =
-        packageName.isEmpty() ? builderClassName : packageName + "." + builderClassName;
+        packageName.isEmpty() ? builderSimpleName : packageName + "." + builderSimpleName;
     StringWriter stringWriter = StringWriterFactory.create();
 
     try (PrintWriter out = new PrintWriter(stringWriter)) {
