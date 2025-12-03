@@ -1,0 +1,40 @@
+---
+name: "Copilot Setup Steps"
+"on":
+  workflow_dispatch: null
+  push:
+    paths:
+    - ".github/workflows/copilot-setup-steps.yml"
+  pull_request:
+    paths:
+    - ".github/workflows/copilot-setup-steps.yml"
+jobs:
+  copilot-setup-steps:
+    runs-on: "ubuntu-latest"
+    env:
+      GH_TOKEN: "${{ secrets.GH_TOKEN }}"
+    permissions:
+      contents: "read"
+    strategy:
+      matrix:
+        language:
+        - "java"
+        java-version:
+        - "25"
+        distribution:
+        - "graalvm"
+    steps:
+    - uses: "actions/checkout@v6"
+    - name: "Set up JDK ${{ matrix.java-version }}-${{ matrix.distribution }}"
+      uses: "actions/setup-java@v5"
+      with:
+        distribution: "${{ matrix.distribution }}"
+        java-version: "${{ matrix.java-version }}"
+        java-package: "jdk"
+        cache: "maven"
+    - name: "Set up Maven"
+      uses: "stCarolas/setup-maven@v5"
+      with:
+        maven-version: "3.9.11"
+    - name: "Install"
+      run: "mvn -s settings.xml clean install"
