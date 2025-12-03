@@ -609,7 +609,17 @@ public class WebHandlerGenerator extends ProcessorBase {
     }
 
     if (typeName instanceof ParameterizedTypeName pt) {
-      return pt.rawType();
+      ClassName className = pt.rawType();
+
+      if (Future.class.getCanonicalName().equals(className.canonicalName())) {
+        List<TypeName> typeNames = pt.typeArguments();
+        if (1 != typeNames.size()) {
+          throw new GenerationException(
+              "generic parameter can have only 1 argument, but found: " + typeNames);
+        }
+      }
+
+      return className;
     }
 
     throw new GenerationException("unsupported type: " + typeName);
