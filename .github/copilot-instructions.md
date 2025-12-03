@@ -46,6 +46,7 @@ mvn -s settings.xml verify
 ## Coding Conventions
 
 ### Code Style
+
 - **Formatter**: Google Java Format (enforced via Spotless)
 - **License headers**: Run `mvn spotless:apply` to automatically add/fix license headers
 - **Import organization**: Automatic via google-java-format
@@ -53,16 +54,19 @@ mvn -s settings.xml verify
 - **Javadoc formatting**: Enabled
 
 ### Naming Conventions
+
 - Package names: `github.benslabbert.vdw.codegen.*`
 - Use descriptive class names ending with their purpose (e.g., `ProcessorBase`, `GenerationException`)
 - Use `var` for local variables when the type is obvious
 
 ### Dependencies
+
 - Use `jakarta.annotation` for annotations (not `javax.annotation`)
 - Prefer immutable collections
 - Use records for simple data carriers
 
 ### Testing
+
 - Tests use JUnit 5
 - Use the `compile-testing` library for annotation processor tests
 - Integration tests are configured with failsafe plugin
@@ -73,3 +77,4 @@ mvn -s settings.xml verify
 - The `GH_TOKEN` environment variable must be set for dependency resolution from GitHub packages
 - Code formatting is enforced - run `spotless:check` before committing
 - The project uses Dagger for dependency injection - follow Dagger patterns for new modules
+
