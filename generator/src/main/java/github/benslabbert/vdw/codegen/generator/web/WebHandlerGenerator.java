@@ -604,27 +604,14 @@ public class WebHandlerGenerator extends ProcessorBase {
   private static ClassName className(TypeMirror typeMirror) {
     TypeName typeName = TypeName.get(typeMirror);
 
+    if (typeName instanceof ClassName cn) {
+      return cn;
+    }
+
     if (typeName instanceof ParameterizedTypeName pt) {
-      ClassName className = pt.rawType();
-
-      if (Future.class.getCanonicalName().equals(className.canonicalName())) {
-        List<TypeName> typeNames = pt.typeArguments();
-        if (1 != typeNames.size()) {
-          throw new GenerationException(
-              "generic parameter can have only 1 argument, but found: " + typeNames);
-        }
-
-        return className;
-      }
+      return pt.rawType();
     }
 
-    String canonicalName = typeName.toString();
-    int idx = canonicalName.lastIndexOf('.');
-    if (-1 == idx) {
-      return ClassName.get("", canonicalName);
-    }
-    String packageName = canonicalName.substring(0, idx);
-    String simpleName = canonicalName.substring(idx + 1);
-    return ClassName.get(packageName, simpleName);
+    throw new GenerationException("unsupported type: " + typeName);
   }
 }
