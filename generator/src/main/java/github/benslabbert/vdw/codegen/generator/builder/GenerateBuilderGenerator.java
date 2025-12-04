@@ -7,6 +7,7 @@ import com.palantir.javapoet.ParameterizedTypeName;
 import com.palantir.javapoet.TypeName;
 import com.palantir.javapoet.WildcardTypeName;
 import github.benslabbert.vdw.codegen.annotation.builder.GenerateBuilder;
+import github.benslabbert.vdw.codegen.annotation.jdbc.Table;
 import github.benslabbert.vdw.codegen.generator.GenerationException;
 import github.benslabbert.vdw.codegen.generator.ProcessorBase;
 import github.benslabbert.vdw.codegen.generator.StringWriterFactory;
@@ -100,6 +101,25 @@ public class GenerateBuilderGenerator extends ProcessorBase {
     // Name of the AutoBuilder implementation expected to be generated elsewhere
     String autoImplName = "AutoBuilder_" + builderSimpleName + "_Builder";
 
+    // If the record is annotated with @Table, initialize id and version to defaults
+    boolean isJdbcTable = recordType.getAnnotation(Table.class) != null;
+    // only add defaults for id/version when those components actually exist
+    boolean hasId = components.stream().anyMatch(rc -> rc.getSimpleName().toString().equals("id"));
+    boolean hasVersion =
+        components.stream().anyMatch(rc -> rc.getSimpleName().toString().equals("version"));
+
+    StringBuilder initBuilder = new StringBuilder();
+    initBuilder.append("new ").append(autoImplName).append("()");
+    if (isJdbcTable) {
+      if (hasId) {
+        initBuilder.append(".id(0L)");
+      }
+      if (hasVersion) {
+        initBuilder.append(".version(0)");
+      }
+    }
+    String builderInitExpression = initBuilder.toString();
+
     // Text-block template for the generated source
     String template =
         """
@@ -112,7 +132,7 @@ public class GenerateBuilderGenerator extends ProcessorBase {
         %s class %s {
 
           %s static Builder builder() {
-            return new %s();
+            return %s;
           }
 
           %s static Builder toBuilder(%s self) {
@@ -138,7 +158,8 @@ public class GenerateBuilderGenerator extends ProcessorBase {
             modifier,
             builderSimpleName,
             modifier,
-            autoImplName,
+            // insert the desired builder initialization expression (may chain id/version)
+            builderInitExpression,
             modifier,
             recordTypeReference,
             autoImplName,
@@ -209,30 +230,21 @@ public class GenerateBuilderGenerator extends ProcessorBase {
                 ? String.join(".", simpleNames)
                 : pkg + "." + String.join(".", simpleNames);
         out.add(fq);
-        return;
-      }
-      if (tn instanceof ParameterizedTypeName) {
-        ParameterizedTypeName p = (ParameterizedTypeName) tn;
+      } else if (tn instanceof ParameterizedTypeName p) {
         collectClassNames(p.rawType(), out);
         for (TypeName arg : p.typeArguments()) {
           collectClassNames(arg, out);
         }
-        return;
-      }
-      if (tn instanceof ArrayTypeName) {
-        collectClassNames(((ArrayTypeName) tn).componentType(), out);
-        return;
-      }
-      if (tn instanceof WildcardTypeName w) {
+      } else if (tn instanceof ArrayTypeName a) {
+        collectClassNames(a.componentType(), out);
+      } else if (tn instanceof WildcardTypeName w) {
         if (w.upperBounds() != null) {
           for (TypeName b : w.upperBounds()) collectClassNames(b, out);
         }
         if (w.lowerBounds() != null) {
           for (TypeName b : w.lowerBounds()) collectClassNames(b, out);
         }
-        return;
       }
-      // TypeVariableName and others: nothing to collect
     }
   }
 }
