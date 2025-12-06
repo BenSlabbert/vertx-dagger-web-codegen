@@ -87,7 +87,7 @@ jobs:
         \ }}"
     - name: "Upload Podman service log on failure"
       if: "failure()"
-      uses: "actions/upload-artifact@v3"
+      uses: "actions/upload-artifact@v4"
       with:
         name: "podman-service-log"
         path: "podman-service.log"
