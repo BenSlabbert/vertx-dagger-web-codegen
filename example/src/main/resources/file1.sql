@@ -1,6 +1,6 @@
 SELECT
   *
 FROM
-  ALL
+  person
 WHERE
   id =?;
