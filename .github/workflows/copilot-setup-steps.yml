@@ -13,6 +13,7 @@ jobs:
     runs-on: "ubuntu-latest"
     env:
       GH_TOKEN: "${{ secrets.GH_TOKEN }}"
+      TESTCONTAINERS_RYUK_DISABLED: true
     permissions:
       contents: "read"
     strategy:
@@ -24,6 +25,11 @@ jobs:
         distribution:
         - "graalvm"
     steps:
+    - name: "Install Podman"
+      uses: "redhat-actions/podman-install@main"
+    - name: "Set DOCKER_HOST to rootless Podman socket"
+      run: "echo \"DOCKER_HOST=unix:///run/$(id -u)/podman/podman.sock\" >> $GITHUB_ENV"
+    - run: "echo \"$DOCKER_HOST\""
     - uses: "actions/checkout@v6"
     - name: "Set up JDK ${{ matrix.java-version }}-${{ matrix.distribution }}"
       uses: "actions/setup-java@v5"
@@ -36,5 +42,7 @@ jobs:
       uses: "stCarolas/setup-maven@v5"
       with:
         maven-version: "3.9.11"
+    - run: "podman version"
+    - run: "mvn -version"
     - name: "Install"
       run: "mvn -s settings.xml clean install"
