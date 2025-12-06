@@ -8,7 +8,8 @@ dependencies {
     
     compileOnly("org.slf4j:slf4j-simple:${property("slf4jVersion")}")
     
-    testImplementation("github.benslabbert.fork:compile-testing:${property("compileTestingVersion")}")
+    // compile-testing dependency has version issues - using Google's version instead
+    testImplementation("com.google.testing.compile:compile-testing:0.21.0")
     testImplementation("org.assertj:assertj-core:${property("assertjVersion")}")
     testImplementation("org.junit.jupiter:junit-jupiter:${property("junitVersion")}")
 }

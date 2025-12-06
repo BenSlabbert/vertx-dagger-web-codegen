@@ -73,4 +73,9 @@ subprojects {
             "--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED"
         )
     }
+    
+    // Ensure JUnit Platform launcher is available for all test tasks
+    dependencies {
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    }
 }
