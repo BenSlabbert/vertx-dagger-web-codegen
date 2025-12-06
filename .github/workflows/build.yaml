@@ -27,11 +27,19 @@ jobs:
         - "23"
         - "24"
         - "25"
+        - "26"
         distribution:
         - "zulu"
         - "temurin"
         - "semeru"
         - "graalvm"
+        exclude:
+        - distribution: "zulu"
+          java-version: "26"
+        - distribution: "temurin"
+          java-version: "26"
+        - distribution: "semeru"
+          java-version: "26"
     steps:
     - uses: "actions/checkout@v6"
     - name: "Set up JDK ${{ matrix.java-version }}-${{ matrix.distribution }}"
