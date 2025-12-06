@@ -1,0 +1,28 @@
+dependencies {
+    api(project(":txmanager:platform"))
+    api("com.google.dagger:dagger:${property("daggerVersion")}")
+    api("com.google.errorprone:error_prone_annotations:${property("errorproneVersion")}")
+    api("com.zaxxer:HikariCP:${property("hikariCpVersion")}")
+    api("commons-dbutils:commons-dbutils:${property("commonsDbUtilsVersion")}")
+    api("io.vertx:vertx-core:${property("vertxVersion")}")
+    api("io.vertx:vertx-json-schema:${property("vertxVersion")}")
+    api("io.vertx:vertx-pg-client:${property("vertxVersion")}")
+    api("io.vertx:vertx-service-proxy:${property("vertxVersion")}")
+    api("io.vertx:vertx-web:${property("vertxVersion")}")
+    api("org.apache.commons:commons-lang3:${property("commonsLang3Version")}")
+    api("org.glassfish.expressly:expressly:${property("expresslyVersion")}")
+    api("org.hibernate.validator:hibernate-validator:${property("hibernateValidatorVersion")}")
+    api("org.jooq:jooq:${property("jooqVersion")}")
+    api("org.slf4j:slf4j-api:${property("slf4jVersion")}")
+    
+    compileOnly("com.google.dagger:dagger-compiler:${property("daggerVersion")}")
+    
+    testImplementation("io.vertx:vertx-junit5:${property("vertxVersion")}")
+    testImplementation("org.assertj:assertj-core:${property("assertjVersion")}")
+    testImplementation("org.junit.jupiter:junit-jupiter:${property("junitVersion")}")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${property("junitVersion")}")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:${property("junitVersion")}")
+    testImplementation("org.mockito:mockito-core:${property("mockitoVersion")}")
+    testImplementation("org.postgresql:postgresql:${property("postgresqlVersion")}")
+    testImplementation("org.slf4j:slf4j-simple:${property("slf4jVersion")}")
+}
