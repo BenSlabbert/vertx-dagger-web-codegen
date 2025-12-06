@@ -62,6 +62,9 @@ public interface Provider {
     @Nullable static Void provideEager(TransactionManager transactionManager, Vertx vertx) {
       log.info("eager init");
       PlatformTransactionManager.setTransactionManager(transactionManager);
+      //        AdviceExecutor.addAdvice();
+      //        CacheAdviceExecutor.setCacheManager();
+      //        RetryAdviceExecutor
       return null;
     }
   }
