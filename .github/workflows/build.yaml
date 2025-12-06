@@ -62,8 +62,7 @@ jobs:
         languages: "${{matrix.language}}"
     - name: "Install Podman"
       uses: "redhat-actions/podman-install@main"
-      with:
-        podman-version-input: "5.7.0"
+    - run: "docker version"
     - run: "podman version"
     - run: "mvn -version"
     - run: "mvn -s settings.xml spotless:check -Djava.version=${{matrix.java-version}}"
