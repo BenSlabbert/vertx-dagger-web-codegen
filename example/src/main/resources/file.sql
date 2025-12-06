@@ -1,4 +1,4 @@
 SELECT
   *
 FROM
-  ALL;
+  person;
