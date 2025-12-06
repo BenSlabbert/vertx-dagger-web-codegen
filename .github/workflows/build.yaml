@@ -22,7 +22,6 @@ jobs:
     runs-on: "ubuntu-latest"
     env:
       GH_TOKEN: "${{secrets.GH_TOKEN}}"
-      DOCKER_HOST: "unix:///run/$(id -u)/1000/podman/podman.sock"
       TESTCONTAINERS_RYUK_DISABLED: true
     timeout-minutes: 360
     permissions:
@@ -45,6 +44,11 @@ jobs:
         - "semeru"
         - "graalvm"
     steps:
+    - name: "Install Podman"
+      uses: "redhat-actions/podman-install@main"
+    - name: "Set DOCKER_HOST to rootless Podman socket"
+      run: "echo \"DOCKER_HOST=unix:///run/$(id -u)/podman/podman.sock\" >> $GITHUB_ENV"
+    - run: "echo \"$DOCKER_HOST\""
     - uses: "actions/checkout@v6"
     - name: "Set up JDK ${{matrix.java-version}}-${{matrix.distribution}}"
       uses: "actions/setup-java@v5"
@@ -63,21 +67,10 @@ jobs:
       if: "${{matrix.distribution == 'graalvm'}}"
       with:
         languages: "${{matrix.language}}"
-    - name: "Install Podman"
-      uses: "redhat-actions/podman-install@main"
-    - run: "docker version"
     - run: "podman version"
-    - run: "echo $DOCKER_HOST"
     - run: "mvn -version"
     - run: "mvn spotless:check -Djava.version=${{matrix.java-version}}"
     - run: "mvn clean install -Djava.version=${{matrix.java-version}}"
-    - name: "Upload Podman service log on failure"
-      if: "failure()"
-      uses: "actions/upload-artifact@v4"
-      with:
-        name: "podman-service-log"
-        path: "podman-service.log"
-      continue-on-error: true
     - name: "Perform CodeQL Analysis"
       uses: "github/codeql-action/analyze@v4"
       if: "${{matrix.distribution == 'graalvm'}}"
