@@ -15,7 +15,7 @@ import javax.sql.DataSource;
 
 @Singleton
 @Component(modules = {ModuleBindings.class, Provider.EagerModule.class})
-interface Provider {
+public interface Provider {
 
   @Nullable Void init();
 
