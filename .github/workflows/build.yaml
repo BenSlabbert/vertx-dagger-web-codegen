@@ -21,7 +21,7 @@ jobs:
   build:
     runs-on: "ubuntu-latest"
     env:
-      GH_TOKEN: "${{ secrets.GH_TOKEN }}"
+      GH_TOKEN: "${{secrets.GH_TOKEN}}"
     timeout-minutes: 360
     permissions:
       actions: "read"
@@ -37,43 +37,37 @@ jobs:
         - "23"
         - "24"
         - "25"
-        - "26"
         distribution:
         - "zulu"
         - "temurin"
         - "semeru"
         - "graalvm"
-        exclude:
-        - distribution: "zulu"
-          java-version: "26"
-        - distribution: "temurin"
-          java-version: "26"
-        - distribution: "semeru"
-          java-version: "26"
     steps:
     - uses: "actions/checkout@v6"
-    - name: "Set up JDK ${{ matrix.java-version }}-${{ matrix.distribution }}"
+    - name: "Set up JDK ${{matrix.java-version}}-${{matrix.distribution}}"
       uses: "actions/setup-java@v5"
       with:
-        distribution: "${{ matrix.distribution }}"
-        java-version: "${{ matrix.java-version }}"
+        distribution: "${{matrix.distribution}}"
+        java-version: "${{matrix.java-version}}"
         java-package: "jdk"
         cache: "maven"
     - name: "Set up Maven"
       uses: "stCarolas/setup-maven@v5"
       with:
-        maven-version: "3.9.10"
+        maven-version: "3.9.11"
     - name: "Initialize CodeQL"
       uses: "github/codeql-action/init@v4"
-      if: "${{ matrix.distribution == 'graalvm' }}"
+      if: "${{matrix.distribution == 'graalvm'}}"
       with:
-        languages: "${{ matrix.language }}"
+        languages: "${{matrix.language}}"
     - name: "Install Podman"
       uses: "redhat-actions/podman-install@main"
       with:
-        podman-version-input: "5.6.2"
-    - run: "mvn -s settings.xml clean spotless:check install -Djava.version=${{ matrix.java-version\
-        \ }}"
+        podman-version-input: "5.7.0"
+    - run: "podman version"
+    - run: "mvn -version"
+    - run: "mvn -s settings.xml spotless:check -Djava.version=${{matrix.java-version}}"
+    - run: "mvn -s settings.xml clean install -Djava.version=${{matrix.java-version}}"
     - name: "Upload Podman service log on failure"
       if: "failure()"
       uses: "actions/upload-artifact@v4"
@@ -83,10 +77,10 @@ jobs:
       continue-on-error: true
     - name: "Perform CodeQL Analysis"
       uses: "github/codeql-action/analyze@v4"
-      if: "${{ matrix.distribution == 'graalvm' }}"
+      if: "${{matrix.distribution == 'graalvm'}}"
     - name: "Submit Dependency Snapshot"
       uses: "advanced-security/maven-dependency-submission-action@v5"
-      if: "${{ matrix.distribution == 'graalvm' }}"
+      if: "${{matrix.distribution == 'graalvm'}}"
       with:
-        token: "${{ secrets.GH_TOKEN }}"
+        token: "${{secrets.GH_TOKEN}}"
         maven-args: "-s settings.xml"
