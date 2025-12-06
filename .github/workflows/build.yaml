@@ -68,21 +68,10 @@ jobs:
       if: "${{ matrix.distribution == 'graalvm' }}"
       with:
         languages: "${{ matrix.language }}"
-    - name: "Install Podman and helpers"
-      if: "always()"
-      run: "sudo apt-get update\nsudo apt-get install -y podman slirp4netns fuse-overlayfs\
-        \ uidmap\npodman version\n"
-    - name: "Start rootless Podman system service"
-      if: "always()"
-      run: "# ensure run directory exists for current user\nUID=$(id -u)\nRUNDIR=/run/user/$UID\n\
-        mkdir -p $RUNDIR/podman\n# start the podman system service (rootless) and\
-        \ background it; allow a short wait\npodman system service --time=0 unix://$RUNDIR/podman/podman.sock\
-        \ > podman-service.log 2>&1 &\nsleep 3\n# print a quick status to help debugging\
-        \ if it fails\nps aux | grep podman || true\nls -l $RUNDIR || true\n"
-    - name: "Configure Testcontainers to use Podman"
-      if: "always()"
-      run: "echo \"DOCKER_HOST=unix:///run/user/$(id -u)/podman/podman.sock\" >> $GITHUB_ENV\n\
-        echo \"TESTCONTAINERS_RYUK_DISABLED=true\" >> $GITHUB_ENV\n"
+    - name: "Install Podman"
+      uses: "redhat-actions/podman-install@main"
+      with:
+        podman-version-input: "5.6.2"
     - run: "mvn -s settings.xml clean spotless:check install -Djava.version=${{ matrix.java-version\
         \ }}"
     - name: "Upload Podman service log on failure"
