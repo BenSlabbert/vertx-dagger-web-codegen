@@ -8,6 +8,7 @@ import github.benslabbert.vdw.codegen.advicetransformer.CacheData.Policy;
 import github.benslabbert.vdw.codegen.annotation.advice.Cache;
 import github.benslabbert.vdw.codegen.aop.cache.CacheAdviceExecutor;
 import github.benslabbert.vdw.codegen.aop.cache.CacheKeyBuilder;
+import java.util.Optional;
 import net.bytebuddy.asm.Advice.AllArguments;
 import net.bytebuddy.asm.Advice.OnMethodExit;
 import net.bytebuddy.asm.Advice.Thrown;
@@ -24,15 +25,15 @@ public final class CacheEvictAdvice {
       @Async boolean async,
       @Thrown Throwable thrown,
       @AllArguments Object[] args) {
-    String key = CacheKeyBuilder.buildKey(keyPattern, args);
+    Optional<String> key = CacheKeyBuilder.buildKey(keyPattern, args);
 
     if (null == thrown) {
-      CacheAdviceExecutor.evict(name, key, async);
+      key.ifPresent(s -> CacheAdviceExecutor.evict(name, s, async));
       return;
     }
 
     if (Cache.Policy.ALWAYS == policy) {
-      CacheAdviceExecutor.evict(name, key, async);
+      key.ifPresent(s -> CacheAdviceExecutor.evict(name, s, async));
     }
   }
 }

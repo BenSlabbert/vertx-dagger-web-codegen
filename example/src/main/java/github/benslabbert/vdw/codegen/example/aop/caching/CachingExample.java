@@ -51,25 +51,9 @@ public class CachingExample {
         });
 
     CachingExample caching = new CachingExample();
-    log.info("before");
-    String async1 = caching.cachedAsync("async1");
-    log.info("before");
-    String cached1 = caching.cached("data");
-    log.info("before");
-    String cached2 = caching.cached("data");
-    log.info("before");
-    caching.revoke();
-    log.info("before");
-    String async2 = caching.cachedAsync("async2");
-    String async3 = caching.cachedAsync("async1");
-
-    log.info("wait 1 sec for all threads");
-    try {
-      Thread.sleep(1000L);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw e;
-    }
+    String cached1 = caching.cached("in");
+    String cache2 = caching.cached("in");
+    log.info("done '{}' '{}'", cached1, cache2);
   }
 
   @Cache.Put(value = "cache", key = "k-#0", async = true)
