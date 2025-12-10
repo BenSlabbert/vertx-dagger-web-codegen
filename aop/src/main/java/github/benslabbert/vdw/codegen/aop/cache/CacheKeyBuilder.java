@@ -3,6 +3,7 @@ package github.benslabbert.vdw.codegen.aop.cache;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,10 +24,14 @@ public final class CacheKeyBuilder {
    * Build a cache key by replacing placeholders like #0, #1 ... with corresponding values. Parsing
    * of the template is cached to avoid repeated regex processing.
    */
-  public static String buildKey(String template, Object... values) {
+  public static Optional<String> buildKey(String template, Object... values) {
+    if (null == values || 0 == values.length) {
+      return Optional.empty();
+    }
+
     log.debug("Building key for template '{}'", template);
     ParsedTemplate pt = TEMPLATE_CACHE.computeIfAbsent(template, CacheKeyBuilder::parseTemplate);
-    return pt.build(values);
+    return Optional.of(pt.build(values));
   }
 
   private static ParsedTemplate parseTemplate(String template) {

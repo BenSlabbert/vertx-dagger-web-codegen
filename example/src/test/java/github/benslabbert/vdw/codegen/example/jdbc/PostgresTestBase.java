@@ -6,26 +6,19 @@ import com.zaxxer.hikari.HikariDataSource;
 import java.sql.SQLException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.Network;
-import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 /** Shared PostgreSQL container for all JDBC integration tests. */
 public abstract class PostgresTestBase {
 
-  public static final Network network = Network.newNetwork();
-
-  public static final GenericContainer<?> POSTGRES =
-      new GenericContainer<>(DockerImageName.parse("docker.io/postgres:17-alpine"))
-          .withExposedPorts(5432)
-          .withNetwork(network)
-          .withNetworkAliases("postgres")
-          .withEnv("POSTGRES_USER", "postgres")
-          .withEnv("POSTGRES_PASSWORD", "postgres")
-          .withEnv("POSTGRES_DB", "postgres")
-          // must wait twice as the init process also prints this message
-          .waitingFor(Wait.forLogMessage(".*database system is ready to accept connections.*", 2));
+  public static final PostgreSQLContainer POSTGRES =
+      new PostgreSQLContainer(
+              DockerImageName.parse("docker.io/postgres:17-alpine")
+                  .asCompatibleSubstituteFor("postgres"))
+          .withDatabaseName("postgres")
+          .withPassword("postgres")
+          .withUsername("postgres");
 
   static {
     System.setProperty("org.jooq.no-tips", "true");
@@ -38,8 +31,7 @@ public abstract class PostgresTestBase {
   @BeforeEach
   void init() {
     HikariConfig hikariConfig = new HikariConfig();
-    hikariConfig.setJdbcUrl(
-        "jdbc:postgresql://localhost:%d/postgres".formatted(POSTGRES.getMappedPort(5432)));
+    hikariConfig.setJdbcUrl(POSTGRES.getJdbcUrl());
     hikariConfig.setUsername("postgres");
     hikariConfig.setPassword("postgres");
     hikariConfig.setAutoCommit(false);

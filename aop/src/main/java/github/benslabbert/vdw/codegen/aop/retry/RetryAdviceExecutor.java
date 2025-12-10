@@ -25,11 +25,23 @@ public final class RetryAdviceExecutor {
     }
   }
 
+  public static void clearFixedRetry() {
+    if (!FIXED_RETRY.compareAndSet(FIXED_RETRY.get(), NO_OP_RETRY)) {
+      throw new IllegalStateException("fixed retry already cleared");
+    }
+  }
+
   public static void setExponentialBackoffRetry(@Nonnull Retry r) {
     Objects.requireNonNull(r);
 
     if (!EXPONENTIAL_BACKOFF_RETRY.compareAndSet(NO_OP_RETRY, r)) {
       throw new IllegalStateException("exponential backoff retry already set");
+    }
+  }
+
+  public static void clearExponentialBackoffRetry() {
+    if (!EXPONENTIAL_BACKOFF_RETRY.compareAndSet(EXPONENTIAL_BACKOFF_RETRY.get(), NO_OP_RETRY)) {
+      throw new IllegalStateException("exponential retry already cleared");
     }
   }
 

@@ -13,20 +13,20 @@ public class RetryExample {
   public static void main(String[] args) {
     RetryExample retry = new RetryExample();
     log.info("before");
-    var s = retry.tryMe();
+    var s = retry.fixedDelay();
     log.info("after tryMe={}", s);
     log.info("before");
-    retry.tryMeNow();
+    retry.exponentialRetry();
   }
 
   @FixedDelay
-  public String tryMe() {
+  public String fixedDelay() {
     log.info("tryMe");
     return "hello";
   }
 
   @ExponentialBackoff
-  public void tryMeNow() {
+  public void exponentialRetry() {
     log.info("tryMeNow");
   }
 }
