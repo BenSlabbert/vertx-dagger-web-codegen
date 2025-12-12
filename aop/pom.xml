@@ -9,7 +9,6 @@
   </parent>
 
   <artifactId>aop</artifactId>
-  <version>${revision}</version>
 
   <dependencies>
     <dependency>

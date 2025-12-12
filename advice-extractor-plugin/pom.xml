@@ -9,7 +9,6 @@
   </parent>
 
   <artifactId>advice-extractor-plugin</artifactId>
-  <version>${revision}</version>
   <packaging>maven-plugin</packaging>
 
   <dependencies>

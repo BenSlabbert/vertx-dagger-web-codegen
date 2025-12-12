@@ -68,7 +68,7 @@ public class CachingExample {
     return in;
   }
 
-  @Cache.Evict(value = "cache", key = "k", policy = Cache.Policy.ALWAYS)
+  @Cache.Evict(value = "cache", key = "key", policy = Cache.Policy.ALWAYS)
   public void revoke() {
     log.info("revoke");
   }
