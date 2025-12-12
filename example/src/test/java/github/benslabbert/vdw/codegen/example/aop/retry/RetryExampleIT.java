@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 
 import github.benslabbert.vdw.codegen.aop.retry.Retry;
 import github.benslabbert.vdw.codegen.aop.retry.RetryAdviceExecutor;
-import github.benslabbert.vdw.codegen.example.aop.retry.RetryExample;
 import java.util.concurrent.Callable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
