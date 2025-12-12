@@ -9,7 +9,6 @@
   </parent>
 
   <artifactId>bom</artifactId>
-  <version>${revision}</version>
   <packaging>pom</packaging>
 
   <dependencyManagement>

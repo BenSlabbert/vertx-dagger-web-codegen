@@ -8,7 +8,6 @@
   </parent>
 
   <artifactId>plugin-example</artifactId>
-  <version>${revision}</version>
 
   <properties>
     <finalName>plugin-example</finalName>

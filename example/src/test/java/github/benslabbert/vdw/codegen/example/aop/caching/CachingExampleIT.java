@@ -64,5 +64,13 @@ class CachingExampleIT {
   }
 
   @Test
-  void revoke() {}
+  void revoke() {
+    when(cacheManager.getCache("cache")).thenReturn(Optional.of(cache));
+
+    cachingExample.revoke();
+
+    verify(cacheManager).getCache("cache");
+    verify(cache).evict("key");
+    verifyNoMoreInteractions(cacheManager, cache);
+  }
 }

@@ -26,7 +26,7 @@ public final class CacheKeyBuilder {
    */
   public static Optional<String> buildKey(String template, Object... values) {
     if (null == values || 0 == values.length) {
-      return Optional.empty();
+      return Optional.of(template);
     }
 
     log.debug("Building key for template '{}'", template);

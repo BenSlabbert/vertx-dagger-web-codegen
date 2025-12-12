@@ -8,7 +8,6 @@
   </parent>
 
   <artifactId>advice-transformer</artifactId>
-  <version>${revision}</version>
 
   <dependencies>
     <dependency>

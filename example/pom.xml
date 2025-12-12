@@ -9,7 +9,6 @@
   </parent>
 
   <artifactId>example</artifactId>
-  <version>${revision}</version>
 
   <properties>
     <finalName>example</finalName>
@@ -153,16 +152,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-junit-jupiter</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
       <scope>test</scope>
@@ -175,6 +164,11 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers-postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -299,6 +293,11 @@
               <goal>integration-test</goal>
               <goal>verify</goal>
             </goals>
+            <configuration>
+              <forkCount>1C</forkCount>
+              <reuseForks>true</reuseForks>
+              <argLine>--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED --add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED --add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED --add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</argLine>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -318,9 +317,9 @@
                   <mainClass>github.benslabbert.vdw.codegen.example.Main</mainClass>
                 </manifest>
               </archive>
-              <excludes>
-                <exclude>github/benslabbert/vdw/codegen/example/aop/**</exclude>
-              </excludes>
+              <!--              <excludes>-->
+              <!--                <exclude>github/benslabbert/vdw/codegen/example/aop/**</exclude>-->
+              <!--              </excludes>-->
             </configuration>
           </execution>
           <execution>
