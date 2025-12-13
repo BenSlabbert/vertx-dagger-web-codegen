@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-
+<project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 http://maven.apache.org/xsd/maven-4.1.0.xsd">
+  <modelVersion>4.1.0</modelVersion>
   <parent>
     <groupId>github.benslabbert.vdw.codegen</groupId>
-    <artifactId>codegen-parent</artifactId>
-    <version>${revision}</version>
+    <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>txmanager</artifactId>
   <packaging>pom</packaging>
 
-  <modules>
-    <module>agent</module>
-    <module>agent-example</module>
-    <module>platform</module>
-    <module>plugin-example</module>
-  </modules>
+  <subprojects>
+    <subproject>agent</subproject>
+    <subproject>agent-example</subproject>
+    <subproject>platform</subproject>
+    <subproject>plugin-example</subproject>
+  </subprojects>
 
 </project>

@@ -1,31 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 https://maven.apache.org/xsd/maven-4.1.0.xsd">
+
+  <modelVersion>4.1.0</modelVersion>
 
   <parent>
     <groupId>github.benslabbert</groupId>
     <artifactId>vertx-dagger-bom</artifactId>
-    <version>3.138.0</version>
+    <version>4.5.0</version>
   </parent>
 
   <groupId>github.benslabbert.vdw.codegen</groupId>
   <artifactId>codegen-parent</artifactId>
   <version>${revision}</version>
   <packaging>pom</packaging>
-
-  <modules>
-    <module>generator</module>
-    <module>annotation</module>
-    <module>commons</module>
-    <module>example</module>
-    <module>bom</module>
-    <module>aop</module>
-    <module>advice-extractor-plugin</module>
-    <module>advice-transformer</module>
-    <module>txmanager</module>
-    <module>logging</module>
-    <module>launcher</module>
-  </modules>
 
   <distributionManagement>
     <repository>
@@ -41,6 +28,8 @@
   </distributionManagement>
 
   <properties>
+    <revision>0.0.0-SNAPSHOT</revision>
+
     <!--config-->
     <shade.skip>false</shade.skip>
 
@@ -51,8 +40,8 @@
     <!--plugins-->
 
     <!--maven-->
-    <maven-plugin-api.version>3.9.11</maven-plugin-api.version>
-    <maven-core.version>3.9.11</maven-core.version>
+    <maven-plugin-api.version>4.0.0-rc-3</maven-plugin-api.version>
+    <maven-core.version>4.0.0-rc-3</maven-core.version>
     <maven-plugin-annotations.version>3.15.2</maven-plugin-annotations.version>
     <maven-plugin-plugin.version>3.15.2</maven-plugin-plugin.version>
   </properties>
@@ -143,5 +132,19 @@
       </plugin>
     </plugins>
   </build>
+
+  <subprojects>
+    <subproject>advice-extractor-plugin</subproject>
+    <subproject>advice-transformer</subproject>
+    <subproject>annotation</subproject>
+    <subproject>aop</subproject>
+    <subproject>bom</subproject>
+    <subproject>commons</subproject>
+    <subproject>example</subproject>
+    <subproject>generator</subproject>
+    <subproject>launcher</subproject>
+    <subproject>logging</subproject>
+    <subproject>txmanager</subproject>
+  </subprojects>
 
 </project>

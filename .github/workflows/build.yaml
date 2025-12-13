@@ -34,14 +34,8 @@ jobs:
         language:
         - "java"
         java-version:
-        - "21"
-        - "23"
-        - "24"
         - "25"
         distribution:
-        - "zulu"
-        - "temurin"
-        - "semeru"
         - "graalvm"
     steps:
     - name: "Install Podman"
@@ -60,7 +54,7 @@ jobs:
     - name: "Set up Maven"
       uses: "stCarolas/setup-maven@v5"
       with:
-        maven-version: "3.9.11"
+        maven-version: "4.0.0-rc-5"
     - name: "Initialize CodeQL"
       uses: "github/codeql-action/init@v4"
       if: "${{matrix.distribution == 'graalvm'}}"
