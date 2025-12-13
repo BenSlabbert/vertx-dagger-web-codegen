@@ -41,7 +41,7 @@
 
     <!--maven-->
     <maven-plugin-api.version>4.0.0-rc-5</maven-plugin-api.version>
-    <maven-core.version>4.0.0-rc-3</maven-core.version>
+    <maven-core.version>4.0.0-rc-5</maven-core.version>
     <maven-plugin-annotations.version>3.15.2</maven-plugin-annotations.version>
     <maven-plugin-plugin.version>3.15.2</maven-plugin-plugin.version>
   </properties>
