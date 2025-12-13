@@ -7,6 +7,8 @@ import dagger.Module;
 import dagger.Provides;
 import github.benslabbert.vdw.codegen.commons.jdbc.JdbcQueryRunnerFactory;
 import github.benslabbert.vdw.codegen.commons.jdbc.JdbcTransactionManager;
+import github.benslabbert.vdw.codegen.example.jdbc.extra.ExtraModuleBindings;
+import github.benslabbert.vdw.codegen.example.jdbc.extra.JobRepository;
 import github.benslabbert.vdw.codegen.txmanager.PlatformTransactionManager;
 import jakarta.annotation.Nullable;
 import jakarta.inject.Singleton;
@@ -14,7 +16,7 @@ import javax.inject.Inject;
 import javax.sql.DataSource;
 
 @Singleton
-@Component(modules = {GeneratedModuleBindings.class, Provider.EagerModule.class})
+@Component(modules = {GeneratedModuleBindings.class, ExtraModuleBindings.class, Provider.EagerModule.class})
 public interface Provider {
 
   @Nullable Void init();
@@ -26,6 +28,8 @@ public interface Provider {
   PersonRepository personRepository();
 
   AddressRepository addressRepository();
+
+  JobRepository jobRepository();
 
   DataSource dataSource();
 
