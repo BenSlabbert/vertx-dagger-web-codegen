@@ -18,13 +18,11 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
 
-/**
- * Annotation processor that generates Dagger module bindings for classes annotated with
- * {@link TableRequiresModuleGeneration}.
- *
- * <p>For each annotated repository implementation class, this processor generates a module
- * interface with a {@code @Binds} method that binds the implementation to its interface.
- */
+/// Annotation processor that generates Dagger module bindings for classes annotated with
+/// [TableRequiresModuleGeneration].
+///
+/// For each annotated repository implementation class, this processor generates a module
+/// interface with a `@Binds` method that binds the implementation to its interface.
 public class TableModuleGeneration extends ProcessorBase {
 
   public TableModuleGeneration() {
@@ -71,12 +69,12 @@ public class TableModuleGeneration extends ProcessorBase {
       out.println("interface " + generatedModuleClassName + " {");
       out.println();
       out.println("\t@Binds");
-      
+
       // Method name is decapitalized interface name
       String methodName = decapitalize(interfaceSimpleName);
       // Parameter name is decapitalized impl class name
       String paramName = decapitalize(implClassName);
-      
+
       out.printf("\t%s %s(%s %s);%n", interfaceSimpleName, methodName, implClassName, paramName);
       out.println("}");
       out.println();
