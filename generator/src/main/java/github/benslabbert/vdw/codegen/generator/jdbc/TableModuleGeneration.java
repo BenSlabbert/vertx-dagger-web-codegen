@@ -71,7 +71,6 @@ public class TableModuleGeneration extends ProcessorBase {
       out.println("interface " + generatedModuleClassName + " {");
       out.println();
       out.println("\t@Binds");
-      out.println();
       
       // Method name is decapitalized interface name
       String methodName = decapitalize(interfaceSimpleName);
