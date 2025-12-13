@@ -4,13 +4,9 @@ package github.benslabbert.vdw.codegen.generator.jdbc;
 import static java.util.function.Predicate.not;
 
 import com.google.common.base.Strings;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import javax.tools.JavaFileObject;
 import com.google.errorprone.annotations.MustBeClosed;
 import github.benslabbert.vdw.codegen.annotation.jdbc.Table;
+import github.benslabbert.vdw.codegen.annotation.jdbc.TableRequiresModuleGeneration;
 import github.benslabbert.vdw.codegen.commons.array.ArraysUtils;
 import github.benslabbert.vdw.codegen.commons.jdbc.EntityNotFoundException;
 import github.benslabbert.vdw.codegen.commons.jdbc.JdbcQueryRunner;
@@ -65,9 +61,6 @@ public class TableGenerator extends ProcessorBase {
   private static final String ITERABLE_CANONICAL_NAME = "java.lang.Iterable";
   private static final String CONSUMER_CANONICAL_NAME = "java.util.function.Consumer";
   private static final String REFERENCE_CANONICAL_NAME = Reference.class.getCanonicalName();
-  
-  // Concurrency guard to avoid duplicate creation attempts within the same processor run
-  private static final ConcurrentMap<String, Boolean> MODULE_CREATED = new ConcurrentHashMap<>();
 
   public TableGenerator() {
     super(Set.of(Table.class.getCanonicalName()));
@@ -104,9 +97,6 @@ public class TableGenerator extends ProcessorBase {
     GeneratedFile generatedRepository =
         generateRepository(
             annotatedClass, table, tableQueries, tableDetails, className, interfaceName);
-
-    // Ensure GeneratedModuleBindings interface is created/updated with binding
-    ensureGeneratedModuleBindings(annotatedClass, interfaceName, className);
 
     return List.of(generatedInterface, generatedRepository);
   }
@@ -176,6 +166,7 @@ public class TableGenerator extends ProcessorBase {
       out.printf("import %s;%n", ArrayList.class.getCanonicalName());
       out.printf("import %s;%n", ArraysUtils.class.getCanonicalName());
       out.printf("import %s;%n", ResultSetHandler.class.getCanonicalName());
+      out.printf("import %s;%n", TableRequiresModuleGeneration.class.getCanonicalName());
       out.printf("import static %s.not;%n", Predicate.class.getCanonicalName());
       out.println();
 
@@ -184,6 +175,7 @@ public class TableGenerator extends ProcessorBase {
           "@Generated(value = \"%s\", date = \"%s\")%n",
           getClass().getCanonicalName(),
           LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
+      out.printf("@TableRequiresModuleGeneration(%s.class)%n", interfaceName);
       out.printf("public class %s implements %s {%n", className, interfaceName);
       out.println();
 
@@ -1355,183 +1347,4 @@ public class TableGenerator extends ProcessorBase {
   }
 
   private record AnnotatedClass(String canonicalName, String classPackage, String name) {}
-
-  /**
-   * Ensures that a package-private GeneratedModuleBindings interface exists in the same package
-   * with an @Module annotation and contains a @Binds method binding repositoryImpl to
-   * repositoryInterface.
-   *
-   * <p>If the file already exists and contains the binding, does nothing. If the file exists but
-   * does not contain the binding, appends the binding. If the file does not exist, creates it with
-   * the @Module annotation and the binding.
-   *
-   * @param ac the annotated class information
-   * @param repositoryInterface the repository interface simple name (e.g., "PersonRepository")
-   * @param repositoryImpl the repository implementation simple name (e.g., "PersonRepositoryImpl")
-   */
-  private void ensureGeneratedModuleBindings(
-      AnnotatedClass ac, String repositoryInterface, String repositoryImpl) {
-    String pkg = ac.classPackage();
-    String qualifiedName = pkg + ".GeneratedModuleBindings";
-    String simpleFileName = "GeneratedModuleBindings.java";
-
-    // Build the @Binds method binding snippet
-    String methodName = decap(repositoryInterface);
-    String implParamName = decap(repositoryImpl);
-    String bindingSnippet =
-        "  @Binds\n"
-            + "  "
-            + repositoryInterface
-            + " "
-            + methodName
-            + "("
-            + repositoryImpl
-            + " "
-            + implParamName
-            + ");";
-
-    // Synchronize on the package string to avoid concurrent creation attempts
-    synchronized (pkg.intern()) {
-      // Check if we've already processed this package in this run
-      if (MODULE_CREATED.putIfAbsent(pkg, Boolean.TRUE) != null) {
-        // Module already created in this run, try to append if needed
-        try {
-          FileObject resource =
-              processingEnv
-                  .getFiler()
-                  .getResource(StandardLocation.SOURCE_OUTPUT, pkg, simpleFileName);
-          String existingContent = resource.getCharContent(true).toString();
-
-          // Check if the binding already exists (simple contains check)
-          if (existingContent.contains(repositoryInterface + " " + methodName + "(")) {
-            // Binding already present, nothing to do
-            return;
-          }
-
-          // Append the binding before the last closing brace
-          int lastBrace = existingContent.lastIndexOf('}');
-          if (lastBrace == -1) {
-            throw new GenerationException(
-                "GeneratedModuleBindings exists but has invalid format (no closing brace)");
-          }
-
-          String updated =
-              existingContent.substring(0, lastBrace).trim()
-                  + "\n\n"
-                  + bindingSnippet
-                  + "\n}\n";
-
-          // Write the updated content back
-          writeSourceFile(pkg, qualifiedName, simpleFileName, updated);
-        } catch (IOException e) {
-          // If reading fails, the file might not exist yet - continue to create it
-          createNewModuleBindings(pkg, qualifiedName, simpleFileName, bindingSnippet);
-        }
-      } else {
-        // First time processing this package in this run
-        // Try to read existing file
-        try {
-          FileObject resource =
-              processingEnv
-                  .getFiler()
-                  .getResource(StandardLocation.SOURCE_OUTPUT, pkg, simpleFileName);
-          String existingContent = resource.getCharContent(true).toString();
-
-          // Check if the binding already exists
-          if (existingContent.contains(repositoryInterface + " " + methodName + "(")) {
-            // Binding already present, nothing to do
-            return;
-          }
-
-          // Append the binding before the last closing brace
-          int lastBrace = existingContent.lastIndexOf('}');
-          if (lastBrace == -1) {
-            throw new GenerationException(
-                "GeneratedModuleBindings exists but has invalid format (no closing brace)");
-          }
-
-          String updated =
-              existingContent.substring(0, lastBrace).trim()
-                  + "\n\n"
-                  + bindingSnippet
-                  + "\n}\n";
-
-          // Write the updated content back
-          writeSourceFile(pkg, qualifiedName, simpleFileName, updated);
-        } catch (IOException e) {
-          // File doesn't exist, create it
-          createNewModuleBindings(pkg, qualifiedName, simpleFileName, bindingSnippet);
-        }
-      }
-    }
-  }
-
-  /**
-   * Creates a new GeneratedModuleBindings file with the given binding.
-   *
-   * @param pkg the package name
-   * @param qualifiedName the fully qualified name
-   * @param simpleFileName the simple file name
-   * @param bindingSnippet the @Binds method snippet to include
-   */
-  private void createNewModuleBindings(
-      String pkg, String qualifiedName, String simpleFileName, String bindingSnippet) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("package ").append(pkg).append(";\n\n");
-    sb.append("import dagger.Binds;\n");
-    sb.append("import dagger.Module;\n\n");
-    sb.append("@Module\n");
-    sb.append("interface GeneratedModuleBindings {\n\n");
-    sb.append(bindingSnippet).append("\n");
-    sb.append("}\n");
-
-    writeSourceFile(pkg, qualifiedName, simpleFileName, sb.toString());
-  }
-
-  /**
-   * Writes a source file using the Filer, with fallback to createResource if createSourceFile
-   * fails.
-   *
-   * @param pkg the package name
-   * @param qualifiedName the fully qualified name
-   * @param simpleFileName the simple file name
-   * @param content the file content
-   */
-  private void writeSourceFile(
-      String pkg, String qualifiedName, String simpleFileName, String content) {
-    try {
-      // Try to create as a source file
-      JavaFileObject out = processingEnv.getFiler().createSourceFile(qualifiedName);
-      try (Writer w = out.openWriter()) {
-        w.write(content);
-      }
-    } catch (IOException fe) {
-      // Fallback: create as a resource
-      try {
-        FileObject out =
-            processingEnv
-                .getFiler()
-                .createResource(StandardLocation.SOURCE_OUTPUT, pkg, simpleFileName);
-        try (Writer w = out.openWriter()) {
-          w.write(content);
-        }
-      } catch (IOException e) {
-        throw new GenerationException(
-            "Failed to write GeneratedModuleBindings: " + e.getMessage(), e);
-      }
-    }
-  }
-
-  /**
-   * Decapitalizes the first character of the string (for method/parameter names).
-   *
-   * @param s the string to decapitalize
-   * @return the decapitalized string
-   */
-  private static String decap(String s) {
-    if (s == null || s.isEmpty()) {
-      return s;
-    }
-    return Character.toLowerCase(s.charAt(0)) + s.substring(1);
-  }
 }
