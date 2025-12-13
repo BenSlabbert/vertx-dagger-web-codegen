@@ -78,7 +78,7 @@ public class TableModuleBindingsGenerator extends AbstractProcessor {
     String packageName = entry.getKey();
 
     String allBindings =
-        entry.getValue().stream().map(s -> s + ".class").collect(Collectors.joining(",\n                  "));
+        entry.getValue().stream().map(s -> s + ".class").collect(Collectors.joining(", "));
 
     try {
       String interfaceName = "GeneratedModuleBindings";
