@@ -6,11 +6,6 @@ registries:
     url: "https://maven.pkg.github.com/BenSlabbert/vertx-dagger-bom"
     username: "BenSlabbert"
     password: "${{ secrets.GH_TOKEN }}"
-  git-version-extension:
-    type: "maven-repository"
-    url: "https://maven.pkg.github.com/BenSlabbert/git-version-extension"
-    username: "BenSlabbert"
-    password: "${{ secrets.GH_TOKEN }}"
   compile-testing:
     type: "maven-repository"
     url: "https://maven.pkg.github.com/BenSlabbert/compile-testing"
@@ -24,7 +19,6 @@ updates:
   open-pull-requests-limit: 10
   registries:
   - "vertx-dagger-bom"
-  - "git-version-extension"
   - "compile-testing"
   labels:
   - "dependencies"
