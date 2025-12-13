@@ -394,8 +394,8 @@ class AddressRepositoryIT extends PostgresTestBase {
                         .addressRepository()
                         .saveWithCte(
                             AddressBuilder.builder().postalCode("pc1").street("s1").build(),
-                            "select id from cte_person",
-                            new ScalarHandler<Long>()));
+                            "select id from cte_address",
+                            new ScalarHandler<>()));
 
     assertThat(id).isNotNull().isEqualTo(1L);
   }
@@ -420,8 +420,8 @@ class AddressRepositoryIT extends PostgresTestBase {
                         .addressRepository()
                         .saveWithCte(
                             AddressBuilder.toBuilder(saved).postalCode("pc2").build(),
-                            "select id from cte_person",
-                            new ScalarHandler<Long>()));
+                            "select id from cte_address",
+                            new ScalarHandler<>()));
 
     assertThat(result).isEqualTo(saved.id());
   }
@@ -512,8 +512,7 @@ class AddressRepositoryIT extends PostgresTestBase {
                 () ->
                     provider
                         .addressRepository()
-                        .deleteWithCte(
-                            saved, "select id from cte_person", new ScalarHandler<Long>()));
+                        .deleteWithCte(saved, "select id from cte_address", new ScalarHandler<>()));
 
     assertThat(deletedId).isEqualTo(saved.id());
 

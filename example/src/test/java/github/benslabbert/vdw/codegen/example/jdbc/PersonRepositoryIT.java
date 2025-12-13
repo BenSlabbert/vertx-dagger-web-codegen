@@ -491,7 +491,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .gender("male")
                                 .address(address)
                                 .build(),
-                            "select id from cte_person",
+                            "select id from c",
                             new ScalarHandler<Long>()));
 
     assertThat(id).isNotNull().isEqualTo(2L);
@@ -523,8 +523,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                 () ->
                     provider
                         .personRepository()
-                        .deleteWithCte(
-                            saved, "select id from cte_person", new ScalarHandler<Long>()));
+                        .deleteWithCte(saved, "select id from c", new ScalarHandler<>()));
 
     assertThat(deletedId).isEqualTo(saved.id());
   }
@@ -1060,13 +1059,7 @@ class PersonRepositoryIT extends PostgresTestBase {
     provider
         .jdbcTransactionManager()
         .executeWithoutResult(
-            () ->
-                provider
-                    .personRepository()
-                    .womenSqlFile(
-                        person -> {
-                          count.incrementAndGet();
-                        }));
+            () -> provider.personRepository().womenSqlFile(_ -> count.incrementAndGet()));
 
     assertThat(count.get()).isEqualTo(2);
   }

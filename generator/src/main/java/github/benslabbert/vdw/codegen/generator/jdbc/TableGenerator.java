@@ -196,17 +196,18 @@ public class TableGenerator extends ProcessorBase {
           table.value(), setClause, idColumn.columnName(), versionColumn.columnName());
       out.println();
 
-      out.println(
+      out.printf(
 """
   private static final String CTE_UPDATE_SQL =
       \"""
-      with cte_person as (
-          %s
+      with %s as (
+          %%s
       )
 
       \"""
           .formatted(UPDATE_SQL);
-""");
+""",
+          cte);
 
       List<String> insertColumns = new ArrayList<>();
       insertColumns.add(idColumn.columnName());
@@ -226,17 +227,18 @@ public class TableGenerator extends ProcessorBase {
           table.value(), String.join(", ", insertColumns), idColumn.sequenceName(), repeat);
       out.println();
 
-      out.println(
+      out.printf(
 """
   private static final String CTE_INSERT_SQL =
       \"""
-      with cte_person as (
-          %s
+      with %s as (
+          %%s
       )
 
       \"""
           .formatted(INSERT_SQL);
-""");
+""",
+          cte);
 
       out.printf(
 """
@@ -248,18 +250,19 @@ public class TableGenerator extends ProcessorBase {
           table.value(), idColumn.columnName(), versionColumn.columnName());
       out.println();
 
-      out.println(
+      out.printf(
 """
   private static final String CTE_DELETE_SQL =
       \"""
-      with cte_person as (
-          %s
+      with %s as (
+          %%s
           returning *
       )
 
       \"""
           .formatted(DELETE_SQL);
-""");
+""",
+          cte);
 
       out.printf(
 """
