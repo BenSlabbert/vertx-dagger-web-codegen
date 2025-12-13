@@ -16,7 +16,7 @@
           <url>https://repo1.maven.org/maven2</url>
         </repository>
         <repository>
-          <id>github</id>
+          <id>github-vertx-dagger-bom</id>
           <url>https://maven.pkg.github.com/BenSlabbert/vertx-dagger-bom</url>
           <snapshots>
             <enabled>true</enabled>
@@ -26,7 +26,7 @@
           </releases>
         </repository>
         <repository>
-          <id>github</id>
+          <id>github-compile-testing</id>
           <url>https://maven.pkg.github.com/BenSlabbert/compile-testing</url>
           <snapshots>
             <enabled>true</enabled>
@@ -38,7 +38,7 @@
       </repositories>
       <pluginRepositories>
         <pluginRepository>
-          <id>github</id>
+          <id>github-vertx-dagger-bom</id>
           <url>https://maven.pkg.github.com/BenSlabbert/vertx-dagger-bom</url>
           <snapshots>
             <enabled>true</enabled>
