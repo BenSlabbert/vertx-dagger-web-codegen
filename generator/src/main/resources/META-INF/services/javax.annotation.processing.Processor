@@ -3,7 +3,9 @@ github.benslabbert.vdw.codegen.generator.ioc.ModuleGeneration
 github.benslabbert.vdw.codegen.generator.web.WebRequestGenerator
 github.benslabbert.vdw.codegen.generator.eb.VertxEBProxyGenerators
 github.benslabbert.vdw.codegen.generator.jdbc.TableGenerator
+github.benslabbert.vdw.codegen.generator.jdbc.TableModuleGeneration
 github.benslabbert.vdw.codegen.generator.ioc.ModuleBindingsGenerator
+github.benslabbert.vdw.codegen.generator.jdbc.TableModuleBindingsGenerator
 github.benslabbert.vdw.codegen.generator.advice.AdviceResourceGenerator
 github.benslabbert.vdw.codegen.generator.builder.GenerateBuilderGenerator
 github.benslabbert.vdw.codegen.generator.json.JsonWriterProcessor
