@@ -20,11 +20,9 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 
-/**
- * Annotation processor that collects all modules annotated with
- * {@link GenerateTableModuleBindings} and generates a single {@code GeneratedModuleBindings}
- * interface per package that includes all the individual module bindings.
- */
+/// Annotation processor that collects all modules annotated with [GenerateTableModuleBindings]
+/// and generates a single `GeneratedModuleBindings` interface per package that includes all
+/// the individual module bindings.
 public class TableModuleBindingsGenerator extends AbstractProcessor {
 
   @Override
