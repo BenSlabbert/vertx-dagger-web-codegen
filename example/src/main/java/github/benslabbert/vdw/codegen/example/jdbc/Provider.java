@@ -14,7 +14,7 @@ import javax.inject.Inject;
 import javax.sql.DataSource;
 
 @Singleton
-@Component(modules = {ModuleBindings.class, Provider.EagerModule.class})
+@Component(modules = {GeneratedModuleBindings.class, Provider.EagerModule.class})
 public interface Provider {
 
   @Nullable Void init();
