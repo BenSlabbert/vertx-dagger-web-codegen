@@ -23,6 +23,11 @@
       </dependency>
       <dependency>
         <groupId>github.benslabbert.vdw.codegen</groupId>
+        <artifactId>agent</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>github.benslabbert.vdw.codegen</groupId>
         <artifactId>annotation</artifactId>
         <version>${revision}</version>
       </dependency>
@@ -39,6 +44,21 @@
       <dependency>
         <groupId>github.benslabbert.vdw.codegen</groupId>
         <artifactId>generator</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>github.benslabbert.vdw.codegen</groupId>
+        <artifactId>launcher</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>github.benslabbert.vdw.codegen</groupId>
+        <artifactId>logging</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>github.benslabbert.vdw.codegen</groupId>
+        <artifactId>platform</artifactId>
         <version>${revision}</version>
       </dependency>
     </dependencies>
