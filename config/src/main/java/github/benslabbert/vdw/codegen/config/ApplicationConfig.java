@@ -1,8 +1,8 @@
 /* Licensed under Apache-2.0 2025. */
-package github.benslabbert.vdw.codegen.commons.config;
+package github.benslabbert.vdw.codegen.config;
 
 import github.benslabbert.vdw.codegen.annotation.builder.GenerateBuilder;
-import github.benslabbert.vdw.codegen.commons.config.ApplicationConfigBuilder.Builder;
+import github.benslabbert.vdw.codegen.config.ApplicationConfigBuilder.Builder;
 import io.vertx.core.json.JsonObject;
 import jakarta.annotation.Nullable;
 import java.time.Duration;

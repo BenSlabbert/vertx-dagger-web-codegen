@@ -3,12 +3,12 @@ package github.benslabbert.vdw.codegen.commons.test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import github.benslabbert.vdw.codegen.commons.config.ApplicationConfig;
-import github.benslabbert.vdw.codegen.commons.config.ApplicationConfigBuilder;
-import github.benslabbert.vdw.codegen.commons.config.ApplicationConfig_HttpConfigBuilder;
-import github.benslabbert.vdw.codegen.commons.config.ApplicationConfig_JdbcConfigBuilder;
-import github.benslabbert.vdw.codegen.commons.config.ApplicationConfig_PostgresConfigBuilder;
-import github.benslabbert.vdw.codegen.commons.config.ApplicationConfig_RedisConfigBuilder;
+import github.benslabbert.vdw.codegen.config.ApplicationConfig;
+import github.benslabbert.vdw.codegen.config.ApplicationConfigBuilder;
+import github.benslabbert.vdw.codegen.config.ApplicationConfig_HttpConfigBuilder;
+import github.benslabbert.vdw.codegen.config.ApplicationConfig_JdbcConfigBuilder;
+import github.benslabbert.vdw.codegen.config.ApplicationConfig_PostgresConfigBuilder;
+import github.benslabbert.vdw.codegen.config.ApplicationConfig_RedisConfigBuilder;
 import io.vertx.core.json.JsonObject;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;

@@ -1,7 +1,7 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.commons.test;
 
-import github.benslabbert.vdw.codegen.commons.config.ApplicationConfig;
+import github.benslabbert.vdw.codegen.config.ApplicationConfig;
 import io.vertx.core.json.JsonObject;
 
 public final class ConfigEncoder {

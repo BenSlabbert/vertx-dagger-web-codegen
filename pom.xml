@@ -148,6 +148,7 @@
     <subproject>logging</subproject>
     <subproject>txmanager</subproject>
     <subproject>commons-test</subproject>
+    <subproject>config</subproject>
   </subprojects>
 
 </project>
