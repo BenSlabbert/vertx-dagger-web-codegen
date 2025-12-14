@@ -1,0 +1,31 @@
+{
+  "usage": "Persist this file inside your repositories as .codescene/custom-quality-gates.json Enable/disable quality gates for specific paths. Rules are tried in order and the first rule that matches will apply. If no rule is matched, all quality gates are disabled. If you want to use a default set of gates specify a rule with matching_content-path **/* as the last rule. You can delete _doc keys, they are not used.",
+  "rule_sets": [
+    {
+      "quality_gates": "pay_down_tech_debt",
+      "quality_gates_doc": "Specify a quality profile: clean_code_collective, bare_minimum, pay_down_tech_debt",
+      "matching_team": "Team 1",
+      "matching_team_doc": "Specify a team name, if a member of a team modifies a file, file matches the rule."
+    },
+    {
+      "quality_gates": {
+        "hotspot_decline": true,
+        "new_code_health": true,
+        "supervise_goals": true,
+        "advisory_health_rules": true,
+        "critical_health_rules": true,
+        "refactoring_goals": true,
+        "tag_codeowners_for_critical_code": true
+      },
+      "quality_gates_doc": "You can turn on and off specific gates by providing a map with keys hotspot_decline, new_code_health, supervise_goals, advisory_health_rules, critical_health_rules, refactoring_goals, tag_codeowners_for_critical_code to true/false. Default is false.",
+      "matching_content_path": "src/**/*.java",
+      "matching_content_path_doc": "Specify a glob pattern relative to this repo root, without repository name prefix."
+    },
+    {
+      "quality_gates": "pay_down_tech_debt",
+      "quality_gates_doc": "Common pattern, last rule as catch-all to turn on all gates.",
+      "matching_content_path": "**/*",
+      "matching_content_path_doc": "**/* means all code, **/*.js means just JavaScript, test/** means all code in a top-level test folder."
+    }
+  ]
+}
