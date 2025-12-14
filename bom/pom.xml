@@ -48,6 +48,11 @@
       </dependency>
       <dependency>
         <groupId>github.benslabbert.vdw.codegen</groupId>
+        <artifactId>config</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>github.benslabbert.vdw.codegen</groupId>
         <artifactId>generator</artifactId>
         <version>${revision}</version>
       </dependency>
@@ -64,11 +69,6 @@
       <dependency>
         <groupId>github.benslabbert.vdw.codegen</groupId>
         <artifactId>platform</artifactId>
-        <version>${revision}</version>
-      </dependency>
-      <dependency>
-        <groupId>github.benslabbert.vdw.codegen</groupId>
-        <artifactId>config</artifactId>
         <version>${revision}</version>
       </dependency>
     </dependencies>
