@@ -3,22 +3,16 @@ package github.benslabbert.vdw.codegen.example.jdbc;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import github.benslabbert.vdw.codegen.commons.test.DockerContainers;
 import java.sql.SQLException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.postgresql.PostgreSQLContainer;
-import org.testcontainers.utility.DockerImageName;
 
 /** Shared PostgreSQL container for all JDBC integration tests. */
 public abstract class PostgresTestBase {
 
-  public static final PostgreSQLContainer POSTGRES =
-      new PostgreSQLContainer(
-              DockerImageName.parse("docker.io/postgres:17-alpine")
-                  .asCompatibleSubstituteFor("postgres"))
-          .withDatabaseName("postgres")
-          .withPassword("postgres")
-          .withUsername("postgres");
+  public static final PostgreSQLContainer POSTGRES = DockerContainers.POSTGRES;
 
   static {
     System.setProperty("org.jooq.no-tips", "true");

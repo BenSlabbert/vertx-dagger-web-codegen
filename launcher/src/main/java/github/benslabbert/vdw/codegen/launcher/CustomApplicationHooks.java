@@ -69,7 +69,8 @@ public class CustomApplicationHooks implements VertxApplicationHooks {
     log.info("loading application.json");
     try (var input = getClass().getClassLoader().getResourceAsStream("application.json")) {
       if (null == input) {
-        throw VertxException.noStackTrace("application.json not found");
+        log.warn("application.json not found, returning unmodified configuration");
+        return config;
       }
 
       log.info("loading default config");
