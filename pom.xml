@@ -40,8 +40,10 @@
     <!--plugins-->
 
     <!--maven-->
-    <maven-plugin-api.version>4.0.0-rc-5</maven-plugin-api.version>
-    <maven-core.version>4.0.0-rc-5</maven-core.version>
+    <!--pin to 4.0.0-rc-3-->
+    <maven-plugin-api.version>4.0.0-rc-3</maven-plugin-api.version>
+    <!--pin to 4.0.0-rc-3-->
+    <maven-core.version>4.0.0-rc-3</maven-core.version>
     <maven-plugin-annotations.version>3.15.2</maven-plugin-annotations.version>
     <maven-plugin-plugin.version>3.15.2</maven-plugin-plugin.version>
   </properties>
@@ -145,6 +147,7 @@
     <subproject>launcher</subproject>
     <subproject>logging</subproject>
     <subproject>txmanager</subproject>
+    <subproject>commons-test</subproject>
   </subprojects>
 
 </project>

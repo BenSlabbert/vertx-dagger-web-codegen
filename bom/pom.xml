@@ -43,6 +43,11 @@
       </dependency>
       <dependency>
         <groupId>github.benslabbert.vdw.codegen</groupId>
+        <artifactId>commons-test</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>github.benslabbert.vdw.codegen</groupId>
         <artifactId>generator</artifactId>
         <version>${revision}</version>
       </dependency>
