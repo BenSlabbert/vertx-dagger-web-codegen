@@ -11,6 +11,8 @@ import io.vertx.core.VertxException;
 import io.vertx.core.json.JsonObject;
 import io.vertx.launcher.application.HookContext;
 import io.vertx.launcher.application.VertxApplicationHooks;
+import io.vertx.micrometer.MicrometerMetricsOptions;
+import io.vertx.micrometer.VertxJmxMetricsOptions;
 import io.vertx.tracing.opentelemetry.OpenTelemetryOptions;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -43,13 +45,23 @@ public class CustomApplicationHooks implements VertxApplicationHooks {
             .setTracerProvider(sdkTracerProvider)
             .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
             .buildAndRegisterGlobal();
+    OpenTelemetryOptions tracingOptions = new OpenTelemetryOptions(openTelemetry);
+
+    MicrometerMetricsOptions metricsOptions =
+        new MicrometerMetricsOptions()
+            .setEnabled(true)
+            .setMeterCacheEnabled(true)
+            .setNettyMetricsEnabled(true)
+            .setJvmMetricsEnabled(true)
+            .setJmxMetricsOptions(new VertxJmxMetricsOptions().setEnabled(true));
 
     context
         .vertxOptions()
         .setWorkerPoolSize(1)
         .setEventLoopPoolSize(1)
         .setInternalBlockingPoolSize(1)
-        .setTracingOptions(new OpenTelemetryOptions(openTelemetry))
+        .setTracingOptions(tracingOptions)
+        .setMetricsOptions(metricsOptions)
         .setPreferNativeTransport(true);
   }
 

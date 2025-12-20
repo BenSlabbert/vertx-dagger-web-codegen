@@ -141,7 +141,8 @@ public record ApplicationConfig(
 
     public String uri() {
       return String.format(
-          "jdbc:postgresql://%s:%d/%s?currentSchema=%s", host, port, database, schema);
+          "jdbc:postgresql://%s:%s@%s:%d/%s?currentSchema=%s",
+          username, password, host, port, database, schema);
     }
   }
 
