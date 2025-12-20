@@ -1,6 +1,8 @@
 /* Licensed under Apache-2.0 2024. */
 package github.benslabbert.vdw.codegen.launcher;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -11,8 +13,9 @@ import io.vertx.core.VertxException;
 import io.vertx.core.json.JsonObject;
 import io.vertx.launcher.application.HookContext;
 import io.vertx.launcher.application.VertxApplicationHooks;
+import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.VertxJmxMetricsOptions;
+import io.vertx.micrometer.backends.BackendRegistries;
 import io.vertx.tracing.opentelemetry.OpenTelemetryOptions;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -49,11 +52,15 @@ public class CustomApplicationHooks implements VertxApplicationHooks {
 
     MicrometerMetricsOptions metricsOptions =
         new MicrometerMetricsOptions()
-            .setEnabled(true)
-            .setMeterCacheEnabled(true)
-            .setNettyMetricsEnabled(true)
-            .setJvmMetricsEnabled(true)
-            .setJmxMetricsOptions(new VertxJmxMetricsOptions().setEnabled(true));
+            .setRegistryName("app")
+            .setMetricsNaming(MetricsNaming.v4Names())
+            .setEnabled(false)
+            .setMeterCacheEnabled(false)
+            .setNettyMetricsEnabled(false)
+            .setJvmMetricsEnabled(false);
+
+    MeterRegistry registry = new SimpleMeterRegistry();
+    BackendRegistries.setupBackend(metricsOptions, registry);
 
     context
         .vertxOptions()
