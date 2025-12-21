@@ -62,7 +62,7 @@ class DefaultVerticleIT {
                 resp ->
                     tc.verify(
                         () -> {
-                          assertThat(resp.body()).hasToString("data");
+                          assertThat(resp.body()).hasToString("data\n");
                           tc.completeNow();
                         })));
   }
@@ -77,7 +77,7 @@ class DefaultVerticleIT {
                 resp ->
                     tc.verify(
                         () -> {
-                          assertThat(resp.body()).hasToString("{\"data\":\"data\"}");
+                          assertThat(resp.body()).hasToString("{\"data\":\"data\"}\n");
                           tc.completeNow();
                         })));
   }
