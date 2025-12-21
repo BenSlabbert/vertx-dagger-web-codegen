@@ -7,9 +7,4 @@ import jakarta.validation.constraints.NotBlank;
 
 @JsonWriter
 @GenerateBuilder
-public record RequestDto(@NotBlank String data) {
-
-  public static RequestDtoBuilder.Builder builder() {
-    return RequestDtoBuilder.builder();
-  }
-}
+public record RequestDto(@NotBlank String data) {}

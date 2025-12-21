@@ -7,9 +7,4 @@ import jakarta.annotation.Nullable;
 
 @JsonWriter
 @GenerateBuilder
-public record ResponseDto(@Nullable String data) {
-
-  public static ResponseDtoBuilder.Builder builder() {
-    return ResponseDtoBuilder.builder();
-  }
-}
+public record ResponseDto(@Nullable String data) {}

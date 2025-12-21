@@ -14,17 +14,8 @@ import jakarta.validation.constraints.NotBlank;
 @GenerateBuilder
 public record NestedRecordDto(@NotBlank String name, @Nullable InnerDto inner) {
 
-  public static NestedRecordDtoBuilder.Builder builder() {
-    return NestedRecordDtoBuilder.builder();
-  }
-
   /** Inner record that also uses @GenerateBuilder and @JsonWriter annotations. */
   @JsonWriter
   @GenerateBuilder
-  public record InnerDto(@NotBlank String innerName, @Nullable Integer count) {
-
-    public static NestedRecordDto_InnerDtoBuilder.Builder builder() {
-      return NestedRecordDto_InnerDtoBuilder.builder();
-    }
-  }
+  public record InnerDto(@NotBlank String innerName, @Nullable Integer count) {}
 }

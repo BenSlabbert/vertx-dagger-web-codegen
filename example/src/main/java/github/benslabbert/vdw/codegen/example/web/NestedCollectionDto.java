@@ -17,21 +17,12 @@ import java.util.List;
 public record NestedCollectionDto(
     @NotBlank String title, @NotNull List<ItemDto> items, @NotNull List<String> tags) {
 
-  public static NestedCollectionDtoBuilder.Builder builder() {
-    return NestedCollectionDtoBuilder.builder();
-  }
-
   /**
-   * Inner record that represents an item in the collection. This also uses @GenerateBuilder and
-   * @JsonWriter annotations.
+   * Inner record that represents an item in the collection. This also uses @GenerateBuilder
+   * and @JsonWriter annotations.
    */
   @JsonWriter
   @GenerateBuilder
   public record ItemDto(
-      @NotBlank String name, @NotNull Integer quantity, @NotNull List<String> properties) {
-
-    public static NestedCollectionDto_ItemDtoBuilder.Builder builder() {
-      return NestedCollectionDto_ItemDtoBuilder.builder();
-    }
-  }
+      @NotBlank String name, @NotNull Integer quantity, @NotNull List<String> properties) {}
 }
