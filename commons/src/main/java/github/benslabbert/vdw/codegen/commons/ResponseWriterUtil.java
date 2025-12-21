@@ -25,7 +25,7 @@ public final class ResponseWriterUtil {
   }
 
   public static void sendBuffer(RoutingContext ctx, int statusCode, Buffer buffer) {
-    ctx.response().setStatusCode(statusCode).end(buffer);
+    ctx.response().setStatusCode(statusCode).end(buffer.appendString("\n"));
   }
 
   public static void sendFuture(RoutingContext ctx, int statusCode, Future<JsonObject> future) {
@@ -37,14 +37,14 @@ public final class ResponseWriterUtil {
         .setStatusCode(statusCode)
         .putHeader(HttpHeaders.CONTENT_TYPE, HttpHeaderValues.TEXT_PLAIN)
         .putHeader(HttpHeaders.CONTENT_LENGTH, Integer.toString(msg.length()))
-        .end(msg);
+        .end(msg + "\n");
   }
 
   public static void sendJson(RoutingContext ctx, int statusCode, JsonObject json) {
     ctx.response()
         .setStatusCode(statusCode)
         .putHeader(HttpHeaders.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
-        .end(json.toBuffer());
+        .end(json.toBuffer().appendString("\n"));
   }
 
   public static <T> void sendRequestHasViolations(
@@ -52,7 +52,10 @@ public final class ResponseWriterUtil {
     log.error("validations fail for request with {} violations", violations.size());
     violations.forEach(v -> log.error("Property {} : {}", v.getPropertyPath(), v.getMessage()));
     JsonObject json = convert(violations);
-    ctx.response().setStatusCode(BAD_REQUEST.code()).end(json.toBuffer()).onFailure(ctx::fail);
+    ctx.response()
+        .setStatusCode(BAD_REQUEST.code())
+        .end(json.toBuffer().appendString("\n"))
+        .onFailure(ctx::fail);
   }
 
   private static <T> JsonObject convert(Set<ConstraintViolation<T>> violations) {

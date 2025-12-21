@@ -1176,11 +1176,20 @@ public class TableGenerator extends ProcessorBase {
   }
 
   private static List<TableQuery> getTableQueries(Element e) {
+    // if the annotation is present once, then this is null
     Table.Queries queries = e.getAnnotation(Table.Queries.class);
-    if (null == queries) {
+    Table.Query q = e.getAnnotation(Table.Query.class);
+    if (null == queries && null == q) {
       return List.of();
     }
-    return Arrays.stream(queries.value())
+    List<Table.Query> all = new ArrayList<>();
+    if (null != q) {
+      all.add(q);
+    }
+    if (null != queries) {
+      all.addAll(Arrays.asList(queries.value()));
+    }
+    return all.stream()
         .map(
             query -> {
               String sql = query.sql();
