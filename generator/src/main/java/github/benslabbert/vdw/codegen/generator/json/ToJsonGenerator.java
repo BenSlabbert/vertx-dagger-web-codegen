@@ -100,7 +100,7 @@ final class ToJsonGenerator {
     if (genericType.startsWith("java.lang.")) {
       out.printf("%s.add(i);%n", name);
     } else {
-      var s = genericType.substring(genericType.lastIndexOf('.') + 1);
+      var s = simpleName(genericType);
       out.printf("%s.add(%sJson.toJson(i));%n", name, s);
     }
 
