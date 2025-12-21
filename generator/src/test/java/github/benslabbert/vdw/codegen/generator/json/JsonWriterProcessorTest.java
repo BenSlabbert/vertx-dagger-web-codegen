@@ -40,4 +40,15 @@ class JsonWriterProcessorTest {
         .processedWith(new JsonWriterProcessor())
         .compilesWithoutError();
   }
+
+  @Test
+  void nestedCollection() {
+    URL resource = this.getClass().getClassLoader().getResource("FindAllResponse.java");
+    assertThat(resource).isNotNull();
+
+    assertAbout(JavaSourceSubjectFactory.javaSource())
+        .that(JavaFileObjects.forResource(resource))
+        .processedWith(new JsonWriterProcessor())
+        .compilesWithoutError();
+  }
 }

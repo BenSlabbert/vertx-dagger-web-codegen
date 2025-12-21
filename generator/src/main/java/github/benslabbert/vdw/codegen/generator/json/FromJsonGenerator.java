@@ -95,7 +95,7 @@ class FromJsonGenerator {
           "json.getJsonArray(\"%s\").stream().map(d -> (Double) d).%s".formatted(name, collector);
       default ->
           "json.getJsonArray(\"%s\").stream().map(obj -> %sJson.fromJson((JsonObject) obj)).%s"
-              .formatted(name, getSimpleName(genericType), collector);
+              .formatted(name, simpleName(genericType), collector);
     };
   }
 
@@ -157,9 +157,5 @@ class FromJsonGenerator {
       case BYTE -> "json.getBinary(\"%s\")[0]".formatted(name);
       default -> throw new GenerationException("Unsupported primitive type: " + kind);
     };
-  }
-
-  private static String getSimpleName(String canonicalName) {
-    return canonicalName.substring(canonicalName.lastIndexOf('.') + 1);
   }
 }
