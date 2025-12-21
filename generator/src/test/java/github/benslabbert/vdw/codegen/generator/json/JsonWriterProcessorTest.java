@@ -51,4 +51,26 @@ class JsonWriterProcessorTest {
         .processedWith(new JsonWriterProcessor())
         .compilesWithoutError();
   }
+
+  @Test
+  void nestedSetCollection() {
+    URL resource = this.getClass().getClassLoader().getResource("SetCollectionResponse.java");
+    assertThat(resource).isNotNull();
+
+    assertAbout(JavaSourceSubjectFactory.javaSource())
+        .that(JavaFileObjects.forResource(resource))
+        .processedWith(new JsonWriterProcessor())
+        .compilesWithoutError();
+  }
+
+  @Test
+  void nestedCollectionInterface() {
+    URL resource = this.getClass().getClassLoader().getResource("CollectionResponse.java");
+    assertThat(resource).isNotNull();
+
+    assertAbout(JavaSourceSubjectFactory.javaSource())
+        .that(JavaFileObjects.forResource(resource))
+        .processedWith(new JsonWriterProcessor())
+        .compilesWithoutError();
+  }
 }
