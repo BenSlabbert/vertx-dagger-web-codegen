@@ -420,9 +420,9 @@ public class TableGenerator extends ProcessorBase {
           case CONSUMER_CANONICAL_NAME -> {
             String p;
             if (methodArgs.isBlank()) {
-              p = "Consumer<%s> consumer".formatted(ac.name);
+              p = "Consumer<%s> consumer".formatted(ac.name());
             } else {
-              p = String.join(", ", "Consumer<%s> consumer".formatted(ac.name), methodArgs);
+              p = String.join(", ", "Consumer<%s> consumer".formatted(ac.name()), methodArgs);
             }
             if (defaultFetchSize) {
               out.printf(
@@ -1008,10 +1008,10 @@ public class TableGenerator extends ProcessorBase {
           case LIST_CANONICAL_NAME -> {
             out.printf(
 """
-			@Override
-			public List<%s> %s(%s) {
-				return transactionManager.executeWithResult(() -> delegate.%s(%s));
-			}
+        @Override
+        public List<%s> %s(%s) {
+            return transactionManager.executeWithResult(() -> delegate.%s(%s));
+        }
 
 """,
                 ac.name(),
@@ -1023,11 +1023,11 @@ public class TableGenerator extends ProcessorBase {
           case STREAM_CANONICAL_NAME -> {
             out.printf(
 """
-			@Override
-			@MustBeClosed
-			public Stream<%s> %s(%s) {
-				throw new UnsupportedOperationException("Stream methods cannot be safely wrapped in transactions due to resource management constraints. Use doInTransaction() with List or Iterable return types instead.");
-			}
+        @Override
+        @MustBeClosed
+        public Stream<%s> %s(%s) {
+            throw new UnsupportedOperationException("Stream methods cannot be safely wrapped in transactions due to resource management constraints. Use doInTransaction() with List or Iterable return types instead.");
+        }
 
 """,
                 ac.name(), tq.name(), methodArgs);
@@ -1035,10 +1035,10 @@ public class TableGenerator extends ProcessorBase {
           case ITERABLE_CANONICAL_NAME -> {
             out.printf(
 """
-			@Override
-			public Iterable<%s> %s(%s) {
-				return transactionManager.executeWithResult(() -> delegate.%s(%s));
-			}
+        @Override
+        public Iterable<%s> %s(%s) {
+            return transactionManager.executeWithResult(() -> delegate.%s(%s));
+        }
 
 """,
                 ac.name(),
@@ -1050,16 +1050,16 @@ public class TableGenerator extends ProcessorBase {
           case CONSUMER_CANONICAL_NAME -> {
             String p;
             if (methodArgs.isBlank()) {
-              p = "Consumer<%s> consumer".formatted(ac.name);
+              p = "Consumer<%s> consumer".formatted(ac.name());
             } else {
-              p = String.join(", ", "Consumer<%s> consumer".formatted(ac.name), methodArgs);
+              p = String.join(", ", "Consumer<%s> consumer".formatted(ac.name()), methodArgs);
             }
             out.printf(
 """
-			@Override
-			public void %s(%s) {
-				transactionManager.executeWithoutResult(() -> delegate.%s(%s));
-			}
+        @Override
+        public void %s(%s) {
+            transactionManager.executeWithoutResult(() -> delegate.%s(%s));
+        }
 
 """,
                 tq.name(),
@@ -1082,38 +1082,38 @@ public class TableGenerator extends ProcessorBase {
         switch (fbc.returnType()) {
           case LIST_CANONICAL_NAME -> out.printf(
 """
-			@Override
-			public List<%s> %s(%s %s) {
-				return transactionManager.executeWithResult(() -> delegate.%s(%s));
-			}
+        @Override
+        public List<%s> %s(%s %s) {
+            return transactionManager.executeWithResult(() -> delegate.%s(%s));
+        }
 
 """,
               ac.name(), td.columnName(), td.columnTypeSimpleName(), td.columnName(), td.columnName(), td.columnName());
           case STREAM_CANONICAL_NAME -> out.printf(
 """
-			@Override
-			@MustBeClosed
-			public Stream<%s> %s(%s %s) {
-				throw new UnsupportedOperationException("Stream methods cannot be safely wrapped in transactions due to resource management constraints. Use doInTransaction() with List or Iterable return types instead.");
-			}
+        @Override
+        @MustBeClosed
+        public Stream<%s> %s(%s %s) {
+            throw new UnsupportedOperationException("Stream methods cannot be safely wrapped in transactions due to resource management constraints. Use doInTransaction() with List or Iterable return types instead.");
+        }
 
 """,
               ac.name(), td.columnName(), td.columnTypeSimpleName(), td.columnName());
           case ITERABLE_CANONICAL_NAME -> out.printf(
 """
-			@Override
-			public Iterable<%s> %s(%s %s) {
-				return transactionManager.executeWithResult(() -> delegate.%s(%s));
-			}
+        @Override
+        public Iterable<%s> %s(%s %s) {
+            return transactionManager.executeWithResult(() -> delegate.%s(%s));
+        }
 
 """,
               ac.name(), td.columnName(), td.columnTypeSimpleName(), td.columnName(), td.columnName(), td.columnName());
           case CONSUMER_CANONICAL_NAME -> out.printf(
 """
-			@Override
-			public void %s(%s %s, Consumer<%s> consumer) {
-				transactionManager.executeWithoutResult(() -> delegate.%s(%s, consumer));
-			}
+        @Override
+        public void %s(%s %s, Consumer<%s> consumer) {
+            transactionManager.executeWithoutResult(() -> delegate.%s(%s, consumer));
+        }
 
 """,
               td.columnName(), td.columnTypeSimpleName(), td.columnName(), ac.name(), td.columnName(), td.columnName());
@@ -1128,10 +1128,10 @@ public class TableGenerator extends ProcessorBase {
 
         out.printf(
 """
-			@Override
-			public Optional<%s> %s(%s %s) {
-				return transactionManager.executeWithResult(() -> delegate.%s(%s));
-			}
+        @Override
+        public Optional<%s> %s(%s %s) {
+            return transactionManager.executeWithResult(() -> delegate.%s(%s));
+        }
 
 """,
             ac.name(), td.columnName(), td.columnTypeSimpleName(), td.columnName(), td.columnName(), td.columnName());
@@ -1140,62 +1140,61 @@ public class TableGenerator extends ProcessorBase {
       // Generate delegate methods for common queries
       out.printf(
 """
-			@Override
-			@MustBeClosed
-			public Stream<%s> all() {
-				throw new UnsupportedOperationException("Stream methods cannot be safely wrapped in transactions due to resource management constraints. Use doInTransaction() with List or Iterable return types instead.");
-			}
-			}
+        @Override
+        @MustBeClosed
+        public Stream<%s> all() {
+            throw new UnsupportedOperationException("Stream methods cannot be safely wrapped in transactions due to resource management constraints. Use doInTransaction() with List or Iterable return types instead.");
+        }
 
-			@Override
-			public Optional<%s> id(long id) {
-				return transactionManager.executeWithResult(() -> delegate.id(id));
-			}
+        @Override
+        public Optional<%s> id(long id) {
+            return transactionManager.executeWithResult(() -> delegate.id(id));
+        }
 
-			@Override
-			public Optional<%s> idAndVersion(long id, int version) {
-				return transactionManager.executeWithResult(() -> delegate.idAndVersion(id, version));
-			}
+        @Override
+        public Optional<%s> idAndVersion(long id, int version) {
+            return transactionManager.executeWithResult(() -> delegate.idAndVersion(id, version));
+        }
 
-			@Override
-			public %s save(%s %s) {
-				return transactionManager.executeWithResult(() -> delegate.save(%s));
-			}
+        @Override
+        public %s save(%s %s) {
+            return transactionManager.executeWithResult(() -> delegate.save(%s));
+        }
 
-			@Override
-			public <T> T saveWithCte(%s %s, String cte, ResultSetHandler<T> rsh, Object... cteArgs) {
-				return transactionManager.executeWithResult(() -> delegate.saveWithCte(%s, cte, rsh, cteArgs));
-			}
+        @Override
+        public <T> T saveWithCte(%s %s, String cte, ResultSetHandler<T> rsh, Object... cteArgs) {
+            return transactionManager.executeWithResult(() -> delegate.saveWithCte(%s, cte, rsh, cteArgs));
+        }
 
-			@Override
-			public Collection<%s> insertAll(Collection<%s> all) {
-				return transactionManager.executeWithResult(() -> delegate.insertAll(all));
-			}
+        @Override
+        public Collection<%s> insertAll(Collection<%s> all) {
+            return transactionManager.executeWithResult(() -> delegate.insertAll(all));
+        }
 
-			@Override
-			public Collection<%s> updateAll(Collection<%s> all) {
-				return transactionManager.executeWithResult(() -> delegate.updateAll(all));
-			}
+        @Override
+        public Collection<%s> updateAll(Collection<%s> all) {
+            return transactionManager.executeWithResult(() -> delegate.updateAll(all));
+        }
 
-			@Override
-			public int delete(%s %s) {
-				return transactionManager.executeWithResult(() -> delegate.delete(%s));
-			}
+        @Override
+        public int delete(%s %s) {
+            return transactionManager.executeWithResult(() -> delegate.delete(%s));
+        }
 
-			@Override
-			public <T> T deleteWithCte(%s %s, String cte, ResultSetHandler<T> rsh, Object... cteArgs) {
-				return transactionManager.executeWithResult(() -> delegate.deleteWithCte(%s, cte, rsh, cteArgs));
-			}
+        @Override
+        public <T> T deleteWithCte(%s %s, String cte, ResultSetHandler<T> rsh, Object... cteArgs) {
+            return transactionManager.executeWithResult(() -> delegate.deleteWithCte(%s, cte, rsh, cteArgs));
+        }
 
-			@Override
-			public int[] deleteAll(Collection<%s> all) {
-				return transactionManager.executeWithResult(() -> delegate.deleteAll(all));
-			}
+        @Override
+        public int[] deleteAll(Collection<%s> all) {
+            return transactionManager.executeWithResult(() -> delegate.deleteAll(all));
+        }
 
-			@Override
-			public %s doInTransaction() {
-				return this;
-			}
+        @Override
+        public %s doInTransaction() {
+            return this;
+        }
 """,
           ac.name(),
           ac.name(),
@@ -1336,9 +1335,9 @@ public class TableGenerator extends ProcessorBase {
           case CONSUMER_CANONICAL_NAME -> {
             String p;
             if (params.isBlank()) {
-              p = "Consumer<%s> consumer".formatted(ac.name);
+              p = "Consumer<%s> consumer".formatted(ac.name());
             } else {
-              p = String.join(", ", "Consumer<%s> consumer".formatted(ac.name), params);
+              p = String.join(", ", "Consumer<%s> consumer".formatted(ac.name()), params);
             }
             out.printf("\tvoid %s(%s);%n", tq.name(), p);
           }
