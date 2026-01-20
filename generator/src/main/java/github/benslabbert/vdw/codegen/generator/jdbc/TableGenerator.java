@@ -1006,10 +1006,6 @@ public class TableGenerator extends ProcessorBase {
 
         switch (tq.returnType()) {
           case LIST_CANONICAL_NAME -> {
-            String args =
-                tq.usesSqlFile()
-                    ? "args"
-                    : "{" + String.join(", ", tq.paramNames()) + "}";
             out.printf(
 """
 			@Override
@@ -1030,7 +1026,7 @@ public class TableGenerator extends ProcessorBase {
 			@Override
 			@MustBeClosed
 			public Stream<%s> %s(%s) {
-				throw new UnsupportedOperationException("Stream methods are not supported in transaction scope.");
+				throw new UnsupportedOperationException("Stream methods cannot be safely wrapped in transactions due to resource management constraints. Use doInTransaction() with List or Iterable return types instead.");
 			}
 
 """,
@@ -1098,7 +1094,7 @@ public class TableGenerator extends ProcessorBase {
 			@Override
 			@MustBeClosed
 			public Stream<%s> %s(%s %s) {
-				throw new UnsupportedOperationException("Stream methods are not supported in transaction scope.");
+				throw new UnsupportedOperationException("Stream methods cannot be safely wrapped in transactions due to resource management constraints. Use doInTransaction() with List or Iterable return types instead.");
 			}
 
 """,
@@ -1138,7 +1134,7 @@ public class TableGenerator extends ProcessorBase {
 			}
 
 """,
-            ac.name(), td.columnName(), td.columnTypeSimpleName(), varName, td.columnName(), varName);
+            ac.name(), td.columnName(), td.columnTypeSimpleName(), td.columnName(), td.columnName(), td.columnName());
       }
 
       // Generate delegate methods for common queries
@@ -1147,7 +1143,8 @@ public class TableGenerator extends ProcessorBase {
 			@Override
 			@MustBeClosed
 			public Stream<%s> all() {
-				throw new UnsupportedOperationException("Stream methods are not supported in transaction scope.");
+				throw new UnsupportedOperationException("Stream methods cannot be safely wrapped in transactions due to resource management constraints. Use doInTransaction() with List or Iterable return types instead.");
+			}
 			}
 
 			@Override
