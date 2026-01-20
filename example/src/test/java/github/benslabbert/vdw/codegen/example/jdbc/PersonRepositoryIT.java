@@ -1085,4 +1085,108 @@ class PersonRepositoryIT extends PostgresTestBase {
                                         .build())))
         .isInstanceOf(RuntimeException.class);
   }
+
+  @Test
+  void doInTransaction_save() {
+    Address address = createAddress("street1", "pc1");
+
+    Person person =
+        provider
+            .personRepository()
+            .doInTransaction()
+            .save(
+                PersonBuilder.builder()
+                    .name("John")
+                    .middleName("M")
+                    .lastName("Doe")
+                    .age(30)
+                    .gender("male")
+                    .address(address)
+                    .build());
+
+    assertThat(person).isNotNull();
+    assertThat(person.id()).isEqualTo(2L);
+    assertThat(person.version()).isZero();
+    assertThat(person.name()).isEqualTo("John");
+    assertThat(person.middleName()).isEqualTo("M");
+    assertThat(person.lastName()).isEqualTo("Doe");
+    assertThat(person.age()).isEqualTo(30);
+    assertThat(person.gender()).isEqualTo("male");
+    assertThat(person.address().id()).isEqualTo(address.id());
+  }
+
+  @Test
+  void doInTransaction_findById() {
+    Address address = createAddress("street1", "pc1");
+    Person saved =
+        provider
+            .personRepository()
+            .doInTransaction()
+            .save(
+                PersonBuilder.builder()
+                    .name("John")
+                    .lastName("Doe")
+                    .age(30)
+                    .gender("male")
+                    .address(address)
+                    .build());
+
+    Optional<Person> found = provider.personRepository().doInTransaction().id(saved.id());
+
+    assertThat(found).isPresent();
+    assertThat(found.get().id()).isEqualTo(saved.id());
+    assertThat(found.get().version()).isEqualTo(saved.version());
+    assertThat(found.get().name()).isEqualTo(saved.name());
+  }
+
+  @Test
+  void doInTransaction_update() {
+    Address address = createAddress("street1", "pc1");
+    Person saved =
+        provider
+            .personRepository()
+            .doInTransaction()
+            .save(
+                PersonBuilder.builder()
+                    .name("John")
+                    .lastName("Doe")
+                    .age(30)
+                    .gender("male")
+                    .address(address)
+                    .build());
+
+    assertThat(saved.version()).isZero();
+
+    Person updated =
+        provider
+            .personRepository()
+            .doInTransaction()
+            .save(PersonBuilder.toBuilder(saved).middleName("M").age(31).build());
+
+    assertThat(updated.id()).isEqualTo(saved.id());
+    assertThat(updated.version()).isOne();
+    assertThat(updated.age()).isEqualTo(31);
+    assertThat(updated.middleName()).isEqualTo("M");
+  }
+
+  @Test
+  void doInTransaction_delete() {
+    Address address = createAddress("street1", "pc1");
+    Person saved =
+        provider
+            .personRepository()
+            .doInTransaction()
+            .save(
+                PersonBuilder.builder()
+                    .name("John")
+                    .lastName("Doe")
+                    .age(30)
+                    .gender("male")
+                    .address(address)
+                    .build());
+
+    int deleted = provider.personRepository().doInTransaction().delete(saved);
+
+    assertThat(deleted).isOne();
+  }
 }

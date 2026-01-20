@@ -589,4 +589,71 @@ class AddressRepositoryIT extends PostgresTestBase {
 
     assertThat(deleted).containsExactly(0, 1); // First fails due to version mismatch
   }
+
+  @Test
+  void doInTransaction_save() {
+    Address address =
+        provider
+            .addressRepository()
+            .doInTransaction()
+            .save(AddressBuilder.builder().postalCode("pc1").street("s1").build());
+
+    assertThat(address).isNotNull();
+    assertThat(address.id()).isOne();
+    assertThat(address.version()).isZero();
+    assertThat(address.postalCode()).isEqualTo("pc1");
+    assertThat(address.street()).isEqualTo("s1");
+  }
+
+  @Test
+  void doInTransaction_findById() {
+    Address saved =
+        provider
+            .addressRepository()
+            .doInTransaction()
+            .save(AddressBuilder.builder().postalCode("pc1").street("s1").build());
+
+    Optional<Address> found = provider.addressRepository().doInTransaction().id(saved.id());
+
+    assertThat(found).isPresent().get().isEqualTo(saved);
+  }
+
+  @Test
+  void doInTransaction_update() {
+    Address saved =
+        provider
+            .addressRepository()
+            .doInTransaction()
+            .save(AddressBuilder.builder().postalCode("pc1").street("s1").build());
+
+    assertThat(saved.version()).isZero();
+
+    Address updated =
+        provider
+            .addressRepository()
+            .doInTransaction()
+            .save(AddressBuilder.toBuilder(saved).postalCode("pc2").build());
+
+    assertThat(updated.id()).isEqualTo(saved.id());
+    assertThat(updated.version()).isOne();
+    assertThat(updated.postalCode()).isEqualTo("pc2");
+    assertThat(updated.street()).isEqualTo("s1"); // street is immutable
+  }
+
+  @Test
+  void doInTransaction_delete() {
+    Address saved =
+        provider
+            .addressRepository()
+            .doInTransaction()
+            .save(AddressBuilder.builder().postalCode("pc1").street("s1").build());
+
+    int deleted = provider.addressRepository().doInTransaction().delete(saved);
+
+    assertThat(deleted).isOne();
+
+    Optional<Address> found = provider.addressRepository().doInTransaction().id(saved.id());
+
+    assertThat(found).isEmpty();
+  }
 }
