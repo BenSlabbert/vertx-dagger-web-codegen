@@ -288,8 +288,7 @@ public class TableGenerator extends ProcessorBase {
         this.transactionRepository = createTransactionRepository();
     }
 """,
-          interfaceName,
-          className);
+          interfaceName, className);
       out.println();
 
       for (TableQuery tq : tableQueries) {
@@ -1067,7 +1066,10 @@ public class TableGenerator extends ProcessorBase {
                 tq.name(),
                 tq.usesSqlFile()
                     ? "consumer, args"
-                    : "consumer" + (tq.paramNames().isEmpty() ? "" : ", " + String.join(", ", tq.paramNames())));
+                    : "consumer"
+                        + (tq.paramNames().isEmpty()
+                            ? ""
+                            : ", " + String.join(", ", tq.paramNames())));
           }
         }
       }
@@ -1080,7 +1082,8 @@ public class TableGenerator extends ProcessorBase {
         }
 
         switch (fbc.returnType()) {
-          case LIST_CANONICAL_NAME -> out.printf(
+          case LIST_CANONICAL_NAME ->
+              out.printf(
 """
         @Override
         public List<%s> %s(%s %s) {
@@ -1088,8 +1091,14 @@ public class TableGenerator extends ProcessorBase {
         }
 
 """,
-              ac.name(), td.columnName(), td.columnTypeSimpleName(), td.columnName(), td.columnName(), td.columnName());
-          case STREAM_CANONICAL_NAME -> out.printf(
+                  ac.name(),
+                  td.columnName(),
+                  td.columnTypeSimpleName(),
+                  td.columnName(),
+                  td.columnName(),
+                  td.columnName());
+          case STREAM_CANONICAL_NAME ->
+              out.printf(
 """
         @Override
         @MustBeClosed
@@ -1098,8 +1107,9 @@ public class TableGenerator extends ProcessorBase {
         }
 
 """,
-              ac.name(), td.columnName(), td.columnTypeSimpleName(), td.columnName());
-          case ITERABLE_CANONICAL_NAME -> out.printf(
+                  ac.name(), td.columnName(), td.columnTypeSimpleName(), td.columnName());
+          case ITERABLE_CANONICAL_NAME ->
+              out.printf(
 """
         @Override
         public Iterable<%s> %s(%s %s) {
@@ -1107,8 +1117,14 @@ public class TableGenerator extends ProcessorBase {
         }
 
 """,
-              ac.name(), td.columnName(), td.columnTypeSimpleName(), td.columnName(), td.columnName(), td.columnName());
-          case CONSUMER_CANONICAL_NAME -> out.printf(
+                  ac.name(),
+                  td.columnName(),
+                  td.columnTypeSimpleName(),
+                  td.columnName(),
+                  td.columnName(),
+                  td.columnName());
+          case CONSUMER_CANONICAL_NAME ->
+              out.printf(
 """
         @Override
         public void %s(%s %s, Consumer<%s> consumer) {
@@ -1116,7 +1132,12 @@ public class TableGenerator extends ProcessorBase {
         }
 
 """,
-              td.columnName(), td.columnTypeSimpleName(), td.columnName(), ac.name(), td.columnName(), td.columnName());
+                  td.columnName(),
+                  td.columnTypeSimpleName(),
+                  td.columnName(),
+                  ac.name(),
+                  td.columnName(),
+                  td.columnName());
         }
       }
 
@@ -1134,7 +1155,12 @@ public class TableGenerator extends ProcessorBase {
         }
 
 """,
-            ac.name(), td.columnName(), td.columnTypeSimpleName(), td.columnName(), td.columnName(), td.columnName());
+            ac.name(),
+            td.columnName(),
+            td.columnTypeSimpleName(),
+            td.columnName(),
+            td.columnName(),
+            td.columnName());
       }
 
       // Generate delegate methods for common queries
@@ -1422,9 +1448,26 @@ public class TableGenerator extends ProcessorBase {
 
     %s doInTransaction();
 """,
-          ac.name(), ac.name(), ac.name(), ac.name(), ac.name(), ac.name(), ac.name(), varName,
-          ac.name(), varName, ac.name(), ac.name(), ac.name(), ac.name(), ac.name(), varName,
-          ac.name(), varName, ac.name(), interfaceName);
+          ac.name(),
+          ac.name(),
+          ac.name(),
+          ac.name(),
+          ac.name(),
+          ac.name(),
+          ac.name(),
+          varName,
+          ac.name(),
+          varName,
+          ac.name(),
+          ac.name(),
+          ac.name(),
+          ac.name(),
+          ac.name(),
+          varName,
+          ac.name(),
+          varName,
+          ac.name(),
+          interfaceName);
       out.println("}");
     }
 
