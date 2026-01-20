@@ -17,6 +17,7 @@ import github.benslabbert.vdw.codegen.commons.jdbc.Reference;
 import github.benslabbert.vdw.codegen.generator.GenerationException;
 import github.benslabbert.vdw.codegen.generator.ProcessorBase;
 import github.benslabbert.vdw.codegen.generator.StringWriterFactory;
+import github.benslabbert.vdw.codegen.txmanager.TransactionManager;
 import jakarta.annotation.Generated;
 import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
@@ -167,7 +168,7 @@ public class TableGenerator extends ProcessorBase {
       out.printf("import %s;%n", ArraysUtils.class.getCanonicalName());
       out.printf("import %s;%n", ResultSetHandler.class.getCanonicalName());
       out.printf("import %s;%n", TableRequiresModuleGeneration.class.getCanonicalName());
-      out.println("import github.benslabbert.vdw.codegen.txmanager.TransactionManager;");
+      out.printf("import %s;%n", TransactionManager.class.getCanonicalName());
       out.printf("import static %s.not;%n", Predicate.class.getCanonicalName());
       out.println();
 
@@ -988,10 +989,14 @@ public class TableGenerator extends ProcessorBase {
       out.println();
 
       // Add createTransactionRepository method
-      out.printf("\tprivate %s createTransactionRepository() {%n", interfaceName);
-      out.printf("\t\tfinal %s delegate = this;%n", interfaceName);
-      out.printf("\t\treturn new %s() {%n", interfaceName);
-      out.println();
+      out.printf(
+"""
+    private %s createTransactionRepository() {
+        final %s delegate = this;
+        return new %s() {
+
+""",
+          interfaceName, interfaceName, interfaceName);
 
       // Generate delegate methods for all table queries
       for (TableQuery tq : tableQueries) {
