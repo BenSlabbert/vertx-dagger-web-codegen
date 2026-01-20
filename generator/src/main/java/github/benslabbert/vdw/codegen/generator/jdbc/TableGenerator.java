@@ -167,6 +167,7 @@ public class TableGenerator extends ProcessorBase {
       out.printf("import %s;%n", ArraysUtils.class.getCanonicalName());
       out.printf("import %s;%n", ResultSetHandler.class.getCanonicalName());
       out.printf("import %s;%n", TableRequiresModuleGeneration.class.getCanonicalName());
+      out.println("import github.benslabbert.vdw.codegen.txmanager.TransactionManager;");
       out.printf("import static %s.not;%n", Predicate.class.getCanonicalName());
       out.println();
 
@@ -273,16 +274,21 @@ public class TableGenerator extends ProcessorBase {
     private final JdbcUtilsFactory jdbcUtilsFactory;
     private final JdbcQueryRunner jdbcQueryRunner;
     private final JdbcUtils jdbcUtils;
+    private final TransactionManager transactionManager;
+    private final %s transactionRepository;
 
     @Inject
-    %s(JdbcQueryRunnerFactory jdbcQueryRunnerFactory, JdbcUtilsFactory jdbcUtilsFactory) {
+    %s(JdbcQueryRunnerFactory jdbcQueryRunnerFactory, JdbcUtilsFactory jdbcUtilsFactory, TransactionManager transactionManager) {
         StatementConfiguration cfg = getConfigBuilder().build();
         this.jdbcQueryRunnerFactory = jdbcQueryRunnerFactory;
         this.jdbcUtilsFactory = jdbcUtilsFactory;
         this.jdbcQueryRunner = jdbcQueryRunnerFactory.create(cfg);
         this.jdbcUtils = jdbcUtilsFactory.create(cfg);
+        this.transactionManager = transactionManager;
+        this.transactionRepository = createTransactionRepository();
     }
 """,
+          interfaceName,
           className);
       out.println();
 
@@ -970,6 +976,258 @@ public class TableGenerator extends ProcessorBase {
 
       out.println();
 
+      // Add doInTransaction implementation
+      out.printf(
+"""
+    @Override
+    public %s doInTransaction() {
+        return transactionRepository;
+    }
+""",
+          interfaceName);
+
+      out.println();
+
+      // Add createTransactionRepository method
+      out.printf("\tprivate %s createTransactionRepository() {%n", interfaceName);
+      out.printf("\t\tfinal %s delegate = this;%n", interfaceName);
+      out.printf("\t\treturn new %s() {%n", interfaceName);
+      out.println();
+
+      // Generate delegate methods for all table queries
+      for (TableQuery tq : tableQueries) {
+        String methodArgs;
+        if (tq.usesSqlFile()) {
+          methodArgs = "Object... args";
+        } else {
+          methodArgs =
+              tq.paramNames().stream().map(s -> "Object " + s).collect(Collectors.joining(", "));
+        }
+
+        switch (tq.returnType()) {
+          case LIST_CANONICAL_NAME -> {
+            String args =
+                tq.usesSqlFile()
+                    ? "args"
+                    : "{" + String.join(", ", tq.paramNames()) + "}";
+            out.printf(
+"""
+			@Override
+			public List<%s> %s(%s) {
+				return transactionManager.executeWithResult(() -> delegate.%s(%s));
+			}
+
+""",
+                ac.name(),
+                tq.name(),
+                methodArgs,
+                tq.name(),
+                tq.usesSqlFile() ? "args" : String.join(", ", tq.paramNames()));
+          }
+          case STREAM_CANONICAL_NAME -> {
+            out.printf(
+"""
+			@Override
+			@MustBeClosed
+			public Stream<%s> %s(%s) {
+				throw new UnsupportedOperationException("Stream methods are not supported in transaction scope.");
+			}
+
+""",
+                ac.name(), tq.name(), methodArgs);
+          }
+          case ITERABLE_CANONICAL_NAME -> {
+            out.printf(
+"""
+			@Override
+			public Iterable<%s> %s(%s) {
+				return transactionManager.executeWithResult(() -> delegate.%s(%s));
+			}
+
+""",
+                ac.name(),
+                tq.name(),
+                methodArgs,
+                tq.name(),
+                tq.usesSqlFile() ? "args" : String.join(", ", tq.paramNames()));
+          }
+          case CONSUMER_CANONICAL_NAME -> {
+            String p;
+            if (methodArgs.isBlank()) {
+              p = "Consumer<%s> consumer".formatted(ac.name);
+            } else {
+              p = String.join(", ", "Consumer<%s> consumer".formatted(ac.name), methodArgs);
+            }
+            out.printf(
+"""
+			@Override
+			public void %s(%s) {
+				transactionManager.executeWithoutResult(() -> delegate.%s(%s));
+			}
+
+""",
+                tq.name(),
+                p,
+                tq.name(),
+                tq.usesSqlFile()
+                    ? "consumer, args"
+                    : "consumer" + (tq.paramNames().isEmpty() ? "" : ", " + String.join(", ", tq.paramNames())));
+          }
+        }
+      }
+
+      // Generate delegate methods for FindByColumn
+      for (TableDetails td : tableDetails) {
+        TableDetails.FindByColumn fbc = td.findByColumn();
+        if (null == fbc) {
+          continue;
+        }
+
+        switch (fbc.returnType()) {
+          case LIST_CANONICAL_NAME -> out.printf(
+"""
+			@Override
+			public List<%s> %s(%s %s) {
+				return transactionManager.executeWithResult(() -> delegate.%s(%s));
+			}
+
+""",
+              ac.name(), td.columnName(), td.columnTypeSimpleName(), td.columnName(), td.columnName(), td.columnName());
+          case STREAM_CANONICAL_NAME -> out.printf(
+"""
+			@Override
+			@MustBeClosed
+			public Stream<%s> %s(%s %s) {
+				throw new UnsupportedOperationException("Stream methods are not supported in transaction scope.");
+			}
+
+""",
+              ac.name(), td.columnName(), td.columnTypeSimpleName(), td.columnName());
+          case ITERABLE_CANONICAL_NAME -> out.printf(
+"""
+			@Override
+			public Iterable<%s> %s(%s %s) {
+				return transactionManager.executeWithResult(() -> delegate.%s(%s));
+			}
+
+""",
+              ac.name(), td.columnName(), td.columnTypeSimpleName(), td.columnName(), td.columnName(), td.columnName());
+          case CONSUMER_CANONICAL_NAME -> out.printf(
+"""
+			@Override
+			public void %s(%s %s, Consumer<%s> consumer) {
+				transactionManager.executeWithoutResult(() -> delegate.%s(%s, consumer));
+			}
+
+""",
+              td.columnName(), td.columnTypeSimpleName(), td.columnName(), ac.name(), td.columnName(), td.columnName());
+        }
+      }
+
+      // Generate delegate methods for FindOneByColumn
+      for (TableDetails td : tableDetails) {
+        if (!td.isFindOneByColumn()) {
+          continue;
+        }
+
+        out.printf(
+"""
+			@Override
+			public Optional<%s> %s(%s %s) {
+				return transactionManager.executeWithResult(() -> delegate.%s(%s));
+			}
+
+""",
+            ac.name(), td.columnName(), td.columnTypeSimpleName(), varName, td.columnName(), varName);
+      }
+
+      // Generate delegate methods for common queries
+      out.printf(
+"""
+			@Override
+			@MustBeClosed
+			public Stream<%s> all() {
+				throw new UnsupportedOperationException("Stream methods are not supported in transaction scope.");
+			}
+
+			@Override
+			public Optional<%s> id(long id) {
+				return transactionManager.executeWithResult(() -> delegate.id(id));
+			}
+
+			@Override
+			public Optional<%s> idAndVersion(long id, int version) {
+				return transactionManager.executeWithResult(() -> delegate.idAndVersion(id, version));
+			}
+
+			@Override
+			public %s save(%s %s) {
+				return transactionManager.executeWithResult(() -> delegate.save(%s));
+			}
+
+			@Override
+			public <T> T saveWithCte(%s %s, String cte, ResultSetHandler<T> rsh, Object... cteArgs) {
+				return transactionManager.executeWithResult(() -> delegate.saveWithCte(%s, cte, rsh, cteArgs));
+			}
+
+			@Override
+			public Collection<%s> insertAll(Collection<%s> all) {
+				return transactionManager.executeWithResult(() -> delegate.insertAll(all));
+			}
+
+			@Override
+			public Collection<%s> updateAll(Collection<%s> all) {
+				return transactionManager.executeWithResult(() -> delegate.updateAll(all));
+			}
+
+			@Override
+			public int delete(%s %s) {
+				return transactionManager.executeWithResult(() -> delegate.delete(%s));
+			}
+
+			@Override
+			public <T> T deleteWithCte(%s %s, String cte, ResultSetHandler<T> rsh, Object... cteArgs) {
+				return transactionManager.executeWithResult(() -> delegate.deleteWithCte(%s, cte, rsh, cteArgs));
+			}
+
+			@Override
+			public int[] deleteAll(Collection<%s> all) {
+				return transactionManager.executeWithResult(() -> delegate.deleteAll(all));
+			}
+
+			@Override
+			public %s doInTransaction() {
+				return this;
+			}
+""",
+          ac.name(),
+          ac.name(),
+          ac.name(),
+          ac.name(),
+          ac.name(),
+          varName,
+          varName,
+          ac.name(),
+          varName,
+          varName,
+          ac.name(),
+          ac.name(),
+          ac.name(),
+          ac.name(),
+          ac.name(),
+          varName,
+          varName,
+          ac.name(),
+          varName,
+          varName,
+          ac.name(),
+          interfaceName);
+
+      out.println("\t\t};");
+      out.println("\t}");
+
+      out.println();
+
       // end of class
       out.println("}");
     }
@@ -1165,10 +1423,12 @@ public class TableGenerator extends ProcessorBase {
     <T> T deleteWithCte(%s %s, String cte, ResultSetHandler<T> rsh, Object... cteArgs);
 
     int[] deleteAll(Collection<%s> all);
+
+    %s doInTransaction();
 """,
           ac.name(), ac.name(), ac.name(), ac.name(), ac.name(), ac.name(), ac.name(), varName,
           ac.name(), varName, ac.name(), ac.name(), ac.name(), ac.name(), ac.name(), varName,
-          ac.name(), varName, ac.name());
+          ac.name(), varName, ac.name(), interfaceName);
       out.println("}");
     }
 
