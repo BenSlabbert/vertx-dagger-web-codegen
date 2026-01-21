@@ -1,8 +1,6 @@
 /* Licensed under Apache-2.0 2024. */
 package github.benslabbert.vdw.codegen.example;
 
-import github.benslabbert.vdw.codegen.example.jdbc.Person;
-import github.benslabbert.vdw.codegen.example.jdbc.PersonBuilder;
 import github.benslabbert.vdw.codegen.launcher.CustomApplicationHooks;
 import io.vertx.launcher.application.VertxApplication;
 import org.slf4j.Logger;
@@ -16,12 +14,6 @@ public class Main extends VertxApplication {
     log.info("Starting");
     int code = new Main(args).launch();
     log.info("launch successful ? {}", 0 == code);
-
-    Person person =
-        PersonBuilder.builder().id(1L).name("name").lastName("lname").age(1).gender("M").build();
-    log.info("person {}", person);
-    Person newPerson = PersonBuilder.toBuilder(person).build();
-    log.info("newPerson {}", newPerson);
   }
 
   private Main(String[] args) {
