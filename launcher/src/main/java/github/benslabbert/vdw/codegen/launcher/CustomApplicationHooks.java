@@ -3,13 +3,9 @@ package github.benslabbert.vdw.codegen.launcher;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
-import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.vertx.core.ThreadingModel;
 import io.vertx.core.VertxException;
+import io.vertx.core.eventbus.EventBusOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.launcher.application.HookContext;
 import io.vertx.launcher.application.VertxApplicationHooks;
@@ -42,13 +38,7 @@ public class CustomApplicationHooks implements VertxApplicationHooks {
 
   @Override
   public void beforeStartingVertx(HookContext context) {
-    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
-    OpenTelemetry openTelemetry =
-        OpenTelemetrySdk.builder()
-            .setTracerProvider(sdkTracerProvider)
-            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-            .buildAndRegisterGlobal();
-    OpenTelemetryOptions tracingOptions = new OpenTelemetryOptions(openTelemetry);
+    OpenTelemetryOptions tracingOptions = new OpenTelemetryOptions();
 
     MicrometerMetricsOptions metricsOptions =
         new MicrometerMetricsOptions()
@@ -62,6 +52,9 @@ public class CustomApplicationHooks implements VertxApplicationHooks {
     MeterRegistry registry = new SimpleMeterRegistry();
     BackendRegistries.setupBackend(metricsOptions, registry);
 
+    EventBusOptions eventBusOptions =
+        new EventBusOptions().setTcpKeepAlive(true).setLogActivity(true);
+
     context
         .vertxOptions()
         .setWorkerPoolSize(1)
@@ -69,6 +62,7 @@ public class CustomApplicationHooks implements VertxApplicationHooks {
         .setInternalBlockingPoolSize(1)
         .setTracingOptions(tracingOptions)
         .setMetricsOptions(metricsOptions)
+        .setEventBusOptions(eventBusOptions)
         .setPreferNativeTransport(true);
   }
 
