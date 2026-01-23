@@ -36,8 +36,7 @@ public final class ResponseWriterUtil {
     ctx.response()
         .setStatusCode(statusCode)
         .putHeader(HttpHeaders.CONTENT_TYPE, HttpHeaderValues.TEXT_PLAIN)
-        .putHeader(HttpHeaders.CONTENT_LENGTH, Integer.toString(msg.length()))
-        .end(msg + "\n");
+        .end(Buffer.buffer(msg + "\n"));
   }
 
   public static void sendJson(RoutingContext ctx, int statusCode, JsonObject json) {
