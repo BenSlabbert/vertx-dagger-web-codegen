@@ -6,8 +6,10 @@ import github.benslabbert.vdw.codegen.annotation.advice.BeforeAdvice;
 import github.benslabbert.vdw.codegen.generator.GenerationException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
+import java.util.zip.CRC32;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
@@ -36,7 +38,8 @@ public class AdviceResourceGenerator extends AbstractProcessor {
     return Set.of(BeforeAdvice.class.getCanonicalName(), AroundAdvice.class.getCanonicalName());
   }
 
-  private record Advice(String adviceAnnotation, String adviceImplementation, String type) {}
+  private record Advice(
+      String adviceAnnotation, String adviceImplementation, String type, int id, long crc32) {}
 
   @Override
   public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
@@ -68,7 +71,10 @@ public class AdviceResourceGenerator extends AbstractProcessor {
 
       try (var w = new PrintWriter(adviceResource.openWriter())) {
         advices.forEach(
-            a -> w.println(a.adviceAnnotation + "," + a.adviceImplementation + "," + a.type));
+            a ->
+                w.printf(
+                    "%s,%s,%s,%d,%d%n",
+                    a.adviceAnnotation, a.adviceImplementation, a.type, a.id, a.crc32));
       }
     } catch (IOException e) {
       throw new GenerationException(e);
@@ -85,17 +91,27 @@ public class AdviceResourceGenerator extends AbstractProcessor {
 
     String type;
     ThrowsMirroredTypeException t;
+    int id;
     if (null != beforeAdvice) {
       t = beforeAdvice::value;
       type = "before";
+      id = beforeAdvice.id();
     } else {
       t = aroundAdvice::value;
       type = "around";
+      id = aroundAdvice.id();
     }
 
     String adviceImplementation = getReturnType(t);
     String adviceAnnotation = e.asType().toString();
-    return new Advice(adviceAnnotation, adviceImplementation, type);
+    long crc32 = stringToLongCrc32(adviceAnnotation);
+    return new Advice(adviceAnnotation, adviceImplementation, type, id, crc32);
+  }
+
+  public static long stringToLongCrc32(String input) {
+    CRC32 crc32 = new CRC32();
+    crc32.update(input.getBytes(StandardCharsets.UTF_8));
+    return crc32.getValue();
   }
 
   private String getReturnType(ThrowsMirroredTypeException callable) {
