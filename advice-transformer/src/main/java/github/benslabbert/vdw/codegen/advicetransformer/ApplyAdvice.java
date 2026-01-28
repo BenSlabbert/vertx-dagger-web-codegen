@@ -19,28 +19,28 @@ public final class ApplyAdvice {
   public static void onEnter(
       @Origin("#t") String className,
       @Origin("#m") String methodName,
-      @AdviceName String adviceNames,
+      @AdviceMask long mask,
       @AllArguments Object[] args) {
-    AdviceExecutor.before(adviceNames, className, methodName, args);
+    AdviceExecutor.before(mask, className, methodName, args);
   }
 
   @OnMethodExit(onThrowable = Throwable.class)
   public static void exit(
       @Origin("#t") String className,
       @Origin("#m") String methodName,
-      @AdviceName String adviceNames,
+      @AdviceMask long mask,
       @Return(typing = DYNAMIC) Object returnValue,
       @Thrown(readOnly = false) Throwable thrown) {
     if (null != thrown) {
       // if throwable is not null, it will be thrown later
-      thrown = AdviceExecutor.exceptionally(adviceNames, className, methodName, thrown);
+      thrown = AdviceExecutor.exceptionally(mask, className, methodName, thrown);
       return;
     }
 
     if (null == returnValue) {
-      AdviceExecutor.after(adviceNames, className, methodName);
+      AdviceExecutor.after(mask, className, methodName);
     } else {
-      AdviceExecutor.after(adviceNames, className, methodName, returnValue);
+      AdviceExecutor.after(mask, className, methodName, returnValue);
     }
   }
 }
