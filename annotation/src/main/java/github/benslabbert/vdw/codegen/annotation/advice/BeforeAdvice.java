@@ -26,6 +26,8 @@ public @interface BeforeAdvice {
 
   Class<? extends BeforeAdviceInvocation> value();
 
+  int id();
+
   interface BeforeAdviceInvocation {
 
     void before(String className, String methodName, Object... args);

@@ -25,6 +25,8 @@ public @interface AroundAdvice {
 
   Class<? extends AroundAdviceInvocation> value();
 
+  int id();
+
   interface AroundAdviceInvocation extends BeforeAdvice.BeforeAdviceInvocation {
 
     void after(String className, String methodName, Object returnValue);

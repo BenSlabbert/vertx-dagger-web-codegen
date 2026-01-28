@@ -15,4 +15,9 @@ public class CustomAdviceImpl implements BeforeAdvice.BeforeAdviceInvocation {
   public void before(String className, String methodName, Object... args) {
     log.info("CustomAdviceImpl.before({}, {}, {})", className, methodName, args);
   }
+
+    @Override
+    public int priority() {
+        return 900;
+    }
 }
