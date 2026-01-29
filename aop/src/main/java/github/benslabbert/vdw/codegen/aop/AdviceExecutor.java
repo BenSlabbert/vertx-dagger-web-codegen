@@ -4,20 +4,21 @@ package github.benslabbert.vdw.codegen.aop;
 import github.benslabbert.vdw.codegen.annotation.advice.AroundAdvice.AroundAdviceInvocation;
 import github.benslabbert.vdw.codegen.annotation.advice.BeforeAdvice.BeforeAdviceInvocation;
 import jakarta.inject.Provider;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
+import java.util.zip.CRC32;
 
 public final class AdviceExecutor {
 
   private AdviceExecutor() {}
 
-  private static final Map<String, List<Provider<? extends BeforeAdviceInvocation>>> MAP =
+  private static final Map<Long, List<Provider<? extends BeforeAdviceInvocation>>> MAP =
       new ConcurrentHashMap<>();
 
   private static final Comparator<BeforeAdviceInvocation> COMPARATOR =
@@ -29,9 +30,12 @@ public final class AdviceExecutor {
 
   public static <T extends BeforeAdviceInvocation> void addAdvice(
       String adviceName, Provider<T> provider) {
+    CRC32 crc32 = new CRC32();
+    crc32.update(adviceName.getBytes(StandardCharsets.UTF_8));
+    long value = crc32.getValue();
     MAP.compute(
-        adviceName,
-        (key, oldValue) -> {
+        value,
+        (_, oldValue) -> {
           if (oldValue == null) {
             List<Provider<? extends BeforeAdviceInvocation>> providers = new ArrayList<>(2);
             providers.add(provider);
@@ -42,31 +46,31 @@ public final class AdviceExecutor {
         });
   }
 
-  public static void before(String advices, String clazz, String method, Object... args) {
-    for (var bi : getAdvicesHighestPriority(advices)) {
+  public static void before(long mask, String clazz, String method, Object... args) {
+    for (var bi : getAdvicesHighestPriority(mask)) {
       bi.before(clazz, method, args);
     }
   }
 
-  public static void after(String advices, String clazz, String method, Object returnValue) {
-    for (var bi : getAdvicesLowestPriority(advices)) {
+  public static void after(long mask, String clazz, String method, Object returnValue) {
+    for (var bi : getAdvicesLowestPriority(mask)) {
       if (bi instanceof AroundAdviceInvocation ai) {
         ai.after(clazz, method, returnValue);
       }
     }
   }
 
-  public static void after(String advices, String clazz, String method) {
-    for (var bi : getAdvicesLowestPriority(advices)) {
+  public static void after(long mask, String clazz, String method) {
+    for (var bi : getAdvicesLowestPriority(mask)) {
       if (bi instanceof AroundAdviceInvocation ai) {
         ai.after(clazz, method);
       }
     }
   }
 
-  public static Throwable exceptionally(String advices, String clazz, String method, Throwable t) {
+  public static Throwable exceptionally(long mask, String clazz, String method, Throwable t) {
     try {
-      for (var bi : getAdvicesLowestPriority(advices)) {
+      for (var bi : getAdvicesLowestPriority(mask)) {
         if (bi instanceof AroundAdviceInvocation ai) {
           t = ai.exceptionally(clazz, method, t);
         }
@@ -78,19 +82,25 @@ public final class AdviceExecutor {
     }
   }
 
-  private static Iterable<BeforeAdviceInvocation> getAdvicesHighestPriority(String advices) {
-    return getAdvices(advices, COMPARATOR.reversed());
+  private static Iterable<BeforeAdviceInvocation> getAdvicesHighestPriority(long mask) {
+    return getAdvices(mask, COMPARATOR.reversed());
   }
 
-  private static Iterable<BeforeAdviceInvocation> getAdvicesLowestPriority(String advices) {
-    return getAdvices(advices, COMPARATOR);
+  private static Iterable<BeforeAdviceInvocation> getAdvicesLowestPriority(long mask) {
+    return getAdvices(mask, COMPARATOR);
   }
 
   private static Iterable<BeforeAdviceInvocation> getAdvices(
-      String advices, Comparator<BeforeAdviceInvocation> comparator) {
+      long mask, Comparator<BeforeAdviceInvocation> comparator) {
+
     Stream<BeforeAdviceInvocation> stream =
-        Arrays.stream(advices.split(","))
-            .map(s -> MAP.getOrDefault(s, List.of()))
+        MAP.entrySet().stream()
+            .filter(
+                e -> {
+                  Long key = e.getKey();
+                  return (mask & key) == key;
+                })
+            .map(Map.Entry::getValue)
             .flatMap(Collection::stream)
             .map(Provider::get)
             .map(s -> (BeforeAdviceInvocation) s)

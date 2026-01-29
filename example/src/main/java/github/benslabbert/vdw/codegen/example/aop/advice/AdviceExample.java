@@ -15,10 +15,9 @@ public class AdviceExample {
 
   static {
     // this initialization should be in the applications mains Provider
-    AdviceExecutor.addAdvice("github.benslabbert.vdw.codegen.aop.LogEntry", LogEntryAdvice::new);
-    AdviceExecutor.addAdvice(
-        "github.benslabbert.vdw.codegen.example.aop.CustomAdvice", CustomAdviceImpl::new);
-    AdviceExecutor.addAdvice("github.benslabbert.vdw.codegen.aop.Observed", ObservedImpl::new);
+    AdviceExecutor.addAdvice(LogEntry.class.getCanonicalName(), LogEntryAdvice::new);
+    AdviceExecutor.addAdvice(CustomAdvice.class.getCanonicalName(), CustomAdviceImpl::new);
+    AdviceExecutor.addAdvice(Observed.class.getCanonicalName(), ObservedImpl::new);
   }
 
   public static void main(String[] args) {
@@ -27,7 +26,6 @@ public class AdviceExample {
     String param = service.doWork("param");
     CustomAdviceExample example = new CustomAdviceExample();
     example.example();
-
     service.throwsException();
   }
 

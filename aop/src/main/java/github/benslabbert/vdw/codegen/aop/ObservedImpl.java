@@ -12,12 +12,12 @@ public class ObservedImpl implements AroundAdvice.AroundAdviceInvocation {
 
   @Override
   public void before(String className, String methodName, Object... args) {
-    log.info("ObservedImpl.before {} {}", className, methodName);
+    log.info("ObservedImpl.before {} {} {}", className, methodName, args);
   }
 
   @Override
   public void after(String className, String methodName, Object returnValue) {
-    log.info("ObservedImpl.before {} {} {}", className, methodName, returnValue);
+    log.info("ObservedImpl.after {} {} {}", className, methodName, returnValue);
   }
 
   @Override
