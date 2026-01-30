@@ -1,6 +1,7 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.aop;
 
+import com.google.common.hash.Hashing;
 import github.benslabbert.vdw.codegen.annotation.advice.AroundAdvice.AroundAdviceInvocation;
 import github.benslabbert.vdw.codegen.annotation.advice.BeforeAdvice.BeforeAdviceInvocation;
 import jakarta.inject.Provider;
@@ -12,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
-import java.util.zip.CRC32;
 
 public final class AdviceExecutor {
 
@@ -30,9 +30,7 @@ public final class AdviceExecutor {
 
   public static <T extends BeforeAdviceInvocation> void addAdvice(
       String adviceName, Provider<T> provider) {
-    CRC32 crc32 = new CRC32();
-    crc32.update(adviceName.getBytes(StandardCharsets.UTF_8));
-    long value = crc32.getValue();
+    long value = Hashing.murmur3_128(0).hashString(adviceName, StandardCharsets.UTF_8).asLong();
     MAP.compute(
         value,
         (_, oldValue) -> {
