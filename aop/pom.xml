@@ -14,6 +14,10 @@
       <artifactId>dagger</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+    <dependency>
       <groupId>github.benslabbert.vdw.codegen</groupId>
       <artifactId>annotation</artifactId>
       <version>${revision}</version>
