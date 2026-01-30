@@ -1,6 +1,7 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.generator.advice;
 
+import com.google.common.hash.Hashing;
 import github.benslabbert.vdw.codegen.annotation.advice.AroundAdvice;
 import github.benslabbert.vdw.codegen.annotation.advice.BeforeAdvice;
 import github.benslabbert.vdw.codegen.generator.GenerationException;
@@ -9,7 +10,6 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
-import java.util.zip.CRC32;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
@@ -109,9 +109,7 @@ public class AdviceResourceGenerator extends AbstractProcessor {
   }
 
   public static long stringToLongCrc32(String input) {
-    CRC32 crc32 = new CRC32();
-    crc32.update(input.getBytes(StandardCharsets.UTF_8));
-    return crc32.getValue();
+    return Hashing.murmur3_128(0).hashString(input, StandardCharsets.UTF_8).asLong();
   }
 
   private String getReturnType(ThrowsMirroredTypeException callable) {

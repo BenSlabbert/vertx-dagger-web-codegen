@@ -16,8 +16,8 @@ public class LogEntryAdvice implements BeforeAdvice.BeforeAdviceInvocation {
     log.info("LogEntryAdvice.before({}, {}, {})", className, methodName, args);
   }
 
-    @Override
-    public int priority() {
-        return 300;
-    }
+  @Override
+  public int priority() {
+    return 300;
+  }
 }
