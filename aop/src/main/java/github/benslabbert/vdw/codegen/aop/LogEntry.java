@@ -11,5 +11,5 @@ import java.lang.annotation.Target;
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.CLASS)
-@BeforeAdvice(value = LogEntryAdvice.class, id = 200)
+@BeforeAdvice(LogEntryAdvice.class)
 public @interface LogEntry {}

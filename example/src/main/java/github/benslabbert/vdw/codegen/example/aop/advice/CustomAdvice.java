@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.CLASS)
-@BeforeAdvice(value = CustomAdviceImpl.class, id = 300)
+@BeforeAdvice(CustomAdviceImpl.class)
 @interface CustomAdvice {
 
   int priority() default 1;

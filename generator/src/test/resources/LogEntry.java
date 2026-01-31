@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.CLASS)
-@BeforeAdvice(value = LogEntry.Impl.class, id = 100)
+@BeforeAdvice(LogEntry.Impl.class)
 public @interface LogEntry {
 
   class Impl implements BeforeAdvice.BeforeAdviceInvocation {

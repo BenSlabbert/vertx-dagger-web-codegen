@@ -38,7 +38,7 @@ public class AdviceResourceGenerator extends AbstractProcessor {
   }
 
   private record Advice(
-      String adviceAnnotation, String adviceImplementation, String type, int id, long crc32) {}
+      String adviceAnnotation, String adviceImplementation, String type, long hash) {}
 
   @Override
   public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
@@ -72,8 +72,7 @@ public class AdviceResourceGenerator extends AbstractProcessor {
         advices.forEach(
             a ->
                 w.printf(
-                    "%s,%s,%s,%d,%d%n",
-                    a.adviceAnnotation, a.adviceImplementation, a.type, a.id, a.crc32));
+                    "%s,%s,%s,%d%n", a.adviceAnnotation, a.adviceImplementation, a.type, a.hash));
       }
     } catch (IOException e) {
       throw new GenerationException(e);
@@ -90,21 +89,18 @@ public class AdviceResourceGenerator extends AbstractProcessor {
 
     String type;
     ThrowsMirroredTypeException t;
-    int id;
     if (null != beforeAdvice) {
       t = beforeAdvice::value;
       type = "before";
-      id = beforeAdvice.id();
     } else {
       t = aroundAdvice::value;
       type = "around";
-      id = aroundAdvice.id();
     }
 
     String adviceImplementation = getReturnType(t);
     String adviceAnnotation = e.asType().toString();
     long hash = Murmur3.hash(adviceAnnotation);
-    return new Advice(adviceAnnotation, adviceImplementation, type, id, hash);
+    return new Advice(adviceAnnotation, adviceImplementation, type, hash);
   }
 
   private String getReturnType(ThrowsMirroredTypeException callable) {
