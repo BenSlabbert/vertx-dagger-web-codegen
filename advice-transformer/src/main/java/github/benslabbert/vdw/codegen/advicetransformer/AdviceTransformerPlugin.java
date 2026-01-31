@@ -145,8 +145,10 @@ public class AdviceTransformerPlugin implements Plugin {
           .map(
               s -> {
                 String[] split = s.split(",");
-                if (split.length != 4) {
-                  throw new IllegalArgumentException("advice_annotation entry must have 5 columns");
+                int reqLength = 4;
+                if (split.length != reqLength) {
+                  throw new IllegalArgumentException(
+                      "advice_annotation entry must have %d columns".formatted(reqLength));
                 }
                 return new AdvicePair(
                     split[0], split[1], AdvicePair.fromString(split[2]), Long.parseLong(split[3]));
