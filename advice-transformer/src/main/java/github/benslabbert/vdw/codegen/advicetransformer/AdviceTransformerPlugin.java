@@ -31,7 +31,7 @@ public class AdviceTransformerPlugin implements Plugin {
   private final Map<AdvicePair, Junction<AnnotationSource>> matchersMap;
   private final BuildLogger log;
 
-  private record AdvicePair(String annotation, String implementation, Type type) {
+  private record AdvicePair(String annotation, String implementation, Type type, long hash) {
 
     Junction<TypeDescription> matcher() {
       return named(annotation);
@@ -82,8 +82,11 @@ public class AdviceTransformerPlugin implements Plugin {
             .toList();
 
     for (MatchedShape ma : matchedAdvices) {
-      String advices =
-          ma.advices.stream().map(AdvicePair::annotation).collect(Collectors.joining(","));
+      long mask = 0;
+      for (AdvicePair advice : ma.advices) {
+        mask |= advice.hash;
+      }
+      log.info("transform advices: mask: " + mask);
 
       builder =
           builder
@@ -92,7 +95,7 @@ public class AdviceTransformerPlugin implements Plugin {
               .annotateMethod(AlreadyTransformedUtil.alreadyTransformed())
               .visit(
                   Advice.withCustomMapping()
-                      .bind(AdviceName.class, advices)
+                      .bind(AdviceMask.class, mask)
                       .to(ApplyAdvice.class)
                       .on(md -> md.equals(ma.shape)));
     }
@@ -142,10 +145,13 @@ public class AdviceTransformerPlugin implements Plugin {
           .map(
               s -> {
                 String[] split = s.split(",");
-                if (split.length != 3) {
-                  throw new IllegalArgumentException("advice_annotation entry must have 3 columns");
+                int reqLength = 4;
+                if (split.length != reqLength) {
+                  throw new IllegalArgumentException(
+                      "advice_annotation entry must have %d columns".formatted(reqLength));
                 }
-                return new AdvicePair(split[0], split[1], AdvicePair.fromString(split[2]));
+                return new AdvicePair(
+                    split[0], split[1], AdvicePair.fromString(split[2]), Long.parseLong(split[3]));
               })
           .collect(Collectors.toSet());
     } catch (IOException e) {

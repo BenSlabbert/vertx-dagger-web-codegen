@@ -3,6 +3,7 @@ package github.benslabbert.vdw.codegen.generator.advice;
 
 import github.benslabbert.vdw.codegen.annotation.advice.AroundAdvice;
 import github.benslabbert.vdw.codegen.annotation.advice.BeforeAdvice;
+import github.benslabbert.vdw.codegen.commons.hash.Murmur3;
 import github.benslabbert.vdw.codegen.generator.GenerationException;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -36,7 +37,8 @@ public class AdviceResourceGenerator extends AbstractProcessor {
     return Set.of(BeforeAdvice.class.getCanonicalName(), AroundAdvice.class.getCanonicalName());
   }
 
-  private record Advice(String adviceAnnotation, String adviceImplementation, String type) {}
+  private record Advice(
+      String adviceAnnotation, String adviceImplementation, String type, long hash) {}
 
   @Override
   public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
@@ -68,7 +70,9 @@ public class AdviceResourceGenerator extends AbstractProcessor {
 
       try (var w = new PrintWriter(adviceResource.openWriter())) {
         advices.forEach(
-            a -> w.println(a.adviceAnnotation + "," + a.adviceImplementation + "," + a.type));
+            a ->
+                w.printf(
+                    "%s,%s,%s,%d%n", a.adviceAnnotation, a.adviceImplementation, a.type, a.hash));
       }
     } catch (IOException e) {
       throw new GenerationException(e);
@@ -95,7 +99,8 @@ public class AdviceResourceGenerator extends AbstractProcessor {
 
     String adviceImplementation = getReturnType(t);
     String adviceAnnotation = e.asType().toString();
-    return new Advice(adviceAnnotation, adviceImplementation, type);
+    long hash = Murmur3.hash(adviceAnnotation);
+    return new Advice(adviceAnnotation, adviceImplementation, type, hash);
   }
 
   private String getReturnType(ThrowsMirroredTypeException callable) {

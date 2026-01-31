@@ -19,6 +19,11 @@
       <version>${revision}</version>
     </dependency>
     <dependency>
+      <groupId>github.benslabbert.vdw.codegen</groupId>
+      <artifactId>commons</artifactId>
+      <version>${revision}</version>
+    </dependency>
+    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
@@ -46,8 +51,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
           <release>${java.version}</release>
           <parameters>true</parameters>
           <compilerArgs>
