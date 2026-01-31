@@ -31,8 +31,7 @@ public class AdviceTransformerPlugin implements Plugin {
   private final Map<AdvicePair, Junction<AnnotationSource>> matchersMap;
   private final BuildLogger log;
 
-  private record AdvicePair(
-      String annotation, String implementation, Type type, int id, long crc32) {
+  private record AdvicePair(String annotation, String implementation, Type type, long hash) {
 
     Junction<TypeDescription> matcher() {
       return named(annotation);
@@ -85,7 +84,7 @@ public class AdviceTransformerPlugin implements Plugin {
     for (MatchedShape ma : matchedAdvices) {
       long mask = 0;
       for (AdvicePair advice : ma.advices) {
-        mask |= advice.crc32;
+        mask |= advice.hash;
       }
       log.info("transform advices: mask: " + mask);
 
@@ -146,15 +145,11 @@ public class AdviceTransformerPlugin implements Plugin {
           .map(
               s -> {
                 String[] split = s.split(",");
-                if (split.length != 5) {
+                if (split.length != 4) {
                   throw new IllegalArgumentException("advice_annotation entry must have 5 columns");
                 }
                 return new AdvicePair(
-                    split[0],
-                    split[1],
-                    AdvicePair.fromString(split[2]),
-                    Integer.parseInt(split[3]),
-                    Long.parseLong(split[4]));
+                    split[0], split[1], AdvicePair.fromString(split[2]), Long.parseLong(split[3]));
               })
           .collect(Collectors.toSet());
     } catch (IOException e) {
