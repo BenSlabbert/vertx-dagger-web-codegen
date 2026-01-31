@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.CLASS)
-@AroundAdvice(value = Observed.Impl.class, id = 1)
+@AroundAdvice(Observed.Impl.class)
 public @interface Observed {
 
   class Impl implements AroundAdvice.AroundAdviceInvocation {
