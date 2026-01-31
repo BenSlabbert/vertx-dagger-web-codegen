@@ -1,13 +1,12 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.generator.advice;
 
-import com.google.common.hash.Hashing;
 import github.benslabbert.vdw.codegen.annotation.advice.AroundAdvice;
 import github.benslabbert.vdw.codegen.annotation.advice.BeforeAdvice;
+import github.benslabbert.vdw.codegen.commons.hash.Murmur3;
 import github.benslabbert.vdw.codegen.generator.GenerationException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
@@ -104,12 +103,8 @@ public class AdviceResourceGenerator extends AbstractProcessor {
 
     String adviceImplementation = getReturnType(t);
     String adviceAnnotation = e.asType().toString();
-    long crc32 = stringToLongCrc32(adviceAnnotation);
-    return new Advice(adviceAnnotation, adviceImplementation, type, id, crc32);
-  }
-
-  public static long stringToLongCrc32(String input) {
-    return Hashing.murmur3_128(0).hashString(input, StandardCharsets.UTF_8).asLong();
+    long hash = Murmur3.hash(adviceAnnotation);
+    return new Advice(adviceAnnotation, adviceImplementation, type, id, hash);
   }
 
   private String getReturnType(ThrowsMirroredTypeException callable) {

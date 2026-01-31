@@ -1,11 +1,10 @@
 /* Licensed under Apache-2.0 2025. */
 package github.benslabbert.vdw.codegen.aop;
 
-import com.google.common.hash.Hashing;
 import github.benslabbert.vdw.codegen.annotation.advice.AroundAdvice.AroundAdviceInvocation;
 import github.benslabbert.vdw.codegen.annotation.advice.BeforeAdvice.BeforeAdviceInvocation;
+import github.benslabbert.vdw.codegen.commons.hash.Murmur3;
 import jakarta.inject.Provider;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -30,9 +29,8 @@ public final class AdviceExecutor {
 
   public static <T extends BeforeAdviceInvocation> void addAdvice(
       String adviceName, Provider<T> provider) {
-    long value = Hashing.murmur3_128(0).hashString(adviceName, StandardCharsets.UTF_8).asLong();
     MAP.compute(
-        value,
+        Murmur3.hash(adviceName),
         (_, oldValue) -> {
           if (oldValue == null) {
             List<Provider<? extends BeforeAdviceInvocation>> providers = new ArrayList<>(2);
