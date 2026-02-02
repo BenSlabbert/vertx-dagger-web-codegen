@@ -33,16 +33,16 @@ class PropertyBuilder {
 
   static List<Property> getProperties(Element e) {
     List<Property> properties = new ArrayList<>();
-    
+
     if (!(e instanceof TypeElement)) {
       throw new GenerationException(
           "Expected TypeElement for property extraction, but received: "
               + e.getClass().getSimpleName());
     }
-    
+
     TypeElement typeElement = (TypeElement) e;
     ElementKind elementKind = typeElement.getKind();
-    
+
     if (elementKind == ElementKind.RECORD) {
       // For records, extract fields
       // RecordComponentElement does not work here as the annotations do not have
