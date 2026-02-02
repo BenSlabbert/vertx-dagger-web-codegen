@@ -94,8 +94,11 @@ public class JsonWriterProcessor extends AbstractProcessor {
   }
 
   private void generate(Element e) throws IOException {
-    if (ElementKind.RECORD != e.getKind()) {
-      processingEnv.getMessager().printError("can only generate JsonWriters on record types", e);
+    ElementKind elementKind = e.getKind();
+    if (ElementKind.RECORD != elementKind && ElementKind.INTERFACE != elementKind) {
+      processingEnv
+          .getMessager()
+          .printError("can only generate JsonWriters on record or interface types", e);
       return;
     }
 
