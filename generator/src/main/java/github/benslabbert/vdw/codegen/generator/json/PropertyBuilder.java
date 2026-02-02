@@ -35,7 +35,9 @@ class PropertyBuilder {
     List<Property> properties = new ArrayList<>();
     
     if (!(e instanceof TypeElement)) {
-      throw new GenerationException("Element must be a TypeElement");
+      throw new GenerationException(
+          "Expected TypeElement for property extraction, but received: "
+              + e.getClass().getSimpleName());
     }
     
     TypeElement typeElement = (TypeElement) e;
