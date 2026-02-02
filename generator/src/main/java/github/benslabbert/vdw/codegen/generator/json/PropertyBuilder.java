@@ -34,6 +34,10 @@ class PropertyBuilder {
   static List<Property> getProperties(Element e) {
     List<Property> properties = new ArrayList<>();
     
+    if (!(e instanceof TypeElement)) {
+      throw new GenerationException("Element must be a TypeElement");
+    }
+    
     TypeElement typeElement = (TypeElement) e;
     ElementKind elementKind = typeElement.getKind();
     
