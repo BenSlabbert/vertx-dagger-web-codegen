@@ -18,8 +18,10 @@ public interface InterfaceExample {
 class InterfaceExampleBuilder {
 
   public static Builder builder() {
-    // TODO: This is a test placeholder. In real usage, return a proper builder implementation.
-    throw new UnsupportedOperationException("Builder not implemented for test");
+    // Note: This is a test resource file used only for compilation testing.
+    // The annotation processor only reads the interface structure, not the builder implementation.
+    // In production code, a proper builder would be provided.
+    throw new UnsupportedOperationException("Test builder placeholder");
   }
 
   public interface Builder {
