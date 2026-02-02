@@ -45,9 +45,7 @@ class PropertyBuilder {
           e.getEnclosedElements().stream().filter(f -> f.getKind() == ElementKind.FIELD).toList();
 
       for (Element enclosedElement : recordComponents) {
-        VariableElement re = (VariableElement) enclosedElement;
-        Property property = extractPropertyFromField(re);
-        properties.add(property);
+        properties.add(extractPropertyFromField((VariableElement) enclosedElement));
       }
     } else if (elementKind == ElementKind.INTERFACE) {
       // For interfaces, extract methods
@@ -59,11 +57,9 @@ class PropertyBuilder {
       for (Element enclosedElement : methods) {
         ExecutableElement method = (ExecutableElement) enclosedElement;
         // Only process methods with no parameters (getters)
-        if (!method.getParameters().isEmpty()) {
-          continue;
+        if (method.getParameters().isEmpty()) {
+          properties.add(extractPropertyFromMethod(method));
         }
-        Property property = extractPropertyFromMethod(method);
-        properties.add(property);
       }
     }
 
@@ -83,13 +79,10 @@ class PropertyBuilder {
 
     // if type is declared and java.lang.String it is ok
     if (TypeKind.DECLARED == kind) {
-      Property property = fromPreparedType(type, re, varName, kind, min, max, size);
-      return property;
+      return fromPreparedType(type, re, varName, kind, min, max, size);
     } else if (kind.isPrimitive()) {
-      Property property =
-          new Property(
-              varName.toString(), false, false, null, kind, false, min, max, size, List.of());
-      return property;
+      return new Property(
+          varName.toString(), false, false, null, kind, false, min, max, size, List.of());
     } else {
       String msg = String.format("unsupported kind: %s", kind);
       throw new GenerationException(msg);
@@ -109,13 +102,10 @@ class PropertyBuilder {
 
     // if type is declared and java.lang.String it is ok
     if (TypeKind.DECLARED == kind) {
-      Property property = fromPreparedType(type, method, methodName, kind, min, max, size);
-      return property;
+      return fromPreparedType(type, method, methodName, kind, min, max, size);
     } else if (kind.isPrimitive()) {
-      Property property =
-          new Property(
-              methodName.toString(), false, false, null, kind, false, min, max, size, List.of());
-      return property;
+      return new Property(
+          methodName.toString(), false, false, null, kind, false, min, max, size, List.of());
     } else {
       String msg = String.format("unsupported kind: %s", kind);
       throw new GenerationException(msg);
