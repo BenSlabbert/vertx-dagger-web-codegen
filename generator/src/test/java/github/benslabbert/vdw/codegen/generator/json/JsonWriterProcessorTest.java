@@ -15,7 +15,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 class JsonWriterProcessorTest {
 
   static Stream<String> source() {
-    return Stream.of("Example.java", "Primitive.java");
+    return Stream.of("Example.java", "Primitive.java", "InterfaceExample.java");
   }
 
   @ParameterizedTest

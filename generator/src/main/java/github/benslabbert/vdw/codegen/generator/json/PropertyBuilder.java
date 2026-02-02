@@ -13,7 +13,9 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -31,52 +33,99 @@ class PropertyBuilder {
 
   static List<Property> getProperties(Element e) {
     List<Property> properties = new ArrayList<>();
+    
+    TypeElement typeElement = (TypeElement) e;
+    ElementKind elementKind = typeElement.getKind();
+    
+    if (elementKind == ElementKind.RECORD) {
+      // For records, extract fields
+      // RecordComponentElement does not work here as the annotations do not have
+      // @Target(ElementType.RECORD_COMPONENT) as their target
+      List<? extends Element> recordComponents =
+          e.getEnclosedElements().stream().filter(f -> f.getKind() == ElementKind.FIELD).toList();
 
-    // RecordComponentElement does not work here as the annotations do not have
-    // @Target(ElementType.RECORD_COMPONENT) as their target
-    List<? extends Element> recordComponents =
-        e.getEnclosedElements().stream().filter(f -> f.getKind() == ElementKind.FIELD).toList();
-
-    for (Element enclosedElement : recordComponents) {
-      VariableElement re = (VariableElement) enclosedElement;
-      // name of the variable
-      Name varName = re.getSimpleName();
-      // type of the variable
-      TypeMirror type = re.asType();
-      // TypeKind.DECLARED -> this is an object
-      TypeKind kind = type.getKind();
-      Min min = re.getAnnotation(Min.class);
-      Max max = re.getAnnotation(Max.class);
-      Size size = re.getAnnotation(Size.class);
-
-      // if type is declared and java.lang.String it is ok
-      if (TypeKind.DECLARED == kind) {
-        Property property = fromPreparedType(type, re, varName, kind, min, max, size);
+      for (Element enclosedElement : recordComponents) {
+        VariableElement re = (VariableElement) enclosedElement;
+        Property property = extractPropertyFromField(re);
         properties.add(property);
-      } else if (kind.isPrimitive()) {
-        Property property =
-            new Property(
-                varName.toString(), false, false, null, kind, false, min, max, size, List.of());
+      }
+    } else if (elementKind == ElementKind.INTERFACE) {
+      // For interfaces, extract methods
+      List<? extends Element> methods =
+          e.getEnclosedElements().stream()
+              .filter(f -> f.getKind() == ElementKind.METHOD)
+              .toList();
+
+      for (Element enclosedElement : methods) {
+        ExecutableElement method = (ExecutableElement) enclosedElement;
+        // Only process methods with no parameters (getters)
+        if (!method.getParameters().isEmpty()) {
+          continue;
+        }
+        Property property = extractPropertyFromMethod(method);
         properties.add(property);
-      } else {
-        String msg = String.format("unsupported kind: %s", kind);
-        throw new GenerationException(msg);
       }
     }
 
     return properties;
   }
 
+  private static Property extractPropertyFromField(VariableElement re) {
+    // name of the variable
+    Name varName = re.getSimpleName();
+    // type of the variable
+    TypeMirror type = re.asType();
+    // TypeKind.DECLARED -> this is an object
+    TypeKind kind = type.getKind();
+    Min min = re.getAnnotation(Min.class);
+    Max max = re.getAnnotation(Max.class);
+    Size size = re.getAnnotation(Size.class);
+
+    // if type is declared and java.lang.String it is ok
+    if (TypeKind.DECLARED == kind) {
+      Property property = fromPreparedType(type, re, varName, kind, min, max, size);
+      return property;
+    } else if (kind.isPrimitive()) {
+      Property property =
+          new Property(
+              varName.toString(), false, false, null, kind, false, min, max, size, List.of());
+      return property;
+    } else {
+      String msg = String.format("unsupported kind: %s", kind);
+      throw new GenerationException(msg);
+    }
+  }
+
+  private static Property extractPropertyFromMethod(ExecutableElement method) {
+    // name of the method (e.g., "name" from "name()")
+    Name methodName = method.getSimpleName();
+    // return type of the method
+    TypeMirror type = method.getReturnType();
+    // TypeKind.DECLARED -> this is an object
+    TypeKind kind = type.getKind();
+    Min min = method.getAnnotation(Min.class);
+    Max max = method.getAnnotation(Max.class);
+    Size size = method.getAnnotation(Size.class);
+
+    // if type is declared and java.lang.String it is ok
+    if (TypeKind.DECLARED == kind) {
+      Property property = fromPreparedType(type, method, methodName, kind, min, max, size);
+      return property;
+    } else if (kind.isPrimitive()) {
+      Property property =
+          new Property(
+              methodName.toString(), false, false, null, kind, false, min, max, size, List.of());
+      return property;
+    } else {
+      String msg = String.format("unsupported kind: %s", kind);
+      throw new GenerationException(msg);
+    }
+  }
+
   private static Property fromPreparedType(
-      TypeMirror type,
-      VariableElement re,
-      Name varName,
-      TypeKind kind,
-      Min min,
-      Max max,
-      Size size) {
-    boolean nullable = null != re.getAnnotation(Nullable.class);
-    boolean notBlank = null != re.getAnnotation(NotBlank.class);
+      TypeMirror type, Element element, Name varName, TypeKind kind, Min min, Max max, Size size) {
+    boolean nullable = null != element.getAnnotation(Nullable.class);
+    boolean notBlank = null != element.getAnnotation(NotBlank.class);
 
     List<GenericParameterAnnotation> genericParameterAnnotations =
         getGenericParameterAnnotations((DeclaredType) type);
