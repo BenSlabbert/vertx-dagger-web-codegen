@@ -36,8 +36,10 @@ class PropertyBuilder {
 
     if (!(e instanceof TypeElement)) {
       throw new GenerationException(
-          "Expected TypeElement for property extraction, but received: "
-              + e.getClass().getSimpleName());
+          String.format(
+              "Expected TypeElement for property extraction, but received: %s (kind: %s, element:"
+                  + " %s)",
+              e.getClass().getSimpleName(), e.getKind(), e));
     }
 
     TypeElement typeElement = (TypeElement) e;
