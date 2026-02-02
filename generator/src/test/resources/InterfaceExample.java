@@ -18,7 +18,8 @@ public interface InterfaceExample {
 class InterfaceExampleBuilder {
 
   public static Builder builder() {
-    return null;
+    // TODO: This is a test placeholder. In real usage, return a proper builder implementation.
+    throw new UnsupportedOperationException("Builder not implemented for test");
   }
 
   public interface Builder {
