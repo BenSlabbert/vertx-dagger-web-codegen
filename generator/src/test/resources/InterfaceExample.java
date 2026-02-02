@@ -15,6 +15,8 @@ public interface InterfaceExample {
   boolean active();
 }
 
+// Package-private test builder class. This is intentionally not used at runtime.
+// The annotation processor only analyzes the interface structure for code generation.
 class InterfaceExampleBuilder {
 
   public static Builder builder() {
