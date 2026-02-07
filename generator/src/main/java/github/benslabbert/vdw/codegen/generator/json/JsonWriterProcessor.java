@@ -208,7 +208,10 @@ public class JsonWriterProcessor extends AbstractProcessor {
       out.println();
 
       ToJsonGenerator.toJson(out, properties, simpleClassName);
-      FromJsonGenerator.fromJson(out, properties, simpleClassName);
+      // Only generate fromJson for records, not for interfaces
+      if (elementKind == ElementKind.RECORD) {
+        FromJsonGenerator.fromJson(out, properties, simpleClassName);
+      }
       JsonSchemaGenerator.jsonSchema(out, properties);
 
       out.println("}");
