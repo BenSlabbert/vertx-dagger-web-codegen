@@ -43,9 +43,8 @@ public final class AdviceExecutor {
         (_, providers) -> {
           if (providers == null) {
             providers = new ArrayList<>(2);
-          } else {
-            providers.add(provider);
           }
+          providers.add(provider);
           log.debug("Added advice {} with number of providers {}", adviceName, providers.size());
           return providers;
         });
@@ -97,13 +96,13 @@ public final class AdviceExecutor {
     try {
       for (var bi : getAdvicesLowestPriority(mask)) {
         if (bi instanceof AroundAdviceInvocation ai) {
-        log.atDebug()
-            .setMessage("execute exceptionally advice {} on class: {}, method: {}, throwable {}")
-            .addArgument(bi)
-            .addArgument(clazz)
-            .addArgument(method)
-            .addArgument(t)
-            .log();
+          log.atDebug()
+              .setMessage("execute exceptionally advice {} on class: {}, method: {}, throwable {}")
+              .addArgument(bi)
+              .addArgument(clazz)
+              .addArgument(method)
+              .addArgument(t)
+              .log();
           var e = ai.exceptionally(clazz, method, t);
           if (null != e) {
             t.addSuppressed(e);
