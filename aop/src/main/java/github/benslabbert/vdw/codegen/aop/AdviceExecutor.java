@@ -12,8 +12,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class AdviceExecutor {
+
+  private static final Logger log = LoggerFactory.getLogger(AdviceExecutor.class);
 
   private AdviceExecutor() {}
 
@@ -24,26 +28,38 @@ public final class AdviceExecutor {
       Comparator.comparingInt(BeforeAdviceInvocation::priority);
 
   public static void clear() {
+    log.debug("Clearing AdviceExecutor");
     MAP.clear();
   }
 
   public static <T extends BeforeAdviceInvocation> void addAdvice(
       String adviceName, Provider<T> provider) {
+    long hash = Murmur3.hash(adviceName);
+
+    log.debug("Adding advice {} to AdviceExecutor with hash {}", adviceName, hash);
+
     MAP.compute(
-        Murmur3.hash(adviceName),
-        (_, oldValue) -> {
-          if (oldValue == null) {
-            List<Provider<? extends BeforeAdviceInvocation>> providers = new ArrayList<>(2);
+        hash,
+        (_, providers) -> {
+          if (providers == null) {
+            providers = new ArrayList<>(2);
+          } else {
             providers.add(provider);
-            return providers;
           }
-          oldValue.add(provider);
-          return oldValue;
+          log.debug("Added advice {} with number of providers {}", adviceName, providers.size());
+          return providers;
         });
   }
 
   public static void before(long mask, String clazz, String method, Object... args) {
     for (var bi : getAdvicesHighestPriority(mask)) {
+      log.atDebug()
+          .setMessage("execute before advice {} on class: {}, method: {}, args: {}")
+          .addArgument(bi)
+          .addArgument(clazz)
+          .addArgument(method)
+          .addArgument(args)
+          .log();
       bi.before(clazz, method, args);
     }
   }
@@ -51,6 +67,13 @@ public final class AdviceExecutor {
   public static void after(long mask, String clazz, String method, Object returnValue) {
     for (var bi : getAdvicesLowestPriority(mask)) {
       if (bi instanceof AroundAdviceInvocation ai) {
+        log.atDebug()
+            .setMessage("execute after advice {} on class: {}, method: {}, returnValue: {}")
+            .addArgument(bi)
+            .addArgument(clazz)
+            .addArgument(method)
+            .addArgument(returnValue)
+            .log();
         ai.after(clazz, method, returnValue);
       }
     }
@@ -59,6 +82,12 @@ public final class AdviceExecutor {
   public static void after(long mask, String clazz, String method) {
     for (var bi : getAdvicesLowestPriority(mask)) {
       if (bi instanceof AroundAdviceInvocation ai) {
+        log.atDebug()
+            .setMessage("execute after advice {} on class: {}, method: {}")
+            .addArgument(bi)
+            .addArgument(clazz)
+            .addArgument(method)
+            .log();
         ai.after(clazz, method);
       }
     }
@@ -68,7 +97,17 @@ public final class AdviceExecutor {
     try {
       for (var bi : getAdvicesLowestPriority(mask)) {
         if (bi instanceof AroundAdviceInvocation ai) {
-          t = ai.exceptionally(clazz, method, t);
+        log.atDebug()
+            .setMessage("execute exceptionally advice {} on class: {}, method: {}, throwable {}")
+            .addArgument(bi)
+            .addArgument(clazz)
+            .addArgument(method)
+            .addArgument(t)
+            .log();
+          var e = ai.exceptionally(clazz, method, t);
+          if (null != e) {
+            t.addSuppressed(e);
+          }
         }
       }
       return t;
