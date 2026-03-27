@@ -7,3 +7,7 @@ target/
 
 dependency-reduced-pom.xml
 file-uploads
+
+.gradle
+build
+.kotlin
