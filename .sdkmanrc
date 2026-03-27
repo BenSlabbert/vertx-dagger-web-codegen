@@ -1,4 +1,5 @@
-java=26.ea.13-graal
+# gradle only supports java 25
+java=25.0.2-graal
 maven=3.9.14
 mvnd=1.0.5
 gradle=9.4.1
