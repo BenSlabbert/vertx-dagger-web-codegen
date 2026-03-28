@@ -16,4 +16,9 @@ dependencies {
     annotationProcessor(libs.com.google.auto.value.auto.value.processor)
 }
 
+tasks.withType<JavaCompile>().configureEach {
+    options.compilerArgs.add("-parameters")
+    options.compilerArgs.add("-proc:full")
+}
+
 description = "config"
