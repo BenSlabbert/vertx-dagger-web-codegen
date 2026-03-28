@@ -4,6 +4,7 @@
 
 plugins {
     id("buildlogic.java-conventions")
+    id("net.bytebuddy.byte-buddy-gradle-plugin") version "1.18.7"
 }
 
 dependencies {
@@ -50,6 +51,17 @@ dependencies {
     annotationProcessor(libs.com.google.dagger.dagger.compiler)
 
 //    providedCompile(project(":advice-extractor-plugin"))
+    "byteBuddy"(project(":advice-transformer"))
+}
+
+byteBuddy {
+  // No explicit transformations – ByteBuddy discovers all plugins listed in
+  // META-INF/net.bytebuddy/build.plugins from the :advice-transformer jar on the
+  // byteBuddy configuration (Discovery.EMPTY fires when no transformation is registered):
+  //   - AdviceTransformerPlugin
+  //   - CacheTransformerPlugin
+  //   - RetryableTransformerPlugin
+  //   - TransactionalAdvicePlugin
 }
 
 tasks.withType<JavaCompile>().configureEach {
