@@ -68,4 +68,37 @@ tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-AdiagnosticKind=ERROR")
 }
 
+// -------------------------------------------------------------------------------------
+// Advice merging – equivalent to the Maven advice-extractor-plugin:merge-advices goal.
+//
+// The merged output is staged at build/tmp/mergeAdvices/META-INF/advice_annotations so that:
+//   - annotationProcessorAdviceFile (@InputFile) always holds the pure AP output and is never
+//     overwritten by this task → no input/output cycle.
+//   - any dependency change in any scope (including runtimeOnly) triggers a re-run because
+//     classpathJars is wired to the full runtimeClasspath (@Classpath).
+//
+// The jar task is configured to exclude the raw AP file and include the merged staging file.
+// -------------------------------------------------------------------------------------
+val mergeAdvices =
+    tasks.register<MergeAdvicesTask>("mergeAdvices") {
+      annotationProcessorAdviceFile.set(
+          tasks.named<JavaCompile>("compileJava").flatMap { javaCompile ->
+            javaCompile.destinationDirectory.file(adviceFileName.map { "META-INF/$it" })
+          })
+      mergedAdviceFile.set(
+          layout.buildDirectory.file(adviceFileName.map { "tmp/mergeAdvices/META-INF/$it" }))
+      // runtimeClasspath is a superset of compileClasspath, so advice annotations carried by
+      // compile-time deps are covered too. Any JAR change in any scope triggers a re-run.
+      classpathJars.from(configurations.runtimeClasspath)
+    }
+
+// mergeAdvices runs after compileJava (implicit task dependency via the annotationProcessorAdviceFile
+// provider) and must complete before the JAR is assembled.
+tasks.named<Jar>("jar") {
+  dependsOn(mergeAdvices)
+  // Replace the raw annotation-processor-generated file with the fully merged version.
+  exclude("META-INF/advice_annotations")
+  from(mergeAdvices.flatMap { it.mergedAdviceFile }) { into("META-INF") }
+}
+
 description = "example"
