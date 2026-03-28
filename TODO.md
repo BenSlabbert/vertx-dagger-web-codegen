@@ -1,6 +1,5 @@
 # Gradle Migration
 
-1. google test does not work, looks like an issue with JDK internal APIs
 2. annotation processing fails when loading resources
 ```java
 @Query(name = "adultsSqlFile", sqlFile = "file1.sql", fetchSize = 5, returnType = Iterable.class)
