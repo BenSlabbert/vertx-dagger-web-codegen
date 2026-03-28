@@ -25,4 +25,8 @@ dependencies {
     testRuntimeOnly(libs.org.junit.platform.junit.platform.launcher)
 }
 
+tasks.withType<JavaCompile>().configureEach {
+    options.compilerArgs.add("-proc:none")
+}
+
 description = "generator"
