@@ -45,10 +45,36 @@ dependencies {
     annotationProcessor(libs.com.google.auto.value.auto.value.processor)
     annotationProcessor(libs.org.hibernate.validator.hibernate.validator.annotation.processor)
     annotationProcessor(libs.org.mapstruct.mapstruct.processor)
-    annotationProcessor(libs.com.google.errorprone.error.prone.core)
+//    no official gradle support
+//    annotationProcessor(libs.com.google.errorprone.error.prone.core)
     annotationProcessor(libs.com.google.dagger.dagger.compiler)
 
 //    providedCompile(project(":advice-extractor-plugin"))
+}
+
+// Annotation processors use StandardLocation.CLASS_PATH to load SQL resource files at compile
+// time. In Maven, process-resources runs before compile so resources are already on the classpath.
+// In Gradle these are independent tasks, so we must explicitly depend on processResources and add
+// the resources output directory to the compile classpath.
+tasks.named<JavaCompile>("compileJava") {
+    dependsOn(tasks.named("processResources"))
+    classpath += files(sourceSets.main.get().output.resourcesDir)
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.compilerArgs.add("-parameters")
+    options.compilerArgs.add("-proc:full")
+    // dagger
+    options.compilerArgs.add("-Adagger.fastInit=enabled")
+    options.compilerArgs.add("-Adagger.formatGeneratedSource=enabled")
+    // errorprone
+//    options.compilerArgs.add("-XDcompilePolicy=simple")
+//    options.compilerArgs.add("--should-stop=ifError=FLOW")
+//    options.compilerArgs.add("-Xplugin:ErrorProne")
+    // hibernate
+    options.compilerArgs.add("-Averbose=true")
+    options.compilerArgs.add("-AmethodConstraintsSupported=true")
+    options.compilerArgs.add("-AdiagnosticKind=ERROR")
 }
 
 description = "example"

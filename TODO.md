@@ -1,9 +1,5 @@
 # Gradle Migration
 
-2. annotation processing fails when loading resources
-```java
-@Query(name = "adultsSqlFile", sqlFile = "file1.sql", fetchSize = 5, returnType = Iterable.class)
-```
 3. the maven plugin needs to be migrated to a gradle task
 4. we need to also migrate the `byte-buddy-maven-plugin` and `advice-transformer` to be gradle tasks
 5. we have duplicate junit platform test configurations
