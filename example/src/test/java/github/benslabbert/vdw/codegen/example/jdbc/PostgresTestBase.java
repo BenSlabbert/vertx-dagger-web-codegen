@@ -5,11 +5,12 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import github.benslabbert.vdw.codegen.commons.test.DockerContainers;
 import java.sql.SQLException;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
-/** Shared PostgreSQL container for all JDBC integration tests. */
 public abstract class PostgresTestBase {
 
   public static final PostgreSQLContainer POSTGRES = DockerContainers.POSTGRES;
@@ -20,22 +21,33 @@ public abstract class PostgresTestBase {
     POSTGRES.start();
   }
 
-  protected Provider provider;
+  private static HikariDataSource sharedDataSource;
+  protected static Provider provider;
 
-  @BeforeEach
-  void init() {
+  @BeforeAll
+  static void initAll() {
     HikariConfig hikariConfig = new HikariConfig();
     hikariConfig.setJdbcUrl(POSTGRES.getJdbcUrl());
     hikariConfig.setUsername("postgres");
     hikariConfig.setPassword("postgres");
     hikariConfig.setAutoCommit(false);
-    hikariConfig.setMaximumPoolSize(2); // Increased for optimistic locking concurrency tests
+    hikariConfig.setMaximumPoolSize(2);
     hikariConfig.setPoolName("jdbc");
     hikariConfig.setThreadFactory(Thread.ofVirtual().name("v-", 0L).factory());
 
-    provider = DaggerProvider.builder().dataSource(new HikariDataSource(hikariConfig)).build();
+    sharedDataSource = new HikariDataSource(hikariConfig);
+    provider = DaggerProvider.builder().dataSource(sharedDataSource).build();
     provider.init();
+  }
 
+  @AfterAll
+  static void tearDownAll() {
+    provider.close();
+    sharedDataSource.close();
+  }
+
+  @BeforeEach
+  void init() {
     try (var c = provider.dataSource().getConnection();
         var s =
             c.prepareStatement(
@@ -84,8 +96,6 @@ public abstract class PostgresTestBase {
       c.commit();
     } catch (SQLException e) {
       throw new RuntimeException(e);
-    } finally {
-      provider.close();
     }
   }
 }
