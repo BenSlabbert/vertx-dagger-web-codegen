@@ -45,8 +45,14 @@ tasks.withType<Test>() {
     )
 }
 
-tasks.withType<JavaCompile>() {
+// Annotation processors use StandardLocation.CLASS_PATH to load SQL resource files at compile
+// time. In Maven, process-resources runs before compile so resources are already on the classpath.
+// In Gradle these are independent tasks, so we must explicitly depend on processResources and add
+// the resources output directory to the compile classpath.
+tasks.named<JavaCompile>("compileJava") {
+    dependsOn(tasks.named("processResources"))
     options.encoding = "UTF-8"
+    classpath += files(sourceSets.main.get().output.resourcesDir)
 }
 
 tasks.withType<Javadoc>() {
