@@ -4,6 +4,7 @@
 
 plugins {
     id("buildlogic.java-conventions")
+    id("net.bytebuddy.byte-buddy-gradle-plugin") version "1.18.7"
 }
 
 dependencies {
@@ -11,12 +12,25 @@ dependencies {
     api(project(":annotation"))
     api(project(":logging"))
     api(project(":txmanager:platform"))
+    testImplementation(libs.org.mockito.mockito.core)
+    testImplementation(libs.org.mockito.mockito.junit.jupiter)
     testImplementation(libs.org.assertj.assertj.core)
     testImplementation(libs.org.junit.jupiter.junit.jupiter)
     testImplementation(libs.org.junit.jupiter.junit.jupiter.api)
     testImplementation(libs.org.junit.jupiter.junit.jupiter.engine)
-    testImplementation(libs.org.mockito.mockito.core)
-    testImplementation(libs.org.mockito.mockito.junit.jupiter)
+    testRuntimeOnly(libs.org.junit.platform.junit.platform.launcher)
+
+    "byteBuddy"(project(":advice-transformer"))
+}
+
+byteBuddy {
+  // No explicit transformations – ByteBuddy discovers all plugins listed in
+  // META-INF/net.bytebuddy/build.plugins from the :advice-transformer jar on the
+  // byteBuddy configuration (Discovery.EMPTY fires when no transformation is registered):
+  //   - AdviceTransformerPlugin
+  //   - CacheTransformerPlugin
+  //   - RetryableTransformerPlugin
+  //   - TransactionalAdvicePlugin
 }
 
 description = "plugin-example"
