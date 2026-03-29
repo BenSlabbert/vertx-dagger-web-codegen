@@ -944,12 +944,12 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .build())));
 
     // adultsSqlFile uses file1.sql which selects by id parameter
-//    Iterable<Person> result =
-//        provider
-//            .jdbcTransactionManager()
-//            .executeWithResult(() -> provider.personRepository().adultsSqlFile(3L));
-//
-//    assertThat(result).hasSize(1).first().extracting(Person::id).isEqualTo(3L);
+    Iterable<Person> result =
+        provider
+            .jdbcTransactionManager()
+            .executeWithResult(() -> provider.personRepository().adultsSqlFile(3L));
+
+    assertThat(result).hasSize(1).first().extracting(Person::id).isEqualTo(3L);
   }
 
   @Test
@@ -981,12 +981,12 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .build())));
 
     // byAgeGroupSqlFile uses file.sql which selects ALL
-//    List<Person> result =
-//        provider
-//            .jdbcTransactionManager()
-//            .executeWithResult(() -> provider.personRepository().byAgeGroupSqlFile());
-//
-//    assertThat(result).hasSize(2);
+    List<Person> result =
+        provider
+            .jdbcTransactionManager()
+            .executeWithResult(() -> provider.personRepository().byAgeGroupSqlFile());
+
+    assertThat(result).hasSize(2);
   }
 
   @Test
@@ -1017,14 +1017,14 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .address(addr2)
                                 .build())));
 
-//    provider
-//        .jdbcTransactionManager()
-//        .executeWithoutResult(
-//            () -> {
-//              try (Stream<Person> men = provider.personRepository().menSqlFile()) {
-//                assertThat(men).hasSize(2);
-//              }
-//            });
+    provider
+        .jdbcTransactionManager()
+        .executeWithoutResult(
+            () -> {
+              try (Stream<Person> men = provider.personRepository().menSqlFile()) {
+                assertThat(men).hasSize(2);
+              }
+            });
   }
 
   @Test
@@ -1056,12 +1056,12 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .build())));
 
     AtomicInteger count = new AtomicInteger();
-//    provider
-//        .jdbcTransactionManager()
-//        .executeWithoutResult(
-//            () -> provider.personRepository().womenSqlFile(_ -> count.incrementAndGet()));
-//
-//    assertThat(count.get()).isEqualTo(2);
+    provider
+        .jdbcTransactionManager()
+        .executeWithoutResult(
+            () -> provider.personRepository().womenSqlFile(_ -> count.incrementAndGet()));
+
+    assertThat(count.get()).isEqualTo(2);
   }
 
   @Test

@@ -7,16 +7,6 @@ name: "Java + Maven"
   pull_request:
     branches:
     - "main"
-  workflow_dispatch:
-    inputs:
-      java:
-        description: "Java version to build with (optional)"
-        required: false
-        default: "25"
-      distribution:
-        description: "JDK distribution to use (optional)"
-        required: false
-        default: "graalvm"
 jobs:
   build:
     runs-on: "ubuntu-latest"
@@ -57,19 +47,18 @@ jobs:
         maven-version: "3.9.14"
     - name: "Initialize CodeQL"
       uses: "github/codeql-action/init@v4"
-      if: "${{matrix.distribution == 'graalvm'}}"
       with:
         languages: "${{matrix.language}}"
     - run: "podman version"
     - run: "mvn -version"
     - run: "mvn -s settings.xml spotless:check -Djava.version=${{matrix.java-version}}"
     - run: "mvn -s settings.xml clean install -Djava.version=${{matrix.java-version}}"
+    - name: "gradle"
+      run: "./gradlew build --console=plain --no-daemon"
     - name: "Perform CodeQL Analysis"
       uses: "github/codeql-action/analyze@v4"
-      if: "${{matrix.distribution == 'graalvm'}}"
     - name: "Submit Dependency Snapshot"
       uses: "advanced-security/maven-dependency-submission-action@v5"
-      if: "${{matrix.distribution == 'graalvm'}}"
       with:
         token: "${{secrets.GH_TOKEN}}"
         maven-args: "-s settings.xml"
