@@ -3,55 +3,54 @@
  */
 
 plugins {
-    id("buildlogic.java-conventions")
-    id("net.bytebuddy.byte-buddy-gradle-plugin") version "1.18.7"
+  id("buildlogic.java-conventions")
+  id("net.bytebuddy.byte-buddy-gradle-plugin") version "1.18.7"
 }
 
 dependencies {
-    api(project(":advice-transformer"))
-    api(project(":txmanager:agent"))
-    api(project(":annotation"))
-    api(project(":aop"))
-    api(project(":commons"))
-    api(project(":launcher"))
-    api(project(":logging"))
-    api(libs.jakarta.annotation.jakarta.annotation.api)
-    api(libs.io.vertx.vertx.core)
-    api(libs.io.vertx.vertx.json.schema)
-    api(libs.io.vertx.vertx.launcher.application)
-    api(libs.io.vertx.vertx.service.proxy)
-    api(libs.io.vertx.vertx.web)
-    api(libs.org.glassfish.expressly.expressly)
-    api(libs.org.hibernate.validator.hibernate.validator)
-    api(libs.org.mapstruct.mapstruct)
-    runtimeOnly(libs.org.postgresql.postgresql)
-    testImplementation(project(":commons-test"))
-    testImplementation(libs.io.vertx.vertx.junit5)
-    testImplementation(libs.io.vertx.vertx.web.client)
-    testImplementation(libs.org.assertj.assertj.core)
-    testImplementation(libs.org.junit.jupiter.junit.jupiter)
-    testImplementation(libs.org.junit.jupiter.junit.jupiter.api)
-    testImplementation(libs.org.junit.jupiter.junit.jupiter.engine)
-    testImplementation(libs.org.mockito.mockito.core)
-    testImplementation(libs.org.testcontainers.testcontainers)
-    testImplementation(libs.org.testcontainers.testcontainers.junit.jupiter)
-    testImplementation(libs.org.junit.jupiter.junit.jupiter.api)
-    testImplementation(libs.org.junit.jupiter.junit.jupiter.engine)
-    testRuntimeOnly(libs.org.junit.platform.junit.platform.launcher)
-    testImplementation(libs.org.testcontainers.testcontainers.postgresql)
-    compileOnly(libs.com.google.auto.value.auto.value.annotations)
+  api(project(":advice-transformer"))
+  api(project(":txmanager:agent"))
+  api(project(":annotation"))
+  api(project(":aop"))
+  api(project(":commons"))
+  api(project(":launcher"))
+  api(project(":logging"))
+  api(libs.jakarta.annotation.jakarta.annotation.api)
+  api(libs.io.vertx.vertx.core)
+  api(libs.io.vertx.vertx.json.schema)
+  api(libs.io.vertx.vertx.launcher.application)
+  api(libs.io.vertx.vertx.service.proxy)
+  api(libs.io.vertx.vertx.web)
+  api(libs.org.glassfish.expressly.expressly)
+  api(libs.org.hibernate.validator.hibernate.validator)
+  api(libs.org.mapstruct.mapstruct)
+  runtimeOnly(libs.org.postgresql.postgresql)
+  testImplementation(project(":commons-test"))
+  testImplementation(libs.io.vertx.vertx.junit5)
+  testImplementation(libs.io.vertx.vertx.web.client)
+  testImplementation(libs.org.assertj.assertj.core)
+  testImplementation(libs.org.junit.jupiter.junit.jupiter)
+  testImplementation(libs.org.junit.jupiter.junit.jupiter.api)
+  testImplementation(libs.org.junit.jupiter.junit.jupiter.engine)
+  testImplementation(libs.org.mockito.mockito.core)
+  testImplementation(libs.org.testcontainers.testcontainers)
+  testImplementation(libs.org.testcontainers.testcontainers.junit.jupiter)
+  testImplementation(libs.org.junit.jupiter.junit.jupiter.api)
+  testImplementation(libs.org.junit.jupiter.junit.jupiter.engine)
+  testRuntimeOnly(libs.org.junit.platform.junit.platform.launcher)
+  testImplementation(libs.org.testcontainers.testcontainers.postgresql)
+  compileOnly(libs.com.google.auto.value.auto.value.annotations)
 
+  annotationProcessor(project(":generator"))
+  annotationProcessor(libs.com.google.auto.value.auto.value.processor)
+  annotationProcessor(libs.org.hibernate.validator.hibernate.validator.annotation.processor)
+  annotationProcessor(libs.org.mapstruct.mapstruct.processor)
+  //    no official gradle support
+  //    annotationProcessor(libs.com.google.errorprone.error.prone.core)
+  annotationProcessor(libs.com.google.dagger.dagger.compiler)
 
-    annotationProcessor(project(":generator"))
-    annotationProcessor(libs.com.google.auto.value.auto.value.processor)
-    annotationProcessor(libs.org.hibernate.validator.hibernate.validator.annotation.processor)
-    annotationProcessor(libs.org.mapstruct.mapstruct.processor)
-//    no official gradle support
-//    annotationProcessor(libs.com.google.errorprone.error.prone.core)
-    annotationProcessor(libs.com.google.dagger.dagger.compiler)
-
-//    providedCompile(project(":advice-extractor-plugin"))
-    "byteBuddy"(project(":advice-transformer"))
+  //    providedCompile(project(":advice-extractor-plugin"))
+  "byteBuddy"(project(":advice-transformer"))
 }
 
 byteBuddy {
@@ -65,19 +64,19 @@ byteBuddy {
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    options.compilerArgs.add("-parameters")
-    options.compilerArgs.add("-proc:full")
-    // dagger
-    options.compilerArgs.add("-Adagger.fastInit=enabled")
-    options.compilerArgs.add("-Adagger.formatGeneratedSource=enabled")
-    // errorprone
-//    options.compilerArgs.add("-XDcompilePolicy=simple")
-//    options.compilerArgs.add("--should-stop=ifError=FLOW")
-//    options.compilerArgs.add("-Xplugin:ErrorProne")
-    // hibernate
-    options.compilerArgs.add("-Averbose=true")
-    options.compilerArgs.add("-AmethodConstraintsSupported=true")
-    options.compilerArgs.add("-AdiagnosticKind=ERROR")
+  options.compilerArgs.add("-parameters")
+  options.compilerArgs.add("-proc:full")
+  // dagger
+  options.compilerArgs.add("-Adagger.fastInit=enabled")
+  options.compilerArgs.add("-Adagger.formatGeneratedSource=enabled")
+  // errorprone
+  //    options.compilerArgs.add("-XDcompilePolicy=simple")
+  //    options.compilerArgs.add("--should-stop=ifError=FLOW")
+  //    options.compilerArgs.add("-Xplugin:ErrorProne")
+  // hibernate
+  options.compilerArgs.add("-Averbose=true")
+  options.compilerArgs.add("-AmethodConstraintsSupported=true")
+  options.compilerArgs.add("-AdiagnosticKind=ERROR")
 }
 
 // -------------------------------------------------------------------------------------
@@ -92,19 +91,22 @@ tasks.withType<JavaCompile>().configureEach {
 // The jar task is configured to exclude the raw AP file and include the merged staging file.
 // -------------------------------------------------------------------------------------
 val mergeAdvices =
-    tasks.register<MergeAdvicesTask>("mergeAdvices") {
-      annotationProcessorAdviceFile.set(
-          tasks.named<JavaCompile>("compileJava").flatMap { javaCompile ->
-            javaCompile.destinationDirectory.file(adviceFileName.map { "META-INF/$it" })
-          })
-      mergedAdviceFile.set(
-          layout.buildDirectory.file(adviceFileName.map { "tmp/mergeAdvices/META-INF/$it" }))
-      // runtimeClasspath is a superset of compileClasspath, so advice annotations carried by
-      // compile-time deps are covered too. Any JAR change in any scope triggers a re-run.
-      classpathJars.from(configurations.runtimeClasspath)
-    }
+  tasks.register<MergeAdvicesTask>("mergeAdvices") {
+    annotationProcessorAdviceFile.set(
+      tasks.named<JavaCompile>("compileJava").flatMap { javaCompile ->
+        javaCompile.destinationDirectory.file(adviceFileName.map { "META-INF/$it" })
+      }
+    )
+    mergedAdviceFile.set(
+      layout.buildDirectory.file(adviceFileName.map { "tmp/mergeAdvices/META-INF/$it" })
+    )
+    // runtimeClasspath is a superset of compileClasspath, so advice annotations carried by
+    // compile-time deps are covered too. Any JAR change in any scope triggers a re-run.
+    classpathJars.from(configurations.runtimeClasspath)
+  }
 
-// mergeAdvices runs after compileJava (implicit task dependency via the annotationProcessorAdviceFile
+// mergeAdvices runs after compileJava (implicit task dependency via the
+// annotationProcessorAdviceFile
 // provider) and must complete before the JAR is assembled.
 tasks.named<Jar>("jar") {
   dependsOn(mergeAdvices)
