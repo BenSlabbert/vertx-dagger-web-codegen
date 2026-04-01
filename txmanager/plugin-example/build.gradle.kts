@@ -3,24 +3,24 @@
  */
 
 plugins {
-    id("buildlogic.java-conventions")
-    id("net.bytebuddy.byte-buddy-gradle-plugin") version "1.18.7"
+  id("buildlogic.java-conventions")
+  id("net.bytebuddy.byte-buddy-gradle-plugin") version "1.18.7"
 }
 
 dependencies {
-    api(project(":advice-transformer"))
-    api(project(":annotation"))
-    api(project(":logging"))
-    api(project(":txmanager:platform"))
-    testImplementation(libs.org.mockito.mockito.core)
-    testImplementation(libs.org.mockito.mockito.junit.jupiter)
-    testImplementation(libs.org.assertj.assertj.core)
-    testImplementation(libs.org.junit.jupiter.junit.jupiter)
-    testImplementation(libs.org.junit.jupiter.junit.jupiter.api)
-    testImplementation(libs.org.junit.jupiter.junit.jupiter.engine)
-    testRuntimeOnly(libs.org.junit.platform.junit.platform.launcher)
+  api(project(":advice-transformer"))
+  api(project(":annotation"))
+  api(project(":logging"))
+  api(project(":txmanager:platform"))
+  testImplementation(libs.org.mockito.mockito.core)
+  testImplementation(libs.org.mockito.mockito.junit.jupiter)
+  testImplementation(libs.org.assertj.assertj.core)
+  testImplementation(libs.org.junit.jupiter.junit.jupiter)
+  testImplementation(libs.org.junit.jupiter.junit.jupiter.api)
+  testImplementation(libs.org.junit.jupiter.junit.jupiter.engine)
+  testRuntimeOnly(libs.org.junit.platform.junit.platform.launcher)
 
-    "byteBuddy"(project(":advice-transformer"))
+  "byteBuddy"(project(":advice-transformer"))
 }
 
 byteBuddy {

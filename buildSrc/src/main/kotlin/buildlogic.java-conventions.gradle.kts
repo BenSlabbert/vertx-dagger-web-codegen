@@ -3,57 +3,51 @@
  */
 
 plugins {
-    `java-library`
-    `maven-publish`
+  `java-library`
+  `maven-publish`
 }
 
 repositories {
-    mavenLocal()
-    maven {
-        url = uri("https://repo.maven.apache.org/maven2/")
-    }
+  mavenLocal()
+  maven { url = uri("https://repo.maven.apache.org/maven2/") }
 
-    maven {
-        url = uri("https://maven.pkg.github.com/BenSlabbert/git-version-extension")
-    }
+  maven { url = uri("https://maven.pkg.github.com/BenSlabbert/git-version-extension") }
 }
 
 group = "github.benslabbert.vdw.codegen"
+
 version = findProperty("projectVersion") ?: "0.0.0-SNAPSHOT"
+
 java.sourceCompatibility = JavaVersion.VERSION_25
 
-java {
-    withSourcesJar()
-}
+java { withSourcesJar() }
 
 publishing {
-    publications.create<MavenPublication>("maven") {
-        from(components["java"])
-    }
+  publications.create<MavenPublication>("maven") { from(components["java"]) }
 
-    repositories {
-        maven {
-            name = "github"
-            url = uri("https://maven.pkg.github.com/BenSlabbert/vertx-dagger-web-codegen")
-            credentials {
-                username = "BenSlabbert"
-                password = System.getenv("GH_TOKEN")
-            }
-        }
+  repositories {
+    maven {
+      name = "github"
+      url = uri("https://maven.pkg.github.com/BenSlabbert/vertx-dagger-web-codegen")
+      credentials {
+        username = "BenSlabbert"
+        password = System.getenv("GH_TOKEN")
+      }
     }
+  }
 }
 
 tasks.withType<Test>() {
-    useJUnitPlatform()
-    jvmArgs(
-        "--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
-        "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-        "--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
-        "--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
-        "--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
-        "--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-        "--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
-    )
+  useJUnitPlatform()
+  jvmArgs(
+    "--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+    "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+    "--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+    "--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+    "--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+    "--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+    "--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+  )
 }
 
 // Annotation processors use StandardLocation.CLASS_PATH to load SQL resource files at compile
@@ -61,11 +55,9 @@ tasks.withType<Test>() {
 // In Gradle these are independent tasks, so we must explicitly depend on processResources and add
 // the resources output directory to the compile classpath.
 tasks.named<JavaCompile>("compileJava") {
-    dependsOn(tasks.named("processResources"))
-    options.encoding = "UTF-8"
-    classpath += files(sourceSets.main.get().output.resourcesDir)
+  dependsOn(tasks.named("processResources"))
+  options.encoding = "UTF-8"
+  classpath += files(sourceSets.main.get().output.resourcesDir)
 }
 
-tasks.withType<Javadoc>() {
-    options.encoding = "UTF-8"
-}
+tasks.withType<Javadoc>() { options.encoding = "UTF-8" }
