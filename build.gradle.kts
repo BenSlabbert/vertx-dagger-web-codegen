@@ -1,16 +1,12 @@
-plugins {
-    id("com.diffplug.spotless") version "8.4.0"
-}
+plugins { id("com.diffplug.spotless") version "8.4.0" }
 
-repositories {
-    mavenCentral()
-}
+repositories { mavenCentral() }
 
 spotless {
     java {
         target("**/src/main/**/*.java", "**/src/test/**/*.java")
         targetExclude("**/build/**")
-        googleJavaFormat("1.35.0").reflowLongStrings()
+        googleJavaFormat().reflowLongStrings()
         formatAnnotations()
         licenseHeader("/* Licensed under Apache-2.0 \$YEAR. */")
     }
@@ -31,6 +27,7 @@ spotless {
     kotlinGradle {
         target("**/*.gradle.kts")
         targetExclude("**/build/**")
-        ktlint("1.8.0")
+        ktfmt().googleStyle()
+        ktlint()
     }
 }

@@ -45,11 +45,11 @@ dependencies {
     annotationProcessor(libs.com.google.auto.value.auto.value.processor)
     annotationProcessor(libs.org.hibernate.validator.hibernate.validator.annotation.processor)
     annotationProcessor(libs.org.mapstruct.mapstruct.processor)
-//    no official gradle support
-//    annotationProcessor(libs.com.google.errorprone.error.prone.core)
+    //    no official gradle support
+    //    annotationProcessor(libs.com.google.errorprone.error.prone.core)
     annotationProcessor(libs.com.google.dagger.dagger.compiler)
 
-//    providedCompile(project(":advice-extractor-plugin"))
+    //    providedCompile(project(":advice-extractor-plugin"))
     "byteBuddy"(project(":advice-transformer"))
 }
 
@@ -70,9 +70,9 @@ tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-Adagger.fastInit=enabled")
     options.compilerArgs.add("-Adagger.formatGeneratedSource=enabled")
     // errorprone
-//    options.compilerArgs.add("-XDcompilePolicy=simple")
-//    options.compilerArgs.add("--should-stop=ifError=FLOW")
-//    options.compilerArgs.add("-Xplugin:ErrorProne")
+    //    options.compilerArgs.add("-XDcompilePolicy=simple")
+    //    options.compilerArgs.add("--should-stop=ifError=FLOW")
+    //    options.compilerArgs.add("-Xplugin:ErrorProne")
     // hibernate
     options.compilerArgs.add("-Averbose=true")
     options.compilerArgs.add("-AmethodConstraintsSupported=true")
@@ -97,13 +97,16 @@ val mergeAdvices =
                 javaCompile.destinationDirectory.file(adviceFileName.map { "META-INF/$it" })
             },
         )
-        mergedAdviceFile.set(layout.buildDirectory.file(adviceFileName.map { "tmp/mergeAdvices/META-INF/$it" }))
+        mergedAdviceFile.set(
+            layout.buildDirectory.file(adviceFileName.map { "tmp/mergeAdvices/META-INF/$it" }),
+        )
         // runtimeClasspath is a superset of compileClasspath, so advice annotations carried by
         // compile-time deps are covered too. Any JAR change in any scope triggers a re-run.
         classpathJars.from(configurations.runtimeClasspath)
     }
 
-// mergeAdvices runs after compileJava (implicit task dependency via the annotationProcessorAdviceFile
+// mergeAdvices runs after compileJava (implicit task dependency via the
+// annotationProcessorAdviceFile
 // provider) and must complete before the JAR is assembled.
 tasks.named<Jar>("jar") {
     dependsOn(mergeAdvices)
