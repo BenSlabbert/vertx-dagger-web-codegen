@@ -9,27 +9,21 @@ plugins {
 
 repositories {
     mavenLocal()
-    maven {
-        url = uri("https://repo.maven.apache.org/maven2/")
-    }
+    maven { url = uri("https://repo.maven.apache.org/maven2/") }
 
-    maven {
-        url = uri("https://maven.pkg.github.com/BenSlabbert/git-version-extension")
-    }
+    maven { url = uri("https://maven.pkg.github.com/BenSlabbert/git-version-extension") }
 }
 
 group = "github.benslabbert.vdw.codegen"
+
 version = findProperty("projectVersion") ?: "0.0.0-SNAPSHOT"
+
 java.sourceCompatibility = JavaVersion.VERSION_25
 
-java {
-    withSourcesJar()
-}
+java { withSourcesJar() }
 
 publishing {
-    publications.create<MavenPublication>("maven") {
-        from(components["java"])
-    }
+    publications.create<MavenPublication>("maven") { from(components["java"]) }
 
     repositories {
         maven {
@@ -46,6 +40,7 @@ publishing {
 tasks.withType<Test> {
     useJUnitPlatform()
     jvmArgs(
+        "--enable-native-access=ALL-UNNAMED",
         "--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
         "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
         "--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
@@ -71,6 +66,4 @@ tasks.named<JavaCompile>("compileJava") {
         )
 }
 
-tasks.withType<Javadoc> {
-    options.encoding = "UTF-8"
-}
+tasks.withType<Javadoc> { options.encoding = "UTF-8" }
