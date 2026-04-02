@@ -3,20 +3,19 @@
  */
 
 plugins {
-  // Support convention plugins written in Kotlin. Convention plugins are build scripts in
-  // 'src/main' that automatically become available as plugins in the main build.
-  `kotlin-dsl`
-  id("com.diffplug.spotless") version "8.4.0"
+    // Support convention plugins written in Kotlin. Convention plugins are build scripts in 'src/main' that automatically become available as plugins in the main build.
+    `kotlin-dsl`
+    id("com.diffplug.spotless") version "8.4.0"
 }
 
 repositories {
-  // Use the plugin portal to apply community plugins in convention plugins.
-  gradlePluginPortal()
+    // Use the plugin portal to apply community plugins in convention plugins.
+    gradlePluginPortal()
 }
 
 spotless {
-  kotlinGradle {
-    target("*.gradle.kts", "src/**/*.gradle.kts")
-    ktfmt("0.53").googleStyle()
-  }
+    kotlinGradle {
+        target("*.gradle.kts", "src/**/*.gradle.kts")
+        ktlint("1.8.0")
+    }
 }
