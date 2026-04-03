@@ -45,15 +45,9 @@ jobs:
       uses: "stCarolas/setup-maven@v5"
       with:
         maven-version: "3.9.14"
-    - name: "Initialize CodeQL"
-      uses: "github/codeql-action/init@v4"
-      with:
-        languages: "${{matrix.language}}"
     - run: "podman version"
     - run: "mvn -version"
     - run: "mvn -s settings.xml spotless:check -Djava.version=${{matrix.java-version}}"
     - run: "mvn -s settings.xml clean install -Djava.version=${{matrix.java-version}}"
     - name: "gradle"
       run: "./gradlew build --console=plain --no-daemon"
-    - name: "Perform CodeQL Analysis"
-      uses: "github/codeql-action/analyze@v4"
