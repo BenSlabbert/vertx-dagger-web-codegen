@@ -4,7 +4,7 @@
 
 plugins {
     id("buildlogic.java-conventions")
-    id("net.bytebuddy.byte-buddy-gradle-plugin") version "1.18.7"
+    id("net.bytebuddy.byte-buddy-gradle-plugin") version "1.18.8"
 }
 
 dependencies {
