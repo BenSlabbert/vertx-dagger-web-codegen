@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is a Java/Maven multi-module project that provides code generation tools for Vert.x web applications with Dagger dependency injection. The project includes annotation processors, AOP support, and various generators for web handlers, event bus consumers, JSON serialization, and more.
+This is a Java/Gradle multi-module project that provides code generation tools for Vert.x web applications with Dagger dependency injection. The project includes annotation processors, AOP support, and various generators for web handlers, event bus consumers, JSON serialization, and more.
 
 ## Project Structure
 
@@ -15,7 +15,6 @@ This is a Java/Maven multi-module project that provides code generation tools fo
 - `txmanager/` - Transaction management
 - `logging/` - Logging utilities
 - `launcher/` - Application launcher utilities
-- `bom/` - Bill of Materials for dependency management
 - `example/` - Example usage
 
 ## Build and Test Commands
