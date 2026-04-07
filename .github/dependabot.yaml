@@ -1,25 +1,11 @@
 ---
 version: 2
-registries:
-  vertx-dagger-bom:
-    type: "maven-repository"
-    url: "https://maven.pkg.github.com/BenSlabbert/vertx-dagger-bom"
-    username: "BenSlabbert"
-    password: "${{ secrets.GH_TOKEN }}"
-  compile-testing:
-    type: "maven-repository"
-    url: "https://maven.pkg.github.com/BenSlabbert/compile-testing"
-    username: "BenSlabbert"
-    password: "${{ secrets.GH_TOKEN }}"
 updates:
-- package-ecosystem: "maven"
+- package-ecosystem: "gradle"
   directory: "/"
   schedule:
     interval: "daily"
   open-pull-requests-limit: 10
-  registries:
-  - "vertx-dagger-bom"
-  - "compile-testing"
   labels:
   - "dependencies"
   - "automerge"
