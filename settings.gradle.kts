@@ -8,8 +8,6 @@ include(":aop")
 
 include(":logging")
 
-include(":bom")
-
 include(":advice-transformer")
 
 include(":config")
