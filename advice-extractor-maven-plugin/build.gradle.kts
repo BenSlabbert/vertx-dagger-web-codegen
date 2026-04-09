@@ -11,4 +11,4 @@ dependencies {
     compileOnly(libs.org.apache.maven.plugin.tools.maven.plugin.annotations)
 }
 
-description = "advice-extractor-plugin"
+description = "advice-extractor-maven-plugin"
