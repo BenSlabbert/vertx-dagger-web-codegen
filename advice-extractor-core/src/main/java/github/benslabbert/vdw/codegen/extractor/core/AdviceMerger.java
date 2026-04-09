@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 /**
  * Build-tool-agnostic utility for merging {@code META-INF/advice_annotations} entries.
  *
- * <p>Both the Maven {@code advice-extractor-plugin} and the Gradle {@code
+ * <p>Both the Maven {@code advice-extractor-maven-plugin} and the Gradle {@code
  * advice-extractor-gradle-plugin} delegate to this class so that the merge semantics are kept in
  * one place and free of any build-tool API dependencies.
  */

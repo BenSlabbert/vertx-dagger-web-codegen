@@ -25,7 +25,7 @@ import org.gradle.work.DisableCachingByDefault;
  * Merges {@code META-INF/advice_annotations} files from all dependency JARs with the
  * annotation-processor-generated file for the current module.
  *
- * <p>This is the Gradle equivalent of the Maven {@code advice-extractor-plugin}'s {@code
+ * <p>This is the Gradle equivalent of the Maven {@code advice-extractor-maven-plugin}'s {@code
  * merge-advices} goal, which runs at the {@code PROCESS_CLASSES} phase (after compile, before
  * package).
  *

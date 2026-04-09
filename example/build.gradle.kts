@@ -50,7 +50,7 @@ dependencies {
     //    annotationProcessor(libs.com.google.errorprone.error.prone.core)
     annotationProcessor(libs.com.google.dagger.dagger.compiler)
 
-    //    providedCompile(project(":advice-extractor-plugin"))
+    //    providedCompile(project(":advice-extractor-maven-plugin"))
     "byteBuddy"(project(":advice-transformer"))
 }
 

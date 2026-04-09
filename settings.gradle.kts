@@ -38,6 +38,6 @@ include(":launcher")
 
 include(":example")
 
-include(":advice-extractor-plugin")
+include(":advice-extractor-maven-plugin")
 
 include(":commons-test")
