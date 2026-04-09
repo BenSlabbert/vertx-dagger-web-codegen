@@ -18,15 +18,6 @@ jobs:
       actions: "read"
       contents: "read"
       security-events: "write"
-    strategy:
-      fail-fast: false
-      matrix:
-        language:
-        - "java"
-        java-version:
-        - "25"
-        distribution:
-        - "graalvm"
     steps:
     - name: "Install Podman"
       uses: "redhat-actions/podman-install@main"
@@ -34,11 +25,11 @@ jobs:
       run: "echo \"DOCKER_HOST=unix:///run/$(id -u)/podman/podman.sock\" >> $GITHUB_ENV"
     - run: "echo \"$DOCKER_HOST\""
     - uses: "actions/checkout@v6"
-    - name: "Set up JDK ${{matrix.java-version}}-${{matrix.distribution}}"
+    - name: "Set up JDK"
       uses: "actions/setup-java@v5"
       with:
-        distribution: "${{matrix.distribution}}"
-        java-version: "${{matrix.java-version}}"
+        distribution: "graalvm"
+        java-version: "25"
         java-package: "jdk"
     - name: "Set up Gradle"
       uses: "gradle/actions/setup-gradle@v6"
@@ -47,7 +38,7 @@ jobs:
     - name: "Initialize CodeQL"
       uses: "github/codeql-action/init@v4"
       with:
-        languages: "${{matrix.language}}"
+        languages: "java"
     - run: "podman version"
     - run: "./gradlew --version"
     - run: "./gradlew clean spotlessCheck build --console=plain --no-daemon"
