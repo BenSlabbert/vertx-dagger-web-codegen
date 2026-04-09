@@ -46,73 +46,64 @@ public class MergeAdvicesPlugin implements Plugin<Project> {
   @Override
   public void apply(Project project) {
     // React to the java plugin so the plugin is safe to apply before java is applied.
+    project.getPlugins().withType(JavaPlugin.class, javaPlugin -> onJavaPlugin(project));
+  }
+
+  private void onJavaPlugin(Project project) {
+    TaskProvider<JavaCompile> compileJava =
+        project.getTasks().named("compileJava", JavaCompile.class);
+
+    TaskProvider<MergeAdvicesTask> mergeAdvicesTask =
+        project
+            .getTasks()
+            .register(
+                TASK_NAME,
+                MergeAdvicesTask.class,
+                task -> configureMergeTask(project, task, compileJava));
+
+    // Replace the raw AP file in the JAR with the fully merged staging file.
     project
-        .getPlugins()
-        .withType(
-            JavaPlugin.class,
-            javaPlugin -> {
-              TaskProvider<JavaCompile> compileJava =
-                  project.getTasks().named("compileJava", JavaCompile.class);
+        .getTasks()
+        .named(JavaPlugin.JAR_TASK_NAME, Jar.class, jar -> configureJar(jar, mergeAdvicesTask));
+  }
 
-              TaskProvider<MergeAdvicesTask> mergeAdvicesTask =
-                  project
-                      .getTasks()
-                      .register(
-                          TASK_NAME,
-                          MergeAdvicesTask.class,
-                          task -> {
-                            task.setDescription(
-                                "Merges META-INF/advice_annotations from AP output and"
-                                    + " dependency JARs.");
-                            task.setGroup("build");
+  private static void configureMergeTask(
+      Project project, MergeAdvicesTask task, TaskProvider<JavaCompile> compileJava) {
+    task.setDescription("Merges META-INF/advice_annotations from AP output and dependency JARs.");
+    task.setGroup("build");
 
-                            // Default advice file name convention.
-                            task.getAdviceFileName().convention(DEFAULT_ADVICE_FILE_NAME);
+    // Default advice file name convention.
+    task.getAdviceFileName().convention(DEFAULT_ADVICE_FILE_NAME);
 
-                            // Wire annotationProcessorAdviceFile to compileJava's output.
-                            task.getAnnotationProcessorAdviceFile()
-                                .convention(
-                                    compileJava.flatMap(
-                                        jc ->
-                                            jc.getDestinationDirectory()
-                                                .file(
-                                                    task.getAdviceFileName()
-                                                        .map(name -> "META-INF/" + name))));
+    // Wire annotationProcessorAdviceFile to compileJava's output.
+    task.getAnnotationProcessorAdviceFile()
+        .convention(
+            compileJava.flatMap(
+                jc ->
+                    jc.getDestinationDirectory()
+                        .file(task.getAdviceFileName().map(name -> "META-INF/" + name))));
 
-                            // Scan the full runtimeClasspath (superset of compileClasspath).
-                            task.getClasspathJars()
-                                .from(
-                                    project
-                                        .getConfigurations()
-                                        .named(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME));
+    // Scan the full runtimeClasspath (superset of compileClasspath).
+    task.getClasspathJars()
+        .from(project.getConfigurations().named(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME));
 
-                            // Stage merged output under build/tmp/mergeAdvices/.
-                            task.getMergedAdviceFile()
-                                .convention(
-                                    project
-                                        .getLayout()
-                                        .getBuildDirectory()
-                                        .file(
-                                            task.getAdviceFileName()
-                                                .map(name -> "tmp/mergeAdvices/META-INF/" + name)));
-                          });
+    // Stage merged output under build/tmp/mergeAdvices/.
+    task.getMergedAdviceFile()
+        .convention(
+            project
+                .getLayout()
+                .getBuildDirectory()
+                .file(task.getAdviceFileName().map(name -> "tmp/mergeAdvices/META-INF/" + name)));
+  }
 
-              // Replace the raw AP file in the JAR with the fully merged staging file.
-              project
-                  .getTasks()
-                  .named(
-                      JavaPlugin.JAR_TASK_NAME,
-                      Jar.class,
-                      jar -> {
-                        jar.dependsOn(mergeAdvicesTask);
-                        // Evaluate the (possibly overridden) advice file name at configuration
-                        // time and use a plain-String exclude so the config cache can serialize
-                        // the jar task without capturing a task reference in a Spec lambda.
-                        jar.exclude("META-INF/" + mergeAdvicesTask.get().getAdviceFileName().get());
-                        jar.from(
-                            mergeAdvicesTask.flatMap(MergeAdvicesTask::getMergedAdviceFile),
-                            spec -> spec.into("META-INF"));
-                      });
-            });
+  private static void configureJar(Jar jar, TaskProvider<MergeAdvicesTask> mergeAdvicesTask) {
+    jar.dependsOn(mergeAdvicesTask);
+    // Evaluate the (possibly overridden) advice file name at configuration time and use a
+    // plain-String exclude so the config cache can serialize the jar task without capturing a
+    // task reference in a Spec lambda.
+    jar.exclude("META-INF/" + mergeAdvicesTask.get().getAdviceFileName().get());
+    jar.from(
+        mergeAdvicesTask.flatMap(MergeAdvicesTask::getMergedAdviceFile),
+        spec -> spec.into("META-INF"));
   }
 }
