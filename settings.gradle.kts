@@ -4,6 +4,14 @@
 
 rootProject.name = "codegen-parent"
 
+// Include the shared core library and the Gradle plugin as composite builds.
+// This makes:
+//   - "github.benslabbert.vdw.codegen:advice-extractor-core" available for subproject deps.
+//   - plugin id "github.benslabbert.vdw.codegen.merge-advices" available in plugins {} blocks.
+includeBuild("advice-extractor-core")
+
+includeBuild("advice-extractor-gradle-plugin")
+
 include(":aop")
 
 include(":logging")
