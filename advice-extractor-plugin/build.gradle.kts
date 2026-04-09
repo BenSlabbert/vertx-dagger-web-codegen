@@ -5,7 +5,7 @@
 plugins { id("buildlogic.java-conventions") }
 
 dependencies {
-    implementation("github.benslabbert.vdw.codegen:advice-extractor-core")
+    implementation("github.benslabbert.vdw.codegen:advice-extractor-core:${project.version}")
     compileOnly(libs.org.apache.maven.maven.core)
     compileOnly(libs.org.apache.maven.maven.plugin.api)
     compileOnly(libs.org.apache.maven.plugin.tools.maven.plugin.annotations)

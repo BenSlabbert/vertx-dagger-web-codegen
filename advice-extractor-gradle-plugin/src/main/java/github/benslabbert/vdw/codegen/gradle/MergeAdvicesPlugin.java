@@ -9,8 +9,8 @@ import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.jvm.tasks.Jar;
 
 /**
- * Gradle plugin that registers and auto-configures {@link MergeAdvicesTask} for projects that
- * apply the {@code java} plugin.
+ * Gradle plugin that registers and auto-configures {@link MergeAdvicesTask} for projects that apply
+ * the {@code java} plugin.
  *
  * <p>Apply this plugin with:
  *
@@ -94,9 +94,7 @@ public class MergeAdvicesPlugin implements Plugin<Project> {
                                         .getBuildDirectory()
                                         .file(
                                             task.getAdviceFileName()
-                                                .map(
-                                                    name ->
-                                                        "tmp/mergeAdvices/META-INF/" + name)));
+                                                .map(name -> "tmp/mergeAdvices/META-INF/" + name)));
                           });
 
               // Replace the raw AP file in the JAR with the fully merged staging file.
@@ -107,7 +105,10 @@ public class MergeAdvicesPlugin implements Plugin<Project> {
                       Jar.class,
                       jar -> {
                         jar.dependsOn(mergeAdvicesTask);
-                        jar.exclude("META-INF/" + DEFAULT_ADVICE_FILE_NAME);
+                        // Evaluate the (possibly overridden) advice file name at configuration
+                        // time and use a plain-String exclude so the config cache can serialize
+                        // the jar task without capturing a task reference in a Spec lambda.
+                        jar.exclude("META-INF/" + mergeAdvicesTask.get().getAdviceFileName().get());
                         jar.from(
                             mergeAdvicesTask.flatMap(MergeAdvicesTask::getMergedAdviceFile),
                             spec -> spec.into("META-INF"));

@@ -56,11 +56,9 @@ public final class AdviceMerger {
           }
         }
         log.fine(
-            () ->
-                "Loaded " + entries.size() + " entry/entries from annotation processor output");
+            () -> "Loaded " + entries.size() + " entry/entries from annotation processor output");
       } catch (IOException e) {
-        log.warning(
-            "Failed to read AP output file: " + apOutputFile.getAbsolutePath() + " - " + e);
+        log.warning("Failed to read AP output file: " + apOutputFile.getAbsolutePath() + " - " + e);
       }
     }
 

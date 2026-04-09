@@ -16,7 +16,10 @@ import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputFile;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.DisableCachingByDefault;
 
 /**
  * Merges {@code META-INF/advice_annotations} files from all dependency JARs with the
@@ -29,23 +32,24 @@ import org.gradle.api.tasks.TaskAction;
  * <h3>Output location</h3>
  *
  * The merged file is written to a staging directory ({@code build/tmp/mergeAdvices/}) rather than
- * overwriting the annotation-processor output in-place. The {@code jar} task is then configured
- * to exclude the raw AP file and include the merged staging file instead.
+ * overwriting the annotation-processor output in-place. The {@code jar} task is then configured to
+ * exclude the raw AP file and include the merged staging file instead.
  *
  * <p>Using a separate output file is essential for correct Gradle UP-TO-DATE semantics:
  *
  * <ul>
- *   <li>{@code annotationProcessorAdviceFile} ({@code @InputFile}) always contains the <em>pure
- *       AP output</em> – it is never written by this task, so its fingerprint only changes when
- *       {@code compileJava} regenerates it.
- *   <li>{@code classpathJars} ({@code @Classpath}) spans the full runtime classpath. Any JAR
- *       change in any scope (including {@code runtimeOnly}) marks this task out-of-date.
+ *   <li>{@code annotationProcessorAdviceFile} ({@code @InputFile}) always contains the <em>pure AP
+ *       output</em> – it is never written by this task, so its fingerprint only changes when {@code
+ *       compileJava} regenerates it.
+ *   <li>{@code classpathJars} ({@code @Classpath}) spans the full runtime classpath. Any JAR change
+ *       in any scope (including {@code runtimeOnly}) marks this task out-of-date.
  *   <li>Because the AP file is not the {@code @OutputFile}, there is no input/output cycle. When
  *       only a runtime dependency changes – and {@code compileJava} therefore does not re-run –
  *       this task still reads the unmodified, pure AP content and produces the correct merged
  *       result.
  * </ul>
  */
+@DisableCachingByDefault(because = "Classpath scanning makes remote caching impractical")
 public abstract class MergeAdvicesTask extends DefaultTask {
 
   /**
@@ -58,6 +62,7 @@ public abstract class MergeAdvicesTask extends DefaultTask {
    */
   @InputFile
   @Optional
+  @PathSensitive(PathSensitivity.NONE)
   public abstract RegularFileProperty getAnnotationProcessorAdviceFile();
 
   /**
