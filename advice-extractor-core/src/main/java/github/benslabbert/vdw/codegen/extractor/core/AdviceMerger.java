@@ -56,9 +56,12 @@ public final class AdviceMerger {
           }
         }
         log.fine(
-            () -> "Loaded " + entries.size() + " entry/entries from annotation processor output");
+            () ->
+                "Loaded %d entry/entries from annotation processor output"
+                    .formatted(entries.size()));
       } catch (IOException e) {
-        log.warning("Failed to read AP output file: " + apOutputFile.getAbsolutePath() + " - " + e);
+        log.warning(
+            "Failed to read AP output file: %s - %s".formatted(apOutputFile.getAbsolutePath(), e));
       }
     }
 
@@ -73,7 +76,7 @@ public final class AdviceMerger {
         if (entry == null) {
           continue;
         }
-        log.fine(() -> "Found " + adviceFileName + " in " + jar.getName());
+        log.fine(() -> "Found %s in %s".formatted(adviceFileName, jar.getName()));
         try (var reader =
             new BufferedReader(
                 new InputStreamReader(jarFile.getInputStream(entry), StandardCharsets.UTF_8))) {
@@ -87,18 +90,15 @@ public final class AdviceMerger {
         }
         jarsWithAdvices++;
       } catch (IOException e) {
-        log.warning("Failed to scan JAR: " + jar.getAbsolutePath() + " - " + e);
+        log.warning("Failed to scan JAR: %s - %s".formatted(jar.getAbsolutePath(), e));
       }
     }
 
     int finalJarsWithAdvices = jarsWithAdvices;
     log.fine(
         () ->
-            "Merged "
-                + finalJarsWithAdvices
-                + " dep advice file(s); total "
-                + entries.size()
-                + " unique entries");
+            "Merged %d dep advice file(s); total %d unique entries"
+                .formatted(finalJarsWithAdvices, entries.size()));
 
     return entries;
   }
