@@ -6,18 +6,21 @@
   },
   "features": {
     "ghcr.io/devcontainers/features/java:1": {
-      "version": "25",
-      "installGradle": true,
-      "gradleVersion": "latest"
+      "version": "25"
     }
   },
   "runArgs": [
-    "--privileged",
-    "--security-opt=seccomp=unconfined",
+    "--cap-add=SYS_ADMIN",
+    "--cap-add=MKNOD",
+    "--security-opt=label=disable",
     "--device=/dev/fuse"
   ],
   "remoteUser": "vscode",
   "postCreateCommand": "bash .devcontainer/postCreate.sh",
+  "containerEnv": {
+    "DOCKER_HOST": "unix:///run/user/1000/podman/podman.sock",
+    "TESTCONTAINERS_RYUK_DISABLED": "true"
+  },
   "customizations": {
     "vscode": {
       "extensions": [
