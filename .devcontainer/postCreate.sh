@@ -2,12 +2,16 @@
 set -euo pipefail
 
 # Configure rootless Podman storage for better compatibility in Codespaces.
+PODMAN_UID="$(id -u)"
+PODMAN_RUNROOT="/run/user/${PODMAN_UID}/containers"
+PODMAN_GRAPHROOT="${HOME}/.local/share/containers/storage"
+
 mkdir -p "${HOME}/.config/containers"
-cat > "${HOME}/.config/containers/storage.conf" <<'EOF'
+cat > "${HOME}/.config/containers/storage.conf" <<EOF
 [storage]
 driver = "overlay"
-runroot = "/run/user/1000/containers"
-graphroot = "/home/vscode/.local/share/containers/storage"
+runroot = "${PODMAN_RUNROOT}"
+graphroot = "${PODMAN_GRAPHROOT}"
 
 [storage.options]
 mount_program = "/usr/bin/fuse-overlayfs"
@@ -28,11 +32,16 @@ if ! grep -q "sdkman-init.sh" "${HOME}/.bashrc"; then
   } >> "${HOME}/.bashrc"
 fi
 
-# Install Gradle via SDKMAN when available (Java is installed via devcontainer feature).
+# Install SDKMAN-managed tools from pinned versions in .sdkmanrc.
 source "${HOME}/.sdkman/bin/sdkman-init.sh"
-sdk install gradle || true
+if [[ -f ".sdkmanrc" ]]; then
+  sdk env install
+  gradle_status="- Gradle is available via SDKMAN using the pinned version from .sdkmanrc."
+else
+  gradle_status="- Gradle was not installed via SDKMAN because .sdkmanrc was not found."
+fi
 
 echo "Setup complete."
 echo "- Java is available via devcontainer Java feature."
-echo "- Gradle is available via SDKMAN (and feature fallback)."
+echo "${gradle_status}"
 echo "- Podman is installed. Use: podman info"
