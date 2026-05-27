@@ -35,7 +35,7 @@ jobs:
       uses: "gradle/actions/setup-gradle@v6"
       with:
         cache-provider: "basic"
-        validate-wrappers: false
+        validate-wrappers: true
         dependency-graph: "generate-and-submit"
     - name: "Initialize CodeQL"
       uses: "github/codeql-action/init@v4"
