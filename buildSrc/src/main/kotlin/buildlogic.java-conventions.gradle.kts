@@ -39,7 +39,7 @@ publishing {
 
 tasks.withType<Test> {
     useJUnitPlatform()
-    maxParallelForks = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
+    maxParallelForks = Runtime.getRuntime().availableProcessors()
     jvmArgs(
         "--enable-native-access=ALL-UNNAMED",
         "--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
