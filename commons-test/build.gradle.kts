@@ -5,7 +5,6 @@ plugins {
 
 dependencies {
     api("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-    api(libs.com.microsoft.playwright.playwright)
     api(libs.commons.codec.commons.codec)
     api(libs.org.testcontainers.testcontainers.postgresql)
     api(project(":commons"))
@@ -17,6 +16,7 @@ dependencies {
         exclude(mapOf("group" to "commons-codec", "module" to "commons-codec"))
     }
 
+    testFixturesApi(libs.io.vertx.vertx.web.client)
     testFixturesApi(libs.com.microsoft.playwright.playwright)
     testFixturesApi(libs.org.mockito.mockito.core)
     testFixturesApi(libs.org.testcontainers.testcontainers)
