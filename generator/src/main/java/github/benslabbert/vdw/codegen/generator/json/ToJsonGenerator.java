@@ -27,7 +27,13 @@ final class ToJsonGenerator {
       }
 
       if (className.startsWith("java.lang.")) {
-        out.printf("json.put(\"%s\", o.%s());%n", name, name);
+        if (property.nullable()) {
+          out.printf("if (null != o.%s()) {%n", name);
+          out.printf("json.put(\"%s\", o.%s());%n", name, name);
+          out.println("}");
+        } else {
+          out.printf("json.put(\"%s\", o.%s());%n", name, name);
+        }
       } else if (className.startsWith("java.time.")) {
         timeToJson(out, property.name(), property.className(), property.nullable());
       } else if (className.startsWith("java.util.Set")) {
@@ -37,7 +43,15 @@ final class ToJsonGenerator {
       } else if (className.startsWith("java.util.Collection")) {
         iterableToJson(out, property.name(), property.className(), property.nullable());
       } else {
-        out.printf("json.put(\"%s\", %sJson.toJson(o.%s()));%n", name, simpleName(className), name);
+        if (property.nullable()) {
+          out.printf("if (null != o.%s()) {%n", name);
+          out.printf(
+              "json.put(\"%s\", %sJson.toJson(o.%s()));%n", name, simpleName(className), name);
+          out.println("}");
+        } else {
+          out.printf(
+              "json.put(\"%s\", %sJson.toJson(o.%s()));%n", name, simpleName(className), name);
+        }
       }
     }
 
@@ -50,20 +64,21 @@ final class ToJsonGenerator {
     switch (className) {
       case "java.time.LocalDate" -> {
         if (nullable) {
+          out.printf("if (null != o.%s()) {%n", name);
           out.printf(
-              "json.put(\"%s\", null == o.%s() ? null :"
-                  + " o.%s().format(DateTimeFormatter.ISO_DATE));%n",
-              name, name, name);
+              "json.put(\"%s\", o.%s().format(DateTimeFormatter.ISO_DATE));%n", name, name);
+          out.println("}");
         } else {
           out.printf("json.put(\"%s\", o.%s().format(DateTimeFormatter.ISO_DATE));%n", name, name);
         }
       }
       case "java.time.LocalDateTime" -> {
         if (nullable) {
+          out.printf("if (null != o.%s()) {%n", name);
           out.printf(
-              "json.put(\"%s\", null == o.%s() ? null :"
-                  + " o.%s().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));%n",
-              name, name, name);
+              "json.put(\"%s\", o.%s().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));%n",
+              name, name);
+          out.println("}");
         } else {
           out.printf(
               "json.put(\"%s\", o.%s().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));%n",
@@ -72,10 +87,11 @@ final class ToJsonGenerator {
       }
       case "java.time.OffsetDateTime" -> {
         if (nullable) {
+          out.printf("if (null != o.%s()) {%n", name);
           out.printf(
-              "json.put(\"%s\", null == o.%s() ? null :"
-                  + " o.%s().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));%n",
-              name, name, name);
+              "json.put(\"%s\", o.%s().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));%n",
+              name, name);
+          out.println("}");
         } else {
           out.printf(
               "json.put(\"%s\", o.%s().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));%n",

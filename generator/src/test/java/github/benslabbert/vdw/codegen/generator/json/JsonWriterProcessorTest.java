@@ -84,4 +84,15 @@ class JsonWriterProcessorTest {
         .processedWith(new JsonWriterProcessor())
         .compilesWithoutError();
   }
+
+  @Test
+  void nullable() {
+    URL resource = this.getClass().getClassLoader().getResource("NullableExample.java");
+    assertThat(resource).isNotNull();
+
+    assertAbout(JavaSourceSubjectFactory.javaSource())
+        .that(JavaFileObjects.forResource(resource))
+        .processedWith(new JsonWriterProcessor())
+        .compilesWithoutError();
+  }
 }
