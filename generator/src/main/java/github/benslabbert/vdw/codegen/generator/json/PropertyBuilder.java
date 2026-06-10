@@ -7,6 +7,7 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,7 @@ class PropertyBuilder {
 
   private static final String NOT_NULL = "jakarta.validation.constraints.NotNull";
   private static final String NOT_BLANK = "jakarta.validation.constraints.NotBlank";
+  private static final String NOT_EMPTY = "jakarta.validation.constraints.NotEmpty";
   private static final String MIN = "jakarta.validation.constraints.Min";
   private static final String MAX = "jakarta.validation.constraints.Max";
   private static final String SIZE = "jakarta.validation.constraints.Size";
@@ -48,15 +50,16 @@ class PropertyBuilder {
       Min min = re.getAnnotation(Min.class);
       Max max = re.getAnnotation(Max.class);
       Size size = re.getAnnotation(Size.class);
+      NotEmpty notEmpty = re.getAnnotation(NotEmpty.class);
 
       // if type is declared and java.lang.String it is ok
       if (TypeKind.DECLARED == kind) {
-        Property property = fromPreparedType(type, re, varName, kind, min, max, size);
+        Property property = fromPreparedType(type, re, varName, kind, min, max, size, notEmpty);
         properties.add(property);
       } else if (kind.isPrimitive()) {
         Property property =
             new Property(
-                varName.toString(), false, false, null, kind, false, min, max, size, List.of());
+                varName.toString(), false, false, null, kind, false, false, min, max, size, List.of());
         properties.add(property);
       } else {
         String msg = String.format("unsupported kind: %s", kind);
@@ -74,7 +77,8 @@ class PropertyBuilder {
       TypeKind kind,
       Min min,
       Max max,
-      Size size) {
+      Size size,
+      NotEmpty notEmpty) {
     boolean nullable = null != re.getAnnotation(Nullable.class);
     boolean notBlank = null != re.getAnnotation(NotBlank.class);
 
@@ -91,6 +95,7 @@ class PropertyBuilder {
         typeString,
         kind,
         notBlank,
+        null != notEmpty,
         min,
         max,
         size,
@@ -121,6 +126,10 @@ class PropertyBuilder {
         }
         case NOT_BLANK -> {
           GenericParameterAnnotation a = GenericParameterAnnotation.NotBlank.create();
+          arr.add(a);
+        }
+        case NOT_EMPTY -> {
+          GenericParameterAnnotation a = GenericParameterAnnotation.NotEmpty.create();
           arr.add(a);
         }
         case MIN -> {

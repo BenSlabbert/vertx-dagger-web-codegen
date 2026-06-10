@@ -31,6 +31,17 @@ class JsonWriterProcessorTest {
   }
 
   @Test
+  void notEmptyExample() {
+    URL resource = this.getClass().getClassLoader().getResource("NotEmptyExample.java");
+    assertThat(resource).isNotNull();
+
+    assertAbout(JavaSourceSubjectFactory.javaSource())
+        .that(JavaFileObjects.forResource(resource))
+        .processedWith(new JsonWriterProcessor())
+        .compilesWithoutError();
+  }
+
+  @Test
   void nested() {
     URL resource = this.getClass().getClassLoader().getResource("Nested.java");
     assertThat(resource).isNotNull();

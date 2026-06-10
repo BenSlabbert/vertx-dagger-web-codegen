@@ -64,6 +64,7 @@ class ComplexJsonSchemaGenerator {
     List<GenericParameterAnnotation> gpa = property.genericParameterAnnotations();
     var notNull = gpa.stream().anyMatch(f -> f instanceof GenericParameterAnnotation.NotNull);
     var notBlank = gpa.stream().anyMatch(f -> f instanceof GenericParameterAnnotation.NotBlank);
+    var notEmpty = gpa.stream().anyMatch(f -> f instanceof GenericParameterAnnotation.NotEmpty);
     var maybeSize =
         gpa.stream()
             .filter(f -> f instanceof GenericParameterAnnotation.Size)
@@ -81,6 +82,9 @@ class ComplexJsonSchemaGenerator {
             .findFirst();
 
     Integer sizeMin = maybeSize.map(GenericParameterAnnotation.Size::min).orElse(null);
+    if (notEmpty && (sizeMin == null || sizeMin == 0)) {
+      sizeMin = 1;
+    }
     Integer sizeMax = maybeSize.map(GenericParameterAnnotation.Size::max).orElse(null);
     Long minValue = maybeMin.map(GenericParameterAnnotation.Min::value).orElse(null);
     Long maxValue = maybeMax.map(GenericParameterAnnotation.Max::value).orElse(null);
