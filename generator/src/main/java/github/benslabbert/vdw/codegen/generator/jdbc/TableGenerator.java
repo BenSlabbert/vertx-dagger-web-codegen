@@ -699,6 +699,282 @@ public class TableGenerator extends ProcessorBase {
             varName);
       }
 
+      for (TableDetails td : tableDetails) {
+        TableDetails.FindByColumn fibc = td.findIdByColumn();
+        if (null == fibc) {
+          continue;
+        }
+        boolean defaultFetchSize = Table.DEFAULT_FETCH_SIZE == fibc.fetchSize();
+        String idType = box(idColumn.columnTypeSimpleName());
+        String idRsGetter = getResultSetGetter(idColumn);
+
+        switch (fibc.returnType()) {
+          case LIST_CANONICAL_NAME -> {
+            if (defaultFetchSize) {
+              out.printf(
+"""
+    @Override
+    public List<%s> %s(%s %s) {
+        String sql = "select %s from %s where %s = ?";
+        Object[] args = {%s};
+        return jdbcQueryRunner.query(sql, rs -> {
+            List<%s> ids = new ArrayList<>(10);
+            while (rs.next()) {
+                ids.add(rs.%s("%s"));
+            }
+            return List.copyOf(ids);
+        }, args);
+    }
+""",
+                  idType,
+                  td.columnName(),
+                  td.columnTypeSimpleName(),
+                  td.columnName(),
+                  idColumn.columnName(),
+                  table.value(),
+                  td.columnName(),
+                  td.columnName(),
+                  idType,
+                  idRsGetter,
+                  idColumn.columnName());
+            } else {
+              out.printf(
+"""
+    @Override
+    public List<%s> %s(%s %s) {
+        String sql = "select %s from %s where %s = ?";
+        Object[] args = {%s};
+        StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
+        return jdbcQueryRunnerFactory.create(cfg).query(sql, rs -> {
+            List<%s> ids = new ArrayList<>(10);
+            while (rs.next()) {
+                ids.add(rs.%s("%s"));
+            }
+            return List.copyOf(ids);
+        }, args);
+    }
+""",
+                  idType,
+                  td.columnName(),
+                  td.columnTypeSimpleName(),
+                  td.columnName(),
+                  idColumn.columnName(),
+                  table.value(),
+                  td.columnName(),
+                  td.columnName(),
+                  fibc.fetchSize(),
+                  idType,
+                  idRsGetter,
+                  idColumn.columnName());
+            }
+          }
+          case STREAM_CANONICAL_NAME -> {
+            if (defaultFetchSize) {
+              out.printf(
+"""
+    @Override
+    @MustBeClosed
+    public Stream<%s> %s(%s %s) {
+        String sql = "select %s from %s where %s = ?";
+        Object[] args = {%s};
+        return jdbcUtils.stream(sql, rs -> rs.%s("%s"), args);
+    }
+""",
+                  idType,
+                  td.columnName(),
+                  td.columnTypeSimpleName(),
+                  td.columnName(),
+                  idColumn.columnName(),
+                  table.value(),
+                  td.columnName(),
+                  td.columnName(),
+                  idRsGetter,
+                  idColumn.columnName());
+            } else {
+              out.printf(
+"""
+    @Override
+    @MustBeClosed
+    public Stream<%s> %s(%s %s) {
+        String sql = "select %s from %s where %s = ?";
+        Object[] args = {%s};
+        StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
+        return jdbcUtilsFactory.create(cfg).stream(sql, rs -> rs.%s("%s"), args);
+    }
+""",
+                  idType,
+                  td.columnName(),
+                  td.columnTypeSimpleName(),
+                  td.columnName(),
+                  idColumn.columnName(),
+                  table.value(),
+                  td.columnName(),
+                  td.columnName(),
+                  fibc.fetchSize(),
+                  idRsGetter,
+                  idColumn.columnName());
+            }
+            out.println();
+          }
+          case ITERABLE_CANONICAL_NAME -> {
+            if (defaultFetchSize) {
+              out.printf(
+"""
+    @Override
+    public Iterable<%s> %s(%s %s) {
+        String sql = "select %s from %s where %s = ?";
+        Object[] args = {%s};
+        return jdbcQueryRunner.query(sql, rs -> {
+            List<%s> ids = new ArrayList<>(10);
+            while (rs.next()) {
+                ids.add(rs.%s("%s"));
+            }
+            return List.copyOf(ids);
+        }, args);
+    }
+""",
+                  idType,
+                  td.columnName(),
+                  td.columnTypeSimpleName(),
+                  td.columnName(),
+                  idColumn.columnName(),
+                  table.value(),
+                  td.columnName(),
+                  td.columnName(),
+                  idType,
+                  idRsGetter,
+                  idColumn.columnName());
+            } else {
+              out.printf(
+"""
+    @Override
+    public Iterable<%s> %s(%s %s) {
+        String sql = "select %s from %s where %s = ?";
+        Object[] args = {%s};
+        StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
+        return jdbcQueryRunnerFactory.create(cfg).query(sql, rs -> {
+            List<%s> ids = new ArrayList<>(10);
+            while (rs.next()) {
+                ids.add(rs.%s("%s"));
+            }
+            return List.copyOf(ids);
+        }, args);
+    }
+""",
+                  idType,
+                  td.columnName(),
+                  td.columnTypeSimpleName(),
+                  td.columnName(),
+                  idColumn.columnName(),
+                  table.value(),
+                  td.columnName(),
+                  td.columnName(),
+                  fibc.fetchSize(),
+                  idType,
+                  idRsGetter,
+                  idColumn.columnName());
+            }
+          }
+          case CONSUMER_CANONICAL_NAME -> {
+            if (defaultFetchSize) {
+              out.printf(
+"""
+    @Override
+    public void %s(%s %s, Consumer<%s> consumer) {
+        String sql = "select %s from %s where %s = ?";
+        Object[] args = {%s};
+        jdbcQueryRunner.query(
+            sql,
+            rs -> {
+                while (rs.next()) {
+                    consumer.accept(rs.%s("%s"));
+                }
+                return null;
+            },
+            args);
+    }
+""",
+                  td.columnName(),
+                  td.columnTypeSimpleName(),
+                  td.columnName(),
+                  idType,
+                  idColumn.columnName(),
+                  table.value(),
+                  td.columnName(),
+                  td.columnName(),
+                  idRsGetter,
+                  idColumn.columnName());
+              out.println();
+            } else {
+              out.printf(
+"""
+    @Override
+    public void %s(%s %s, Consumer<%s> consumer) {
+        String sql = "select %s from %s where %s = ?";
+        Object[] args = {%s};
+        StatementConfiguration cfg = getConfigBuilder().fetchSize(%d).build();
+        jdbcQueryRunnerFactory.create(cfg).query(
+            sql,
+            rs -> {
+                while (rs.next()) {
+                    consumer.accept(rs.%s("%s"));
+                }
+                return null;
+            },
+            args);
+    }
+""",
+                  td.columnName(),
+                  td.columnTypeSimpleName(),
+                  td.columnName(),
+                  idType,
+                  idColumn.columnName(),
+                  table.value(),
+                  td.columnName(),
+                  td.columnName(),
+                  fibc.fetchSize(),
+                  idRsGetter,
+                  idColumn.columnName());
+              out.println();
+            }
+          }
+          default -> unsupportedReturnType(fibc.returnType());
+        }
+      }
+
+      for (TableDetails td : tableDetails) {
+        if (!td.isFindOneIdByColumn()) {
+          continue;
+        }
+
+        String idType = box(idColumn.columnTypeSimpleName());
+        String idRsGetter = getResultSetGetter(idColumn);
+        out.printf(
+"""
+    @Override
+    public Optional<%s> %s(%s %s) {
+        String sql = "select %s from %s where %s = ? limit 1";
+        Object[] args = {%s};
+        return jdbcQueryRunner.query(sql, rs -> {
+            if (rs.next()) {
+                return Optional.of(rs.%s("%s"));
+            }
+            return Optional.empty();
+        }, args);
+    }
+""",
+            idType,
+            td.columnName(),
+            td.columnTypeSimpleName(),
+            varName,
+            idColumn.columnName(),
+            table.value(),
+            td.columnName(),
+            varName,
+            idRsGetter,
+            idColumn.columnName());
+      }
+
       // common queries
       out.printf(
 """
@@ -1168,6 +1444,97 @@ public class TableGenerator extends ProcessorBase {
             td.columnName());
       }
 
+      // Generate delegate methods for FindIdByColumn
+      for (TableDetails td : tableDetails) {
+        TableDetails.FindByColumn fibc = td.findIdByColumn();
+        if (null == fibc) {
+          continue;
+        }
+
+        String idType = box(idColumn.columnTypeSimpleName());
+        switch (fibc.returnType()) {
+          case LIST_CANONICAL_NAME ->
+              out.printf(
+"""
+        @Override
+        public List<%s> %s(%s %s) {
+            return transactionManager.executeWithResult(() -> delegate.%s(%s));
+        }
+
+""",
+                  idType,
+                  td.columnName(),
+                  td.columnTypeSimpleName(),
+                  td.columnName(),
+                  td.columnName(),
+                  td.columnName());
+          case STREAM_CANONICAL_NAME ->
+              out.printf(
+"""
+        @Override
+        @MustBeClosed
+        public Stream<%s> %s(%s %s) {
+            throw new UnsupportedOperationException("Stream methods cannot be safely wrapped in transactions due to resource management constraints. Use doInTransaction() with List or Iterable return types instead.");
+        }
+
+""",
+                  idType, td.columnName(), td.columnTypeSimpleName(), td.columnName());
+          case ITERABLE_CANONICAL_NAME ->
+              out.printf(
+"""
+        @Override
+        public Iterable<%s> %s(%s %s) {
+            return transactionManager.executeWithResult(() -> delegate.%s(%s));
+        }
+
+""",
+                  idType,
+                  td.columnName(),
+                  td.columnTypeSimpleName(),
+                  td.columnName(),
+                  td.columnName(),
+                  td.columnName());
+          case CONSUMER_CANONICAL_NAME ->
+              out.printf(
+"""
+        @Override
+        public void %s(%s %s, Consumer<%s> consumer) {
+            transactionManager.executeWithoutResult(() -> delegate.%s(%s, consumer));
+        }
+
+""",
+                  td.columnName(),
+                  td.columnTypeSimpleName(),
+                  td.columnName(),
+                  idType,
+                  td.columnName(),
+                  td.columnName());
+        }
+      }
+
+      // Generate delegate methods for FindOneIdByColumn
+      for (TableDetails td : tableDetails) {
+        if (!td.isFindOneIdByColumn()) {
+          continue;
+        }
+
+        String idType = box(idColumn.columnTypeSimpleName());
+        out.printf(
+"""
+        @Override
+        public Optional<%s> %s(%s %s) {
+            return transactionManager.executeWithResult(() -> delegate.%s(%s));
+        }
+
+""",
+            idType,
+            td.columnName(),
+            td.columnTypeSimpleName(),
+            td.columnName(),
+            td.columnName(),
+            td.columnName());
+      }
+
       // Generate delegate methods for common queries
       out.printf(
 """
@@ -1307,12 +1674,28 @@ public class TableGenerator extends ProcessorBase {
             .formatted(returnType));
   }
 
+  private static String box(String typeName) {
+    return switch (typeName) {
+      case "long" -> "Long";
+      case "int" -> "Integer";
+      case "boolean" -> "Boolean";
+      case "byte" -> "Byte";
+      case "double" -> "Double";
+      case "float" -> "Float";
+      case "short" -> "Short";
+      case "char" -> "Character";
+      default -> typeName;
+    };
+  }
+
   private GeneratedFile generateInterface(
       AnnotatedClass ac,
       List<TableQuery> tableQueries,
       List<TableDetails> tableDetails,
       String interfaceName) {
     String varName = ac.name().substring(0, 1).toLowerCase();
+    TableDetails idColumn =
+        tableDetails.stream().filter(TableDetails::id).findFirst().orElseThrow();
 
     StringWriter stringWriter = StringWriterFactory.create();
 
@@ -1417,6 +1800,51 @@ public class TableGenerator extends ProcessorBase {
         out.printf(
             "\tOptional<%s> %s(%s %s);%n",
             ac.name(), td.columnName(), td.columnTypeSimpleName(), td.columnName());
+      }
+
+      for (TableDetails td : tableDetails) {
+        TableDetails.FindByColumn fibc = td.findIdByColumn();
+        if (null == fibc) {
+          continue;
+        }
+
+        String idType = box(idColumn.columnTypeSimpleName());
+        switch (fibc.returnType()) {
+          case LIST_CANONICAL_NAME ->
+              out.printf(
+                  "\tList<%s> %s(%s %s);%n",
+                  idType, td.columnName(), td.columnTypeSimpleName(), td.columnName());
+          case STREAM_CANONICAL_NAME -> {
+            out.println("\t@MustBeClosed");
+            out.printf(
+                "\tStream<%s> %s(%s %s);%n",
+                idType, td.columnName(), td.columnTypeSimpleName(), td.columnName());
+          }
+          case ITERABLE_CANONICAL_NAME ->
+              out.printf(
+                  "\tIterable<%s> %s(%s %s);%n",
+                  idType, td.columnName(), td.columnTypeSimpleName(), td.columnName());
+          case CONSUMER_CANONICAL_NAME ->
+              out.printf(
+                  "\tvoid %s(%s);%n",
+                  td.columnName(),
+                  String.join(
+                      ", ",
+                      "%s %s".formatted(td.columnTypeSimpleName(), td.columnName()),
+                      "Consumer<%s> consumer".formatted(idType)));
+          default -> unsupportedReturnType(fibc.returnType());
+        }
+      }
+
+      for (TableDetails td : tableDetails) {
+        if (!td.isFindOneIdByColumn()) {
+          continue;
+        }
+
+        String idType = box(idColumn.columnTypeSimpleName());
+        out.printf(
+            "\tOptional<%s> %s(%s %s);%n",
+            idType, td.columnName(), td.columnTypeSimpleName(), td.columnName());
       }
 
       // common queries
@@ -1563,9 +1991,17 @@ public class TableGenerator extends ProcessorBase {
               Table.Version version = ee.getAnnotation(Table.Version.class);
               Table.FindByColumn findByColumn = ee.getAnnotation(Table.FindByColumn.class);
               Table.FindOneByColumn findOneByColumn = ee.getAnnotation(Table.FindOneByColumn.class);
+              Table.FindIdByColumn findIdByColumn = ee.getAnnotation(Table.FindIdByColumn.class);
+              Table.FindOneIdByColumn findOneIdByColumn =
+                  ee.getAnnotation(Table.FindOneIdByColumn.class);
 
-              if (null != findByColumn && null != findOneByColumn) {
-                throw new GenerationException("cannot have both findByColumn and findOneByColumn");
+              long findAnnotationCount =
+                  Stream.of(findByColumn, findOneByColumn, findIdByColumn, findOneIdByColumn)
+                      .filter(a -> a != null)
+                      .count();
+              if (findAnnotationCount > 1) {
+                throw new GenerationException(
+                    "cannot have more than one of findByColumn, findOneByColumn, findIdByColumn, findOneIdByColumn");
               }
 
               String fieldName = ee.getSimpleName().toString();
@@ -1599,6 +2035,13 @@ public class TableGenerator extends ProcessorBase {
                         findByColumn.fetchSize(), getReturnType(findByColumn::returnType));
               }
 
+              TableDetails.FindByColumn fibc = null;
+              if (null != findIdByColumn && findIdByColumn.value().isBlank()) {
+                fibc =
+                    new TableDetails.FindByColumn(
+                        findIdByColumn.fetchSize(), getReturnType(findIdByColumn::returnType));
+              }
+
               return new TableDetails(
                   ee,
                   column.value(),
@@ -1611,7 +2054,9 @@ public class TableGenerator extends ProcessorBase {
                   version != null,
                   isReference,
                   null != findOneByColumn,
-                  fbc);
+                  null != findOneIdByColumn,
+                  fbc,
+                  fibc);
             })
         .toList();
   }
@@ -1654,7 +2099,9 @@ public class TableGenerator extends ProcessorBase {
       boolean version,
       boolean isReference,
       boolean isFindOneByColumn,
-      FindByColumn findByColumn) {
+      boolean isFindOneIdByColumn,
+      FindByColumn findByColumn,
+      FindByColumn findIdByColumn) {
 
     private record FindByColumn(int fetchSize, String returnType) {}
   }
