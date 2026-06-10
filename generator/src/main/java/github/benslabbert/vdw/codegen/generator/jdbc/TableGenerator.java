@@ -2001,7 +2001,8 @@ public class TableGenerator extends ProcessorBase {
                       .count();
               if (findAnnotationCount > 1) {
                 throw new GenerationException(
-                    "cannot have more than one of findByColumn, findOneByColumn, findIdByColumn, findOneIdByColumn");
+                    "cannot have more than one of findByColumn, findOneByColumn, findIdByColumn,"
+                        + " findOneIdByColumn");
               }
 
               String fieldName = ee.getSimpleName().toString();
