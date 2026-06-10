@@ -4,7 +4,9 @@ package github.benslabbert.vdw.codegen.example.jdbc;
 import github.benslabbert.vdw.codegen.annotation.jdbc.Table;
 import github.benslabbert.vdw.codegen.annotation.jdbc.Table.Column;
 import github.benslabbert.vdw.codegen.annotation.jdbc.Table.FindByColumn;
+import github.benslabbert.vdw.codegen.annotation.jdbc.Table.FindIdByColumn;
 import github.benslabbert.vdw.codegen.annotation.jdbc.Table.FindOneByColumn;
+import github.benslabbert.vdw.codegen.annotation.jdbc.Table.FindOneIdByColumn;
 import github.benslabbert.vdw.codegen.annotation.jdbc.Table.Id;
 import github.benslabbert.vdw.codegen.annotation.jdbc.Table.InsertOnly;
 import github.benslabbert.vdw.codegen.annotation.jdbc.Table.Query;
@@ -32,8 +34,9 @@ import java.util.function.Consumer;
 public record Person(
     @Column("id") @Id("id_seq") long id,
     @Column("first_name") @FindByColumn(returnType = List.class) @InsertOnly String name,
-    @Column("last_name") @FindByColumn @InsertOnly String lastName,
+    @Column("last_name") @FindIdByColumn(returnType = List.class) @InsertOnly String lastName,
     @Column("unique") @FindOneByColumn @InsertOnly String unique,
+    @Column("email") @FindOneIdByColumn @InsertOnly String email,
     @Column("age") @FindByColumn(fetchSize = 25, returnType = Consumer.class) int age,
     @Column("gender") @FindByColumn(returnType = Iterable.class) @InsertOnly String gender,
     @Column("address_id") @Nonnull Reference<Address> address,
@@ -45,8 +48,8 @@ public record Person(
   @Nonnull
   @Override
   public String toString() {
-    return "Person{id=%d, name='%s', lastName='%s', unique='%s', age=%d, gender='%s', address=%d, version=%d}"
-        .formatted(id, name, lastName, unique, age, gender, address.id(), version);
+    return "Person{id=%d, name='%s', lastName='%s', unique='%s', email='%s', age=%d, gender='%s', address=%d, version=%d}"
+        .formatted(id, name, lastName, unique, email, age, gender, address.id(), version);
   }
 }
 
@@ -68,6 +71,8 @@ class PersonBuilder {
     Builder lastName(String lastName);
 
     Builder unique(String unique);
+
+    Builder email(String email);
 
     Builder age(int age);
 

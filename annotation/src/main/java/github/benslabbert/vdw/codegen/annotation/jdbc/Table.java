@@ -72,6 +72,21 @@ public @interface Table {
   }
 
   @Target(ElementType.RECORD_COMPONENT)
+  @interface FindIdByColumn {
+    String value() default "";
+
+    /** Supports: {@link List}, {@link Iterable}, {@link Stream}, {@link Consumer} */
+    Class<?> returnType() default Stream.class;
+
+    int fetchSize() default DEFAULT_FETCH_SIZE;
+  }
+
+  @Target(ElementType.RECORD_COMPONENT)
+  @interface FindOneIdByColumn {
+    String value() default "";
+  }
+
+  @Target(ElementType.RECORD_COMPONENT)
   @interface InsertOnly {}
 
   @Target(ElementType.RECORD_COMPONENT)
