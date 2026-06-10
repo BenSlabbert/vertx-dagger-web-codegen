@@ -65,8 +65,7 @@ final class ToJsonGenerator {
       case "java.time.LocalDate" -> {
         if (nullable) {
           out.printf("if (null != o.%s()) {%n", name);
-          out.printf(
-              "json.put(\"%s\", o.%s().format(DateTimeFormatter.ISO_DATE));%n", name, name);
+          out.printf("json.put(\"%s\", o.%s().format(DateTimeFormatter.ISO_DATE));%n", name, name);
           out.println("}");
         } else {
           out.printf("json.put(\"%s\", o.%s().format(DateTimeFormatter.ISO_DATE));%n", name, name);
