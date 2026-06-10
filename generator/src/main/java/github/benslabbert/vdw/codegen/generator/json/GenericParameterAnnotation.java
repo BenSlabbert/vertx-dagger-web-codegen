@@ -7,6 +7,7 @@ import javax.lang.model.element.AnnotationMirror;
 sealed interface GenericParameterAnnotation
     permits GenericParameterAnnotation.NotNull,
         GenericParameterAnnotation.NotBlank,
+        GenericParameterAnnotation.NotEmpty,
         GenericParameterAnnotation.Min,
         GenericParameterAnnotation.Max,
         GenericParameterAnnotation.Size {
@@ -20,6 +21,12 @@ sealed interface GenericParameterAnnotation
   record NotBlank() implements GenericParameterAnnotation {
     static NotBlank create() {
       return new NotBlank();
+    }
+  }
+
+  record NotEmpty() implements GenericParameterAnnotation {
+    static NotEmpty create() {
+      return new NotEmpty();
     }
   }
 

@@ -18,12 +18,16 @@ record Property(
     String className,
     TypeKind kind,
     boolean notBlank,
+    boolean notEmpty,
     Min min,
     Max max,
     Size size,
     List<GenericParameterAnnotation> genericParameterAnnotations) {
 
   @Nullable Integer getSizeMin() {
+    if (notEmpty && (null == size || size.min() == 0)) {
+      return 1;
+    }
     return null == size || size.min() == 0 ? null : size.min();
   }
 
