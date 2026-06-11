@@ -1,7 +1,8 @@
 Use podman instead of docker
 
 ```shell
-export DOCKER_HOST=unix:///run/user/1000/podman/podman.sock
-export TESTCONTAINERS_RYUK_DISABLED=true
+mkdir -p /run/user/$(id -u)/podman
+chmod 777 -R /run/user/$(id -u)/podman
+podman system service --time=0 unix:///run/user/$(id -u)/podman/podman.sock &
 ```
 

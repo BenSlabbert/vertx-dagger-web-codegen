@@ -37,9 +37,23 @@ publishing {
     }
 }
 
+val uid =
+    runCatching {
+        providers
+            .exec { commandLine("id", "-u") }
+            .standardOutput.asText
+            .get()
+            .trim()
+    }.getOrDefault("1000")
+
 tasks.withType<Test> {
     useJUnitPlatform()
+    minHeapSize = "64m"
+    maxHeapSize = "128m"
     maxParallelForks = Runtime.getRuntime().availableProcessors()
+    environment("DOCKER_HOST", "unix:///run/user/$uid/podman/podman.sock")
+    environment("TESTCONTAINERS_RYUK_DISABLED", "true")
+    environment("TESTCONTAINERS_HOST_OVERRIDE", "127.0.0.1")
     jvmArgs(
         "--enable-native-access=ALL-UNNAMED",
         "--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
