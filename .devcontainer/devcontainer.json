@@ -1,41 +1,23 @@
 {
-  "name": "Java + Gradle + Podman",
-  "build": {
-    "dockerfile": "Dockerfile",
-    "context": ".."
-  },
-  "features": {
-    "ghcr.io/devcontainers/features/java:1": {
-      "version": "25"
-    },
-    "ghcr.io/devcontainers/features/sshd:1": {
-        "version": "latest"
-    }
-  },
+  "name": "devcontainer",
+  "image": "mcr.microsoft.com/devcontainers/base:trixie",
   "runArgs": [
-    "--cap-add=SYS_ADMIN",
-    "--cap-add=MKNOD",
-    "--security-opt=label=disable",
+    "--privileged",
     "--device=/dev/fuse"
   ],
-  "remoteUser": "vscode",
-  "postCreateCommand": "bash .devcontainer/postCreate.sh",
-  "containerEnv": {
-    "DOCKER_HOST": "unix:///run/user/1000/podman/podman.sock",
-    "TESTCONTAINERS_RYUK_DISABLED": "true"
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "25.0.3-graal"
+    },
+    "ghcr.io/devcontainers/features/sshd:1": {}
   },
   "customizations": {
     "vscode": {
-      "extensions": [
-        "vscjava.vscode-java-pack",
-        "vscjava.vscode-gradle",
-        "redhat.java",
-        "ms-azuretools.vscode-containers",
-        "ms-vscode-remote.remote-containers"
-      ],
+      "extensions": [],
       "settings": {
-        "java.configuration.updateBuildConfiguration": "interactive"
+        "java.jdt.ls.java.home": "/usr/local/sdkman/candidates/java/current"
       }
     }
-  }
+  },
+  "postCreateCommand": "sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y podman uidmap slirp4netns fuse-overlayfs && chmod +x gradlew && ./gradlew build -x test --console=plain && podman --version"
 }
