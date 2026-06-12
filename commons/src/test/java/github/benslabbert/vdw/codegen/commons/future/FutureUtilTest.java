@@ -2,7 +2,6 @@
 package github.benslabbert.vdw.codegen.commons.future;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 import io.vertx.core.Future;
 import io.vertx.junit5.VertxExtension;
