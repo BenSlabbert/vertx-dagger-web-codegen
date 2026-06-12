@@ -59,7 +59,17 @@ class PropertyBuilder {
       } else if (kind.isPrimitive()) {
         Property property =
             new Property(
-                varName.toString(), false, false, null, kind, false, false, min, max, size, List.of());
+                varName.toString(),
+                false,
+                false,
+                null,
+                kind,
+                false,
+                false,
+                min,
+                max,
+                size,
+                List.of());
         properties.add(property);
       } else {
         String msg = String.format("unsupported kind: %s", kind);

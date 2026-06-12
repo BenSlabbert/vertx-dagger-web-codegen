@@ -10,7 +10,7 @@ public final class DockerContainers {
 
   public static final PostgreSQLContainer POSTGRES =
       new PostgreSQLContainer(
-              DockerImageName.parse("docker.io/postgres:17-alpine")
+              DockerImageName.parse("docker.io/postgres:18.4-alpine3.23")
                   .asCompatibleSubstituteFor("postgres"))
           .withDatabaseName("postgres")
           .withPassword("postgres")
