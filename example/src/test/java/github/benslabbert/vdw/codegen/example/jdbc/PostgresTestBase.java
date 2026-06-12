@@ -71,6 +71,7 @@ public abstract class PostgresTestBase {
                     middle_name text,
                     last_name text,
                     age int4,
+                    siblings int4,
                     gender text,
                     address_id bigint not null unique,
                     constraint person_address_fk foreign key (address_id) references address(id)

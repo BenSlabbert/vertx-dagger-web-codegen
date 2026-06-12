@@ -45,6 +45,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(30)
                                 .gender("male")
                                 .address(address)
+                                .siblings(1)
                                 .build()));
 
     assertThat(person).isNotNull();
@@ -55,7 +56,88 @@ class PersonRepositoryIT extends PostgresTestBase {
     assertThat(person.lastName()).isEqualTo("Doe");
     assertThat(person.age()).isEqualTo(30);
     assertThat(person.gender()).isEqualTo("male");
+    assertThat(person.siblings()).isEqualTo(1);
     assertThat(person.address().id()).isEqualTo(address.id());
+  }
+
+  @Test
+  void siblings() {
+    Address address = createAddress("street1", "pc1");
+
+    Person person =
+        provider
+            .personRepository()
+            .doInTransaction()
+            .save(
+                PersonBuilder.builder()
+                    .name("John")
+                    .middleName("M")
+                    .lastName("Doe")
+                    .age(30)
+                    .gender("male")
+                    .address(address)
+                    .siblings(1)
+                    .build());
+
+    provider
+        .jdbcTransactionManager()
+        .executeWithoutResult(
+            () -> {
+              try (Stream<Long> all = provider.personRepository().siblings(1)) {
+                assertThat(all).singleElement().isEqualTo(person.id());
+              }
+            });
+  }
+
+  @Test
+  void middle_name() {
+    Address address = createAddress("street1", "pc1");
+
+    Person person =
+        provider
+            .personRepository()
+            .doInTransaction()
+            .save(
+                PersonBuilder.builder()
+                    .name("John")
+                    .middleName("M")
+                    .lastName("Doe")
+                    .age(30)
+                    .gender("male")
+                    .address(address)
+                    .siblings(1)
+                    .build());
+
+    provider
+        .jdbcTransactionManager()
+        .executeWithoutResult(
+            () -> {
+              Optional<Long> mId = provider.personRepository().middle_name("M");
+              assertThat(mId).isPresent().contains(person.id());
+            });
+  }
+
+  @Test
+  void middle_name_doInTransaction() {
+    Address address = createAddress("street1", "pc1");
+
+    Person person =
+        provider
+            .personRepository()
+            .doInTransaction()
+            .save(
+                PersonBuilder.builder()
+                    .name("John")
+                    .middleName("M")
+                    .lastName("Doe")
+                    .age(30)
+                    .gender("male")
+                    .address(address)
+                    .siblings(1)
+                    .build());
+
+    Optional<Long> mId = provider.personRepository().doInTransaction().middle_name("M");
+    assertThat(mId).isPresent().contains(person.id());
   }
 
   @Test
@@ -78,6 +160,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                     .age(30)
                                     .gender("male")
                                     .address(addr1)
+                                    .siblings(1)
                                     .build(),
                                 PersonBuilder.builder()
                                     .name("Jane")
@@ -85,6 +168,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                     .age(25)
                                     .gender("female")
                                     .address(addr2)
+                                    .siblings(1)
                                     .build())));
 
     assertThat(people)
@@ -124,6 +208,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                     .age(30)
                                     .gender("male")
                                     .address(addr1)
+                                    .siblings(1)
                                     .build(),
                                 PersonBuilder.builder()
                                     .name("Jane")
@@ -131,6 +216,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                     .age(25)
                                     .gender("female")
                                     .address(addr2)
+                                    .siblings(1)
                                     .build())));
 
     Iterator<Person> itr = saved.iterator();
@@ -202,6 +288,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(30)
                                 .gender("male")
                                 .address(address)
+                                .siblings(1)
                                 .build()));
 
     assertThat(saved.version()).isZero();
@@ -239,6 +326,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(30)
                                 .gender("male")
                                 .address(address)
+                                .siblings(1)
                                 .build()));
 
     // Simulate concurrent update
@@ -277,6 +365,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(30)
                                 .gender("male")
                                 .address(address)
+                                .siblings(1)
                                 .build()));
 
     Optional<Person> found =
@@ -307,6 +396,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(30)
                                 .gender("male")
                                 .address(address)
+                                .siblings(1)
                                 .build()));
 
     Person found =
@@ -348,6 +438,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(30)
                                 .gender("male")
                                 .address(address)
+                                .siblings(1)
                                 .build()));
 
     Optional<Person> found =
@@ -391,6 +482,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(30)
                                 .gender("male")
                                 .address(address)
+                                .siblings(1)
                                 .build()));
 
     int deleted =
@@ -418,6 +510,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(30)
                                 .gender("male")
                                 .address(address)
+                                .siblings(1)
                                 .build()));
 
     // Update to increment version
@@ -455,6 +548,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                     .age(30)
                                     .gender("male")
                                     .address(addr1)
+                                    .siblings(1)
                                     .build(),
                                 PersonBuilder.builder()
                                     .name("Jane")
@@ -462,6 +556,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                     .age(25)
                                     .gender("female")
                                     .address(addr2)
+                                    .siblings(1)
                                     .build())));
 
     int[] deleted =
@@ -490,6 +585,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(30)
                                 .gender("male")
                                 .address(address)
+                                .siblings(1)
                                 .build(),
                             "select id from c",
                             new ScalarHandler<Long>()));
@@ -514,6 +610,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(30)
                                 .gender("male")
                                 .address(address)
+                                .siblings(1)
                                 .build()));
 
     Long deletedId =
@@ -547,6 +644,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(30)
                                 .gender("male")
                                 .address(addr1)
+                                .siblings(1)
                                 .build(),
                             PersonBuilder.builder()
                                 .name("John")
@@ -554,6 +652,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(25)
                                 .gender("male")
                                 .address(addr2)
+                                .siblings(1)
                                 .build())));
 
     List<Person> found =
@@ -583,6 +682,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(30)
                                 .gender("male")
                                 .address(addr1)
+                                .siblings(1)
                                 .build(),
                             PersonBuilder.builder()
                                 .name("Jane")
@@ -590,6 +690,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(25)
                                 .gender("female")
                                 .address(addr2)
+                                .siblings(1)
                                 .build())));
 
     provider
@@ -621,6 +722,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(30)
                                 .gender("male")
                                 .address(addr1)
+                                .siblings(1)
                                 .build(),
                             PersonBuilder.builder()
                                 .name("Jane")
@@ -628,6 +730,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(30)
                                 .gender("female")
                                 .address(addr2)
+                                .siblings(1)
                                 .build())));
 
     AtomicInteger count = new AtomicInteger();
@@ -667,6 +770,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(30)
                                 .gender("male")
                                 .address(addr1)
+                                .siblings(1)
                                 .build(),
                             PersonBuilder.builder()
                                 .name("Jane")
@@ -674,6 +778,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(25)
                                 .gender("female")
                                 .address(addr2)
+                                .siblings(1)
                                 .build(),
                             PersonBuilder.builder()
                                 .name("Jack")
@@ -681,6 +786,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(35)
                                 .gender("male")
                                 .address(addr3)
+                                .siblings(1)
                                 .build())));
 
     Iterable<Person> males =
@@ -711,6 +817,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(25)
                                 .gender("male")
                                 .address(addr1)
+                                .siblings(1)
                                 .build(),
                             PersonBuilder.builder()
                                 .name("Jane")
@@ -718,6 +825,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(18)
                                 .gender("female")
                                 .address(addr2)
+                                .siblings(1)
                                 .build(),
                             PersonBuilder.builder()
                                 .name("Jack")
@@ -725,6 +833,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(30)
                                 .gender("male")
                                 .address(addr3)
+                                .siblings(1)
                                 .build())));
 
     Iterable<Person> adults =
@@ -755,6 +864,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(25)
                                 .gender("male")
                                 .address(addr1)
+                                .siblings(1)
                                 .build(),
                             PersonBuilder.builder()
                                 .name("Jane")
@@ -762,6 +872,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(35)
                                 .gender("female")
                                 .address(addr2)
+                                .siblings(1)
                                 .build(),
                             PersonBuilder.builder()
                                 .name("Jack")
@@ -769,6 +880,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(45)
                                 .gender("male")
                                 .address(addr3)
+                                .siblings(1)
                                 .build())));
 
     List<Person> ageGroup =
@@ -799,6 +911,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(25)
                                 .gender("male")
                                 .address(addr1)
+                                .siblings(1)
                                 .build(),
                             PersonBuilder.builder()
                                 .name("Jane")
@@ -806,6 +919,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(35)
                                 .gender("female")
                                 .address(addr2)
+                                .siblings(1)
                                 .build(),
                             PersonBuilder.builder()
                                 .name("Jack")
@@ -813,6 +927,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(45)
                                 .gender("male")
                                 .address(addr3)
+                                .siblings(1)
                                 .build())));
 
     provider
@@ -845,6 +960,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(25)
                                 .gender("male")
                                 .address(addr1)
+                                .siblings(1)
                                 .build(),
                             PersonBuilder.builder()
                                 .name("Jane")
@@ -852,6 +968,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(35)
                                 .gender("female")
                                 .address(addr2)
+                                .siblings(1)
                                 .build(),
                             PersonBuilder.builder()
                                 .name("Jill")
@@ -859,6 +976,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(45)
                                 .gender("female")
                                 .address(addr3)
+                                .siblings(1)
                                 .build())));
 
     AtomicInteger count = new AtomicInteger();
@@ -896,6 +1014,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(30)
                                 .gender("male")
                                 .address(addr1)
+                                .siblings(1)
                                 .build(),
                             PersonBuilder.builder()
                                 .name("Jane")
@@ -903,6 +1022,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(25)
                                 .gender("female")
                                 .address(addr2)
+                                .siblings(2)
                                 .build())));
 
     provider
@@ -934,6 +1054,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(25)
                                 .gender("male")
                                 .address(addr1)
+                                .siblings(1)
                                 .build(),
                             PersonBuilder.builder()
                                 .name("Jane")
@@ -941,6 +1062,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(18)
                                 .gender("female")
                                 .address(addr2)
+                                .siblings(1)
                                 .build())));
 
     // adultsSqlFile uses file1.sql which selects by id parameter
@@ -971,6 +1093,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(25)
                                 .gender("male")
                                 .address(addr1)
+                                .siblings(1)
                                 .build(),
                             PersonBuilder.builder()
                                 .name("Jane")
@@ -978,6 +1101,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(35)
                                 .gender("female")
                                 .address(addr2)
+                                .siblings(1)
                                 .build())));
 
     // byAgeGroupSqlFile uses file.sql which selects ALL
@@ -1008,6 +1132,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(25)
                                 .gender("male")
                                 .address(addr1)
+                                .siblings(1)
                                 .build(),
                             PersonBuilder.builder()
                                 .name("Jane")
@@ -1015,6 +1140,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(35)
                                 .gender("female")
                                 .address(addr2)
+                                .siblings(1)
                                 .build())));
 
     provider
@@ -1046,6 +1172,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(25)
                                 .gender("male")
                                 .address(addr1)
+                                .siblings(1)
                                 .build(),
                             PersonBuilder.builder()
                                 .name("Jane")
@@ -1053,6 +1180,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                 .age(35)
                                 .gender("female")
                                 .address(addr2)
+                                .siblings(1)
                                 .build())));
 
     AtomicInteger count = new AtomicInteger();
@@ -1082,6 +1210,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                                         .age(30)
                                         .gender("male")
                                         .address(() -> 999L) // Non-existent address
+                                        .siblings(1)
                                         .build())))
         .isInstanceOf(RuntimeException.class);
   }
@@ -1102,6 +1231,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                     .age(30)
                     .gender("male")
                     .address(address)
+                    .siblings(1)
                     .build());
 
     assertThat(person).isNotNull();
@@ -1129,6 +1259,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                     .age(30)
                     .gender("male")
                     .address(address)
+                    .siblings(1)
                     .build());
 
     Optional<Person> found = provider.personRepository().doInTransaction().id(saved.id());
@@ -1153,6 +1284,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                     .age(30)
                     .gender("male")
                     .address(address)
+                    .siblings(1)
                     .build());
 
     assertThat(saved.version()).isZero();
@@ -1183,6 +1315,7 @@ class PersonRepositoryIT extends PostgresTestBase {
                     .age(30)
                     .gender("male")
                     .address(address)
+                    .siblings(1)
                     .build());
 
     int deleted = provider.personRepository().doInTransaction().delete(saved);
