@@ -58,6 +58,40 @@ class JsonWriterProcessorTest {
   }
 
   @Test
+  void interfaceExample() throws Exception {
+    URL resource = this.getClass().getClassLoader().getResource("InterfaceExample.java");
+    assertThat(resource).isNotNull();
+
+    Compilation compilation =
+        Compiler.javac()
+            .withProcessors(new JsonWriterProcessor())
+            .compile(JavaFileObjects.forResource(resource));
+
+    assertThat(compilation.status()).isEqualTo(Compilation.Status.SUCCESS);
+
+    var generatedFile = compilation.generatedSourceFile("my.test.InterfaceExampleJson");
+    assertThat(generatedFile).isPresent();
+
+    String generatedSource = generatedFile.get().getCharContent(false).toString();
+    assertThat(generatedSource).contains("public static JsonObject toJson(InterfaceExample o)");
+    assertThat(generatedSource).contains("json.put(\"id\", o.id())");
+    assertThat(generatedSource).contains("json.put(\"name\", o.name())");
+    assertThat(generatedSource).contains("json.put(\"age\", o.age())");
+    assertThat(generatedSource).contains("json.put(\"active\", o.active())");
+    assertThat(generatedSource).doesNotContain("fromJson(");
+    assertThat(generatedSource).doesNotContain("jsonSchema(");
+    assertThat(generatedSource).doesNotContain("\"getClass\"");
+    assertThat(generatedSource).doesNotContain("\"hashCode\"");
+    assertThat(generatedSource).doesNotContain("\"toString\"");
+    assertThat(generatedSource).doesNotContain("\"helper\"");
+
+    assertAbout(JavaSourceSubjectFactory.javaSource())
+        .that(JavaFileObjects.forResource(resource))
+        .processedWith(new JsonWriterProcessor())
+        .compilesWithoutError();
+  }
+
+  @Test
   void nested() {
     URL resource = this.getClass().getClassLoader().getResource("Nested.java");
     assertThat(resource).isNotNull();
