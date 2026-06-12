@@ -16,13 +16,12 @@ class FromJsonGenerator {
   static void fromJson(PrintWriter out, List<Property> properties, String simpleClassName) {
     // For nested classes, the builder class uses underscores (e.g., Nested_InnerBuilder)
     // but the return type uses dots (e.g., Nested.Inner)
-    String builderClassName = simpleClassName;
     String returnTypeName = simpleClassName.replace('_', '.');
     out.printf("public static %s fromJson(JsonObject json) {%n", returnTypeName);
     out.println("if (null == json) {");
     out.println("return null;");
     out.println("}");
-    out.printf("return %sBuilder.builder()%n", builderClassName);
+    out.printf("return %sBuilder.builder()%n", simpleClassName);
 
     for (Property property : properties) {
       String jsonGetter =
@@ -117,25 +116,29 @@ class FromJsonGenerator {
     return switch (className) {
       case "java.time.LocalDate" -> {
         if (nullable) {
-          yield "null == json.getString(\"%s\") ? null :"
-              + " LocalDate.parse(json.getString(\"%s\"), DateTimeFormatter.ISO_DATE)";
+          yield """
+          null == json.getString("%1$s") ? null : LocalDate.parse(json.getString("%1$s"), DateTimeFormatter.ISO_DATE)
+          """
+              .formatted(name);
         }
         yield "LocalDate.parse(json.getString(\"%s\"), DateTimeFormatter.ISO_DATE)".formatted(name);
       }
       case "java.time.LocalDateTime" -> {
         if (nullable) {
-          yield "null == json.getString(\"%s\") ? null :"
-              + " LocalDateTime.parse(json.getString(\"%s\"),"
-              + " DateTimeFormatter.ISO_LOCAL_DATE_TIME)";
+          yield """
+          null == json.getString("%1$s") ? null : LocalDateTime.parse(json.getString("%1$s"), DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+          """
+              .formatted(name);
         }
         yield "LocalDateTime.parse(json.getString(\"%s\"), DateTimeFormatter.ISO_LOCAL_DATE_TIME)"
             .formatted(name);
       }
       case "java.time.OffsetDateTime" -> {
         if (nullable) {
-          yield "null == json.getString(\"%s\") ? null :"
-              + " OffsetDateTime.parse(json.getString(\"%s\"),"
-              + " DateTimeFormatter.ISO_OFFSET_DATE_TIME)";
+          yield """
+          null == json.getString("%1$s") ? null : OffsetDateTime.parse(json.getString("%1$s"), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+          """
+              .formatted(name);
         }
         yield "OffsetDateTime.parse(json.getString(\"%s\"), DateTimeFormatter.ISO_OFFSET_DATE_TIME)"
             .formatted(name);
