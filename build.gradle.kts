@@ -8,7 +8,7 @@ spotless {
         targetExclude("**/build/**")
         googleJavaFormat().reflowLongStrings()
         formatAnnotations()
-        licenseHeader("/* Licensed under Apache-2.0 \$YEAR. */")
+        licenseHeader($$"/* Licensed under Apache-2.0 $YEAR. */")
     }
     sql {
         target("**/src/**/*.sql")
