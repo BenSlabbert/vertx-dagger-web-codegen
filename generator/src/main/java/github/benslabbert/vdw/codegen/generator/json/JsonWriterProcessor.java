@@ -94,8 +94,11 @@ public class JsonWriterProcessor extends AbstractProcessor {
   }
 
   private void generate(Element e) throws IOException {
-    if (ElementKind.RECORD != e.getKind()) {
-      processingEnv.getMessager().printError("can only generate JsonWriters on record types", e);
+    ElementKind elementKind = e.getKind();
+    if (ElementKind.RECORD != elementKind && ElementKind.INTERFACE != elementKind) {
+      processingEnv
+          .getMessager()
+          .printError("can only generate JsonWriters on record or interface types", e);
       return;
     }
 
@@ -110,10 +113,7 @@ public class JsonWriterProcessor extends AbstractProcessor {
 
     boolean isMember = NestingKind.MEMBER == te.getNestingKind();
 
-    List<Property> properties = PropertyBuilder.getProperties(te);
-    if (properties.isEmpty()) {
-      return;
-    }
+    List<Property> properties = PropertyBuilder.getProperties(te, processingEnv.getElementUtils());
 
     String annotatedClassName = te.getQualifiedName().toString();
 
@@ -205,8 +205,11 @@ public class JsonWriterProcessor extends AbstractProcessor {
       out.println();
 
       ToJsonGenerator.toJson(out, properties, simpleClassName);
-      FromJsonGenerator.fromJson(out, properties, simpleClassName);
-      JsonSchemaGenerator.jsonSchema(out, properties);
+      // Only generate fromJson and jsonSchema for records, not for interfaces
+      if (elementKind == ElementKind.RECORD) {
+        FromJsonGenerator.fromJson(out, properties, simpleClassName);
+        JsonSchemaGenerator.jsonSchema(out, properties);
+      }
 
       out.println("}");
     }
