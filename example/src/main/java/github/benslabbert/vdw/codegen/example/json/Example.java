@@ -3,7 +3,11 @@ package github.benslabbert.vdw.codegen.example.json;
 
 import github.benslabbert.vdw.codegen.annotation.builder.GenerateBuilder;
 import github.benslabbert.vdw.codegen.annotation.json.JsonWriter;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
