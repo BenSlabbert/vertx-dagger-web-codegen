@@ -3,12 +3,7 @@ package github.benslabbert.vdw.codegen.example.jdbc;
 
 import github.benslabbert.vdw.codegen.annotation.builder.GenerateBuilder;
 import github.benslabbert.vdw.codegen.annotation.jdbc.Table;
-import github.benslabbert.vdw.codegen.annotation.jdbc.Table.Column;
-import github.benslabbert.vdw.codegen.annotation.jdbc.Table.FindByColumn;
-import github.benslabbert.vdw.codegen.annotation.jdbc.Table.Id;
-import github.benslabbert.vdw.codegen.annotation.jdbc.Table.InsertOnly;
-import github.benslabbert.vdw.codegen.annotation.jdbc.Table.Query;
-import github.benslabbert.vdw.codegen.annotation.jdbc.Table.Version;
+import github.benslabbert.vdw.codegen.annotation.jdbc.Table.*;
 import github.benslabbert.vdw.codegen.commons.jdbc.Reference;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -40,9 +35,10 @@ public record Person(
     @Column("id") @Id("id_seq") long id,
     @Column("first_name") @FindByColumn(fetchSize = 1, returnType = List.class) @InsertOnly
         String name,
-    @Column("middle_name") @Nullable String middleName,
+    @Column("middle_name") @Nullable @FindOneIdByColumn String middleName,
     @Column("last_name") @FindByColumn @InsertOnly String lastName,
     @Column("age") @FindByColumn(fetchSize = 25, returnType = Consumer.class) int age,
+    @Column("siblings") @FindIdByColumn int siblings,
     @Column("gender") @FindByColumn(fetchSize = 50, returnType = Iterable.class) @InsertOnly
         String gender,
     @Column("address_id") @Nonnull Reference<Address> address,
