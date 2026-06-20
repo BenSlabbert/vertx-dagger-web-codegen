@@ -24,7 +24,7 @@ jobs:
     - name: "Set DOCKER_HOST to rootless Podman socket"
       run: "echo \"DOCKER_HOST=unix:///run/$(id -u)/podman/podman.sock\" >> $GITHUB_ENV"
     - run: "echo \"$DOCKER_HOST\""
-    - uses: "actions/checkout@v6"
+    - uses: "actions/checkout@v7"
     - name: "Set up JDK"
       uses: "actions/setup-java@v5"
       with:
