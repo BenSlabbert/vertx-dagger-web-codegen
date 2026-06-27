@@ -32,10 +32,11 @@ jobs:
         java-version: "25"
         java-package: "jdk"
     - name: "Set up Gradle"
-      uses: "gradle/actions/setup-gradle@v6"
+      uses: "gradle/actions/setup-gradle@v6.2.0"
       with:
         cache-provider: "basic"
         validate-wrappers: true
+        gradle-version: "9.6.1"
         dependency-graph: "generate-and-submit"
     - name: "Initialize CodeQL"
       uses: "github/codeql-action/init@v4"
