@@ -16,7 +16,7 @@ repositories { mavenCentral() }
 
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.1")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.2")
     testImplementation("org.assertj:assertj-core:3.27.7")
 }
 
